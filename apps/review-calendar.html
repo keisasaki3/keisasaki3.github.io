@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>復習カレンダー</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .container .label {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .container .date {
+            font-size: 1.5rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="today"></h1>
+    <div class="container">
+        <span class="label">① 昨日</span>
+        <span class="date" id="yesterday"></span>
+    </div>
+    <div class="container">
+        <span class="label">② 3日前</span>
+        <span class="date" id="threeDaysAgo"></span>
+    </div>
+    <div class="container">
+        <span class="label">③ 1週間前</span>
+        <span class="date" id="oneWeekAgo"></span>
+    </div>
+    <div class="container">
+        <span class="label">④ 30日前</span>
+        <span class="date" id="thirtyDaysAgo"></span>
+    </div>
+
+    <script>
+        // 日付をフォーマットする関数
+        function formatDate(date) {
+            let year = date.getFullYear();
+            let month = String(date.getMonth() + 1).padStart(2, '0');
+            let day = String(date.getDate()).padStart(2, '0');
+            return `${year}/${month}/${day}`;
+        }
+
+        // 今日の日付
+        let today = new Date();
+        document.getElementById('today').textContent = `${formatDate(today)} 復習カレンダー`;
+
+        // 昨日
+        let yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+        document.getElementById('yesterday').textContent = formatDate(yesterday);
+
+        // 3日前
+        let threeDaysAgo = new Date();
+        threeDaysAgo.setDate(today.getDate() - 3);
+        document.getElementById('threeDaysAgo').textContent = formatDate(threeDaysAgo);
+
+        // 1週間前
+        let oneWeekAgo = new Date();
+        oneWeekAgo.setDate(today.getDate() - 7);
+        document.getElementById('oneWeekAgo').textContent = formatDate(oneWeekAgo);
+
+        // 30日前
+        let thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(today.getDate() - 30);
+        document.getElementById('thirtyDaysAgo').textContent = formatDate(thirtyDaysAgo);
+    </script>
+</body>
+</html>
