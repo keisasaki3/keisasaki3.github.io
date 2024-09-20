@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head> 
+    <meta charset="UTF-8">
+    <title>I'm Feeling Jazzy 黒本ランダマイザー</title>
+    <style>
+        body {
+            font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', Meiryo, メイリオ, Osaka, 'MS PGothic', arial, helvetica, sans-serif;
+            background-color: #f6f6f4;
+        }
+        div {
+            text-align: center;
+            margin: auto;
+        }
+        #contents {
+            background-color: #FFFFFF;
+            width: 600px;
+            padding: 18px;
+        }
+        #title {
+            color: #AEC4E5;
+            font-size: 20px;
+        }
+        #song_display {
+            color: #6088C6;
+            font-size: 20px;
+            height: 70px;
+            vertical-align: middle;
+        }
+        #buttons {
+            margin: auto;
+        }
+        .blue {
+            background: #008DDD;
+        }
+        .red {
+            background: #EB8686;
+        }
+        .button {
+            width: 200px;
+            margin: 0 auto;
+            padding: 15px 0;
+            font-size: 20px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            color: #FFFFFF;
+            border-radius: 5px;
+            -webkit-border-radius: 5px;/* for Safari and Chrome 対応*/
+            -moz-border-radius: 5px;/* for Firefox 対応*/
+        }
+    </style>
+</head>
+<body>
+<div id="contents">
+    <div id="title">I'm Feeling Jazzy 黒本ランダマイザー (227 songs)</div>
+    <br>
+    <div id="song_display"></div>
+    <br>
+    <div id="buttons">
+        <a href="javascript:getSong();" class="button blue">I'm Feeling Jazzy</a>
+        <a href="javascript:copyToClipboard()" class="button red">Copy</a>
+    </div>
+</div>
+</body>
+<script type="text/plain" id="songs_data">
+1) AFTERNOON IN PARIS　～アフタヌーン・イン・パリ
+2) AIREGIN　～エアジン
+3) ALICE IN WONDERLAND　～不思議の国のアリス
+4) ALL BLUES　～オール・ブルース
+5) ALL OF ME　～私のすべて
+6) ALL OF YOU　～あなたの全て
+7) ALL THE THINGS YOU ARE　～オール・ザ・シング・ユー・アー
+8) ALONE TOGETHER　～ただふたりで
+9) ANTHROPOLOGY　～アンソロポロジー
+10) APRIL IN PARIS　～パリの4月
+11) AU PRIVAVE　～オウ・プリベーブ
+12) AUTUMN IN NEW YORK　～ニューヨークの秋
+13) AUTUMN LEAVES　～枯葉
+14) BAG'S GROOVE　～バグズ・グルーヴ
+15) BEATRICE　～ベアトリス
+16) BEAUTIFUL LOVE　～ビューティフル・ラブ
+17) BESSIE'S BLUES　～ベッシーズ・ブルース
+18) BILLIE'S BOUNCE　～ビリーズ・バウンス
+19) BLACK NILE　～ブラック・ナイル
+20) BLACK ORPHEUS　～オルフェの唄／黒いオルフェ
+21) BLUE BOSSA　～ブルー・ボッサ
+22) BLUE IN GREEN　～ブルー・イン・グルーン
+23) BLUE MONK　～ブルー・モンク
+24) BLUESETTE　～木陰にて
+25) BODY AND SOUL　～身も心も
+26) BOLIVIA　～ボリビア
+27) BUT NOT FOR ME　～バット・ノット・フォー・ミー
+28) BYE BYE BLACKBIRD　～バイ・バイ・ブラックバード
+29) C JAM BLUES　～シー・ジャム・ブルース
+30) CANDY　～恋するキャンディー
+31) CANTALOUPE ISLAND　～カンタロープ・アイランド
+32) CARAVAN　～キャラバン
+33) CHEROKEE　～チェロキー
+34) CHERYL　～シェリル
+35) CHICKEN, The　～チキン
+36) CHILD IS BORN, A　～チャイルド・イズ・ボーン
+37) CHRISTMAS SONG, The　～クリスマス・ソング
+38) CLEOPATRA'S DREAM　～クレオパトラの夢
+39) COME RAIN OR COME SHINE　～降っても晴れても
+40) CON ALMA　～コン・アルマ
+41) CONFIRMATION　～コンファメーション
+42) CORCOVADO　～静かな夜／コルコバド
+43) CUTE　～可愛いキューピット／キュート
+44) DAAHOUD　～ダフード
+45) DAY BY DAY　～デイ・バイ・デイ
+46) DAYS OF WINE AND ROSES, The　～酒とバラの日々
+47) DEAR OLD STOCKHOLM　～麗しのワームランド
+48) DOLPHIN DANCE　～ドルフィン・ダンス
+49) DONNA LEE　～ドナ・リー
+50) DOXY　～ドキシー
+51) EASY LIVING　～イージー・リビング
+52) EMILY　～卑怯者の勲章
+53) EVERYTHING HAPPENS TO ME　～なんでも私に
+54) EVIDENCE　～エビデンス
+55) FALLING IN LOVE WITH LOVE　～恋に恋して
+56) FEEL LIKE MAKIN' LOVE　～愛のためいき
+57) FLY ME TO THE MOON　～月に想いを
+58) FOGGY DAY, A　～霧の日
+59) FOOTPRINTS　～フットプリンツ
+60) FOREST FLOWER　～フォレスト・フラワー
+61) FOUR　～フォー
+62) FOUR ON SIX　～フォー・オン・シックス
+63) FREDDIE THE FREELOADER　～フレディー・ザ・フリーローダー
+64) GEORGIA ON MY MIND　～我が心のジョージア
+65) GIANT STEPS　～ジャイアント・ステップス
+66) GIRL FROM IPANEMA　～イパネマの娘
+67) GOOD BAIT　～グッド・バイト
+68) GROOVIN' HIGH　～グルーヴィン・ハイ
+69) HAVE YOU MET MISS JONES?　～ジョーンズ嬢に会ったかい？
+70) HERE'S THAT RAINY DAY　～雨の日に
+71) HOT HOUSE　～ホット・ハウス
+72) HOW DEEP IS THE OCEAN　～愛は海よりも深く
+73) HOW HIGH THE MOON　～ハウ・ハイ・ザ・ムーン
+74) HOW INSENSITIVE　～お馬鹿さん
+75) I CAN'T GET STARTED　～言い出しかねて
+76) I CAN'T GIVE YOU ANYTHING BUT LOVE　～捧げるは愛のみ
+77) I CONCENTRATE ON YOU　～あなたに夢中
+78) I COULD WRITE A BOOK　～書き残したい私の恋を
+79) I DIDN'T KNOW WHAT TIME IT WAS　～時さえ忘れて
+80) I FALL IN LOVE TOO EASILY　～惚れっぽいの
+81) I HEAR A RHAPSODY　～アイ・ヒアー・ア・ラプソディー
+82) I LOVE YOU　～アイ・ラブ・ユー
+83) I MEAN YOU　～アイ・ミーン・ユー
+84) I REMEMBER CLIFFORD　～クリフォードの想い出
+85) I REMEMBER YOU　～アイ・リメンバー・ユー
+86) I SHOULD CARE　～アイ・シュッド・ケア
+87) I THOUGHT ABOUT YOU　～君のことばかり
+88) I'LL CLOSE MY EYES　～瞳をとじて
+89) I'LL REMEMBER APRIL　～4月の想い出
+90) I'M OLD FASHIONED　～アイム・オールド・ファッションド
+91) IF I SHOULD LOSE YOU　～あなたなしでは
+92) IF I WERE A BELL　～イフ・アイ・ワー・ア・ベル
+93) IF YOU COULD SEE ME NOW　～もし私を見たら
+94) IMPRESSIONS　～インプレッションズ
+95) IN A MELLOW TONE　～イン・ア・メロウ・トーン
+96) IN A SENTIMENTAL MOOD　～イン・ア・センチメンタル・ムード
+97) IN YOUR OWN SWEET WAY　～イン・ユア・オウン・スウィート・ウェイ
+98) INNER URGE　～インナー・アージ
+99) INTERPLAY　～インタープレイ
+100) INVITATION　～インビテイション
+101) ISRAEL　～イスラエル
+102) IT COULD HAPPEN TO YOU　～イット・ クッド・ハプン・トゥ・ユー
+103) IT DON'T MEAN A THING　～スイングしなけりゃ意味ないね
+104) IT MIGHT AS WELL BE SPRING　～これぞ春
+105) IT'S ALL RIGHT WITH ME　～僕は満足
+106) IT'S ONLY A PAPER MOON　～ペーパー・ムーン
+107) IT'S YOU OR NO ONE　～イッツ・ユー・オア・ノー・ワン
+108) JOR DU　～ジョードゥ
+109) JOY SPRING　～ジョイ・スプリング
+110) JUST FRIENDS　～ジャスト・フレンズ
+111) JUST ONE OF THOSE THINGS　～よくあることさ
+112) KILLER JOE　～キラー・ジョー
+113) LADY BIRD　～レディー・バード
+114) LAMENT　～ラメント
+115) LAZY BIRD　～レイジー・バード
+116) LEFT ALONE　～レフト・アローン
+117) LIKE SOMEONE IN LOVE　～恋の気持ちで
+118) LITTLE B'S POEM　～リトル・ビーズ・ポエム
+119) L-O-V-E　～ラブ
+120) LOVE FOR SALE　～恋はいかが
+121) LOVE IS HERE TO STAY　～わが恋はここに
+122) LOVE LETTERS　～ラブ・レター
+123) LOVER COME BACK TO ME　～恋人よ我に帰れ
+124) LOVER MAN　～ラヴァー・マン
+125) LULLABY OF BIRDLAND　～バードランドの子守歌
+126) MACK THE KNIFE／MORITAT　～マック・ザ・ナイフ／モリタート
+127) MAIDEN VOYAGE　～処女航海
+128) MILESTONES　～マイルス・トーン
+129) MOANIN'　～モーニン
+130) MOMENT'S NOTICE　～モーメンツ・ノーティス
+131) MR. P.C.　～ミスター・ピー・シー
+132) MY FAVORITE THINGS　～私のお気に入り
+133) MY FOOLISH HEART　～愚かなりわが心
+134) MY FUNNY VALENTINE　～マイ・ファニー・バレンタイン
+135) MY LITTLE SUEDE SHOES　～マイ・リトル・スエード・シューズ
+136) MY ONE AND ONLY LOVE　～ただひとつの恋
+137) MY ROMANCE　～マイ・ロマンス
+138) NAIMA　～ネイマ
+139) NARDIS　～ナルディス
+140) NICA'S DREAM　～ニカの夢
+141) NIGHT AND DAY　～ナイト・アンド・デイ／夜も昼も
+142) NIGHT HAS A THOUSAND EYES, The　～夜は千の眼をもつ
+143) NIGHT IN TUNISIA, A　～チュニジアの夜
+144) NOW'S THE TIME　～ナウズ・ザ・タイム
+145) OLD DEVIL MOON　～月の誘惑
+146) OLD FOLKS　～オールド・フォークス
+147) OLEO　～オレオ
+148) ON A CLEAR DAY　～晴れた日に永遠が見える
+149) ON GREEN DOLPHIN STREET　～グリーン・ドルフィン・ストリート
+150) ON THE SUNNY SIDE OF THE STREET　～明るい表通りで
+151) ONCE I LOVED　～ワンス・アイ・ラブド
+152) ONE NOTE SAMBA　～ワン・ノート・サンバ
+153) ORNITHOLOGY　～オーニソロジー
+154) OUT OF NOWHERE　～アウト・オブ・ノーウェアー
+155) OVER THE RAINBOW　～虹の彼方に／オーバー・ザ・レインボー
+156) PEACE　～ピース
+157) PENT-UP HOUSE　～ペント・アップ・ハウス
+158) PERDIDO　～パーディド
+159) POLKA DOTS AND MOONBEAMS　～水玉と月の光りと
+160) PRELUDE TO A KISS　～プレリュード・トゥー・ア・キス
+161) RECADO　～レカード／ギフト
+162) RECORDA ME　～リコーダ・ミー
+163) RHYTHM-A-NING　～リズム・ア・ニング
+164) ROUND MIDNIGHT　～ラウンド・ミッドナイト
+165) SAMBA DE ORFEU　～オルフェのサンバ
+166) SATIN DOLL　～サテン・ドール
+167) SCRAPPLE FROM THE APPLE　～スクラップル・フロム・ジ・アップル
+168) SECRET LOVE　～恋の秘めごと
+169) SEVEN STEPS TO HEAVEN　～天国への七つの階段
+170) SHADOW OF YOUR SMILE, The　～いそしぎ
+171) SHINY STOCKINGS　～シャイニー・ストッキング
+172) SMOKE GETS IN YOUR EYES　～煙が目にしみる
+173) SO WHAT　～ソー・ホワット
+174) SOFTLY AS IN A MORNING SUNRISE　～朝日のごとくさわやかに
+175) SOLAR　～ソーラー
+176) SOME OTHER BLUES　～サム・アザー・ブルース
+177) SOMEDAY MY PRINCE WILL COME　～いつか王子様が
+178) SOMEONE TO WATCH OVER ME　～誰かが私を見つめてる
+179) SONG FOR MY FATHER　～ソング・フォー・マイ・ファーザー
+180) SONG IS YOU　～ソング・イズ・ユー
+181) SONNYMOON FOR TWO　～ソニームーン・フォー・トゥー
+182) SOPHISTICATED LADY　～ソフィスティケイテッド・レディ
+183) SPAIN　～スペイン
+184) SPRING CAN REALLY HANG YOU UP THE MOST　～スプリング・キャン・リアリー・ハング・ユー・アップ・ザ・モースト
+185) SPEAK LOW　～スピーク・ロウ
+186) ST. THOMAS　～セイント・トーマス
+187) STABLE MATES　～スタブル・メイツ
+188) STAR EYES　～スター・アイズ
+189) STARDUST　～スターダスト
+190) STELLA BY STARLIGHT　～星影のステラ
+191) STOLEN MOMENTS　～ストールン・モーメンツ
+192) STOMPIN' AT THE SAVOY　～ストンピン・アト・ザ・サボイ
+193) STRAIGHT, NO CHASER　～ストレイト・ノー・チェイサー
+194) STROLLIN'　～ストローリン
+195) SUMMERTIME　～サマータイム／ポギー・アンド・ベス
+196) TAKE FIVE　～テイク・ファイブ
+197) TAKE THE "A" TRAIN　～A列車で行こう
+198) TELL ME A BEDTIME STORY　～テル・ミー・ア・ベッドタイム・ストーリー
+199) TENOR MADNESS　～テナー・マッドネス
+200) THERE IS NO GREATER LOVE　～ゼアー・イズ・ノー・グリーター・ラブ
+201) THERE WILL NEVER BE ANOTHER YOU　～あなただけを
+202) UP JUMPED SPRING　～アップ・ジャンプト・スプリング
+203) VERY EARLY　～ベリー・アーリー
+204) WALKIN'　～ウォーキン
+205) WALTZ FOR DEBBY　～ワルツ・フォー・デビー
+206) WATERMELON MAN　～ウォーター・メロン・マン
+207) WAVE　～波 
+208) WELL YOU NEEDN'T　～ウェル・ユー・ニードント
+209) WHAT A DIFFERENCE A DAY MADE　～縁は異なもの
+210) WHAT ARE YOU DOING THE REST OF YOUR LIFE?　～これからの人生
+211) WHAT IS THIS THING CALLED LOVE?　～恋とは
+212) WHAT'S NEW　～ホワッツ・ニュー
+213) WHEN I FALL IN LOVE　～恋におちた時
+214) WHEN SUNNY GETS BLUE　～サニーが憂欝
+215) WHEN YOU WISH UPON A STAR　～星に願いを
+216) WHISPER NOT　～ウィスパー・ノット
+217) WHITE CHRISTMAS　～ホワイト・クリスマス
+218) WOODY'N YOU　～ウッディン・ユー
+219) WORK SONG　～ワーク・ソング
+220) YARDBIRD SUITE　～ヤードバード組曲
+221) YES OR NO　～イエス・オア・ノー
+222) YESTERDAYS　～過ぎ去りし日々
+223) YOU AND THE NIGHT AND THE MUSIC　～あなたと夜と音楽と
+224) YOU DON'T KNOW WHAT LOVE IS　～恋を知らないあなた
+225) YOU MUST BELIEVE IN SPRING　～マクサンスの歌／ユー・マスト・ビリーブ・イン・スプリング
+226) YOU STEPPED OUT OF A DREAM　～夢から覚めて
+227) YOU'D BE SO NICE TO COME HOME TO　～帰ってくればいいのに
+</script>
+<script>
+var　NumOfSongs = 226;
+var disp = document.getElementById('song_display');
+
+var dataText = document.getElementById("songs_data").textContent;
+
+var songsList = dataText
+  .split(/\r\n?|\n/)
+  .map(function(str) {
+    return str.trim();
+  })
+  .filter(function(str) {
+    return str !== "";
+  });
+
+function getSong(){
+    var random = Math.floor( Math.random() * NumOfSongs );
+    disp.innerHTML = songsList[random];
+}
+
+function copyToClipboard(){
+    var area = document.createElement("textarea");
+    area.textContent = document.getElementById("song_display").innerText;
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    document.body.removeChild(area);
+}
+
+getSong();
+</script>
+</html>
