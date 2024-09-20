@@ -1,44 +1,42 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head> 
+<head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- レスポンシブ対応 -->
     <title>I'm feeling jazzy - 黒本ランダマイザー</title>
     <style>
         body {
             font-family: 'Hiragino Kaku Gothic Pro', 'ヒラギノ角ゴ Pro W3', Meiryo, メイリオ, Osaka, 'MS PGothic', arial, helvetica, sans-serif;
             background-color: #f6f6f4;
-        }
-        div {
-            text-align: center;
-            margin: auto;
+            margin: 0; /* ページの余白を削除 */
+            padding: 20px; /* 全体のパディングを追加 */
         }
         #contents {
             background-color: #FFFFFF;
-            width: 600px;
+            max-width: 600px; /* 最大幅を設定 */
+            margin: auto; /* 中央揃え */
             padding: 18px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 影を追加 */
+            border-radius: 8px; /* 角を丸くする */
         }
         #title {
             color: #AEC4E5;
-            font-size: 20px;
+            font-size: 24px; /* タイトルのフォントサイズを調整 */
+            margin-bottom: 20px; /* 下の余白を追加 */
         }
         #song_display {
             color: #6088C6;
             font-size: 20px;
             height: 70px;
-            vertical-align: middle;
+            line-height: 70px; /* 垂直方向に中央揃え */
+            margin-bottom: 20px; /* 下の余白を追加 */
         }
         #buttons {
-            margin: auto;
-        }
-        .blue {
-            background: #008DDD;
-        }
-        .red {
-            background: #EB8686;
+            text-align: center; /* ボタンを中央揃え */
         }
         .button {
-            width: 200px;
-            margin: 0 auto;
+            width: 100%; /* 幅を100%に設定 */
+            max-width: 200px; /* 最大幅を設定 */
             padding: 15px 0;
             font-size: 20px;
             text-decoration: none;
@@ -46,23 +44,46 @@
             text-align: center;
             color: #FFFFFF;
             border-radius: 5px;
-            -webkit-border-radius: 5px;/* for Safari and Chrome 対応*/
-            -moz-border-radius: 5px;/* for Firefox 対応*/
+            transition: background-color 0.3s; /* ホバー効果のためにトランジションを追加 */
+            margin: 10px 0; /* ボタンの間に余白を追加 */
+        }
+        .blue {
+            background: #008DDD;
+        }
+        .blue:hover {
+            background: #007ACC; /* ホバー時の色を変更 */
+        }
+        .red {
+            background: #EB8686;
+        }
+        .red:hover {
+            background: #D95C5C; /* ホバー時の色を変更 */
+        }
+        @media (max-width: 600px) { /* 小さい画面向けのスタイル */
+            #contents {
+                width: 90%; /* 幅を90%に設定 */
+            }
+            #title {
+                font-size: 20px; /* タイトルのフォントサイズを調整 */
+            }
+            #song_display {
+                font-size: 18px; /* フォントサイズを調整 */
+            }
+            .button {
+                font-size: 18px; /* ボタンのフォントサイズを調整 */
+            }
         }
     </style>
 </head>
 <body>
 <div id="contents">
     <div id="title">黒本ランダマイザー - 227 Songs</div>
-    <br>
     <div id="song_display">???</div>
-    <br>
     <div id="buttons">
         <a href="javascript:getSong();" class="button blue">I'm Feeling Jazzy</a>
         <a href="javascript:copyToClipboard()" class="button red">Copy</a>
     </div>
 </div>
-</body>
 <script type="text/plain" id="songs_data">
 1) AFTERNOON IN PARIS　～アフタヌーン・イン・パリ
 2) AIREGIN　～エアジン
