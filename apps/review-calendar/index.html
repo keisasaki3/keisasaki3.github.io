@@ -7,53 +7,76 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0; /* 淡いグレーの背景 */
+            background-color: #f0f8ff; /* 淡い青色の背景 */
+            color: #333; /* テキストカラー */
             text-align: center;
             margin: 0;
             padding: 20px;
+            font-size: 16px; /* 一貫性を持たせる */
         }
         h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 20px;
-            color: #333;
+            color: #4682b4; /* スチールブルー */
+        }
+        .table-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* 中央揃え */
+            justify-content: center;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff; /* 白い背景 */
+            border-radius: 8px;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px; /* 表示幅を調整 */
         }
         .container {
             display: flex;
             justify-content: space-between;
             margin: 10px 0;
-            background-color: #fff; /* 白い背景 */
             padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
         }
-        .container .label {
-            font-size: 1.5rem;
+        .label {
+            font-size: 1.2rem;
             font-weight: bold;
-            color: #666;
+            color: #5f9ea0; /* 少し濃い色で視認性向上 */
         }
-        .container .date {
-            font-size: 1.5rem;
+        .date {
+            font-size: 1.2rem;
             color: #333;
+        }
+        @media (max-width: 600px) {
+            body {
+                font-size: 18px; /* スマホ向けにフォントサイズを調整 */
+            }
+            .label, .date {
+                font-size: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
     <h1 id="today"></h1>
-    <div class="container">
-        <span class="label">① 昨日</span>
-        <span class="date" id="yesterday"></span>
-    </div>
-    <div class="container">
-        <span class="label">② 3日前</span>
-        <span class="date" id="threeDaysAgo"></span>
-    </div>
-    <div class="container">
-        <span class="label">③ 1週間前</span>
-        <span class="date" id="oneWeekAgo"></span>
-    </div>
-    <div class="container">
-        <span class="label">④ 30日前</span>
-        <span class="date" id="thirtyDaysAgo"></span>
+    <div class="table-container">
+        <div class="container">
+            <span class="label">① 昨日</span>
+            <span class="date" id="yesterday"></span>
+        </div>
+        <div class="container">
+            <span class="label">② 3日前</span>
+            <span class="date" id="threeDaysAgo"></span>
+        </div>
+        <div class="container">
+            <span class="label">③ 1週間前</span>
+            <span class="date" id="oneWeekAgo"></span>
+        </div>
+        <div class="container">
+            <span class="label">④ 30日前</span>
+            <span class="date" id="thirtyDaysAgo"></span>
+        </div>
     </div>
 
     <script>
