@@ -62,6 +62,12 @@
             color: #54433a; /* ダークブラウン系 */
             margin-top: 20px;
         }
+        .message {
+            font-size: 2rem;
+            color: #cc6214; /* メッセージの色 */
+            margin-top: 20px;
+            display: none; /* 初めは非表示 */
+        }
 
         @media (max-width: 600px) {
             h1 {
@@ -86,26 +92,28 @@
     
     <div class="main-container">
         <div class="container">
-            <input type="checkbox" />
+            <input type="checkbox" onchange="checkAll()" />
             <span class="label">① 昨日</span>
             <span class="date" id="yesterday"></span>
         </div>
         <div class="container">
-            <input type="checkbox" />
+            <input type="checkbox" onchange="checkAll()" />
             <span class="label">② 3日前</span>
             <span class="date" id="threeDaysAgo"></span>
         </div>
         <div class="container">
-            <input type="checkbox" />
+            <input type="checkbox" onchange="checkAll()" />
             <span class="label">③ 1週間前</span>
             <span class="date" id="oneWeekAgo"></span>
         </div>
         <div class="container">
-            <input type="checkbox" />
+            <input type="checkbox" onchange="checkAll()" />
             <span class="label">④ 30日前</span>
             <span class="date" id="thirtyDaysAgo"></span>
         </div>
     </div>
+
+    <div class="message" id="successMessage">You did it!</div> <!-- メッセージを表示する部分 -->
     
     <div class="footer">
         この復習カレンダーはForgetting curve、Spaced repetitionを参考にしています。
@@ -143,6 +151,19 @@
         let thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(today.getDate() - 30);
         document.getElementById('thirtyDaysAgo').textContent = formatDate(thirtyDaysAgo);
+
+        // チェックボックスがすべてチェックされているか確認する関数
+        function checkAll() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            const successMessage = document.getElementById('successMessage');
+            const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+            if (allChecked) {
+                successMessage.style.display = 'block'; // メッセージを表示
+            } else {
+                successMessage.style.display = 'none'; // メッセージを非表示
+            }
+        }
     </script>
 </body>
 </html>
