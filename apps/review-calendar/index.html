@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>復習カレンダー</title>
+    <title>今日の復習カレンダー</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0; /* 淡いグレーの背景 */
+            background-color: #bba79c; /* Grey Friends パレットの背景色 */
             text-align: center;
             margin: 0;
             padding: 20px;
@@ -16,27 +16,51 @@
         h1 {
             font-size: 2.5rem;
             margin-bottom: 20px;
-            color: #333;
+        }
+        .title-part1 {
+            color: #cc6214; /* パレットのオレンジ系 */
+        }
+        .title-part2, .date {
+            font-size: 2.0rem;
+            color: #54433a; /* ダークブラウン系 */
+        }
+        .main-container {
+            background-color: #e7d9d1; /* ソフトで馴染みやすい色 */
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column; /* 縦に並べる */
+            align-items: center; /* 中央揃え */
         }
         .container {
             display: flex;
-            justify-content: space-between;
-            margin: 10px auto;
-            background-color: #fff; /* 白い背景 */
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 100%; /* コンテナが画面幅を超えないように */
-            box-sizing: border-box; /* パディングとボーダーを含めたサイズ指定 */
-            width: 90%; /* スマホ向けのコンテナ幅調整 */
-        }
-        .label, .date {
-            font-size: 1.5rem;
-            color: #333;
+            align-items: center; /* チェックボックスとラベルを縦に揃える */
+            margin: 15px 0;
+            width: 100%;
+            justify-content: center; /* 中央揃えにする */
         }
         .label {
+            font-size: 1.5rem;
             font-weight: bold;
-            color: #666;
+            color: #cc6214; /* 明度を少し上げたオレンジ系 */
+            margin-left: 10px;
+        }
+        .date {
+            font-size: 1.5rem;
+            margin-left: 10px;
+            color: #54433a; /* ダークブラウン系 */
+        }
+        input[type="checkbox"] {
+            transform: scale(1.5); /* チェックボックスを少し大きくする */
+            margin-right: 10px;
+        }
+        .footer {
+            font-size: 0.9rem;
+            color: #54433a; /* ダークブラウン系 */
+            margin-top: 20px;
         }
 
         @media (max-width: 600px) {
@@ -44,7 +68,7 @@
                 font-size: 2rem;
             }
             .container {
-                flex-direction: column; /* スマホで縦並びにする */
+                flex-direction: column;
                 padding: 15px;
                 text-align: left;
             }
@@ -55,22 +79,36 @@
     </style>
 </head>
 <body>
-    <h1 id="today"></h1>
-    <div class="container">
-        <span class="label">① 昨日</span>
-        <span class="date" id="yesterday"></span>
+    <h1>
+        <span class="title-part2" id="today"></span>
+        <span class="title-part1">今日の復習カレンダー</span> 
+    </h1>
+    
+    <div class="main-container">
+        <div class="container">
+            <input type="checkbox" />
+            <span class="label">① 昨日</span>
+            <span class="date" id="yesterday"></span>
+        </div>
+        <div class="container">
+            <input type="checkbox" />
+            <span class="label">② 3日前</span>
+            <span class="date" id="threeDaysAgo"></span>
+        </div>
+        <div class="container">
+            <input type="checkbox" />
+            <span class="label">③ 1週間前</span>
+            <span class="date" id="oneWeekAgo"></span>
+        </div>
+        <div class="container">
+            <input type="checkbox" />
+            <span class="label">④ 30日前</span>
+            <span class="date" id="thirtyDaysAgo"></span>
+        </div>
     </div>
-    <div class="container">
-        <span class="label">② 3日前</span>
-        <span class="date" id="threeDaysAgo"></span>
-    </div>
-    <div class="container">
-        <span class="label">③ 1週間前</span>
-        <span class="date" id="oneWeekAgo"></span>
-    </div>
-    <div class="container">
-        <span class="label">④ 30日前</span>
-        <span class="date" id="thirtyDaysAgo"></span>
+    
+    <div class="footer">
+        この復習カレンダーはForgetting curve、Spaced repetitionを参考にしています。
     </div>
 
     <script>
@@ -84,7 +122,7 @@
 
         // 今日の日付
         let today = new Date();
-        document.getElementById('today').textContent = `${formatDate(today)} 復習カレンダー`;
+        document.getElementById('today').textContent = `${formatDate(today)}`;
 
         // 昨日
         let yesterday = new Date();
