@@ -77,7 +77,12 @@
             const urls = wordList
                 .map(word => word.trim()) // Remove extra spaces
                 .filter(word => word !== '') // Ignore empty lines
-                .map(word => `${baseUrl}${encodeURIComponent(word)}`); // Generate URLs
+                .map(word => {
+                    // For goo dictionary, append the "m0u" at the end of the URL
+                    return searchType === 'goo'
+                        ? `${baseUrl}${encodeURIComponent(word)}/m0u/`
+                        : `${baseUrl}${encodeURIComponent(word)}`;
+                }); // Generate URLs
 
             const result = urls.join('\n');
             document.getElementById('output').value = result;
