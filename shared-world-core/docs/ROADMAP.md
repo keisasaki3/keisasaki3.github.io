@@ -17,11 +17,12 @@
 
 技術名:
 
-- repository slug / ルートフォルダ / 技術上の識別名: `natsume-portal`
+- repository slug / ルートフォルダ / 技術上の識別名: `natsum-portal`
+- 今後このプロジェクトで新しく付けるフォルダ名・repository名・技術識別名は、特段の理由がない限り `natsum-portal` を基準名として採用する。
 
 ### 人生クエスト / 午後三時、夏の果。 のrepo統合
 
-将来的に「人生クエスト」と「午後三時、夏の果。」のGitHub repositoryを `natsume-portal` に統合する。
+将来的に「人生クエスト」と「午後三時、夏の果。」のGitHub repositoryを `natsum-portal` に統合する。
 
 方針:
 
@@ -34,7 +35,7 @@
 想定構成例:
 
 ```text
-natsume-portal/
+natsum-portal/
 ├─ apps/
 │  ├─ life-quest/
 │  └─ summer-end/
