@@ -1,7 +1,7 @@
 const SUPABASE_URL = 'https://rjydvhpqfhmlvpsykwzf.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx';
 const LEGACY_KEY = 'lifeQuestMathV06Public';
-const GOOGLE_AUTH_ENABLED = false;
+const GOOGLE_AUTH_ENABLED = true;
 
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -30,7 +30,7 @@ let currentSearch = '';
 
 const $ = (s) => document.querySelector(s);
 const main = () => $('#main');
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 
 function setShellVisible(visible) {
   $('.top').style.display = visible ? '' : 'none';
@@ -82,7 +82,7 @@ function renderAuth() {
         <input id="password" type="password" autocomplete="current-password" placeholder="パスワード" required minlength="6">
         <button class="primarybtn" type="submit">ログイン</button>
         <button class="plainbtn" type="button" id="signup">新規登録</button>
-        ${GOOGLE_AUTH_ENABLED ? '<button class="plainbtn" type="button" id="googleLogin">Googleでログイン</button>' : ''}
+        ${GOOGLE_AUTH_ENABLED ? '<button class="plainbtn" type="button" id="googleLogin">Googleで続ける</button>' : ''}
         <div id="authMessage" class="authmessage"></div>
       </form>
     </div>`;
