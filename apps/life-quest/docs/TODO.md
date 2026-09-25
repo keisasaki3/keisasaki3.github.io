@@ -45,6 +45,7 @@
 - [x] DB件数確認: races 3 / subjects 29 / math fields 20 / math topics 275
 - [x] Security Advisor警告0
 - [x] MASTERデータをRLSで本人のみに制限
+- [x] Renderで新ログイン版がlive
 - [ ] 公開URLでメール新規登録確認
 - [ ] メール確認後ログイン確認
 - [ ] 別ブラウザで同一MASTER状態を確認
@@ -53,10 +54,10 @@
 
 ## デプロイ
 
-- [ ] 新ログイン版をRenderへ公開しlive確認
+- [x] 新ログイン版をRenderへ公開しlive確認
 - [ ] 人生クエスト専用GitHub repo作成可能になったら `apps/life-quest/` を移動
 - [ ] Renderの接続先を専用repoへ変更
-- [ ] 公開URLを維持できる場合は既存URLを継続
+- [x] 既存公開URLを継続
 
 ## 運用ルール
 
