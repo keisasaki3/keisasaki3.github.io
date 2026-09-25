@@ -8,37 +8,52 @@
 - [x] データモデル文書を作成
 - [x] カリキュラム方針を作成
 - [x] GitをSource of Truthとする運用を明文化
-- [ ] 旧Library資料は今後参照専用とし、新規更新を停止
+- [x] 旧Library資料は参照専用とし、新規更新を停止
 
 ## 共通バックエンド
 
 - [x] 共通DB設計を `/shared-world-core/` に定義
-- [ ] Supabaseプロジェクト作成
-- [ ] `001_initial_schema.sql` をSupabaseへ適用
-- [ ] Google OAuth設定
-- [ ] メール/パスワード認証設定
-- [ ] races / 29学問 seed投入
+- [x] Supabase `shared-world-core` プロジェクト作成
+- [x] 初期スキーマをSupabaseへ適用
+- [x] RLS・権限・Security Advisor確認
+- [x] races / 29学問 seed投入
+- [x] 数学20分野・275トピック投入
+- [x] 数学以外28学問の現行3仮トピックを移行用に投入
+- [x] メール/パスワード認証を利用するクライアント実装
+- [ ] Auth Site URL / Redirect URLを公開URLへ設定
+- [ ] Google Cloud OAuth Client作成
+- [ ] Supabase Google Provider設定
 
 ## 人生クエスト実装
 
-- [ ] Supabase Authクライアント導入
-- [ ] 初回ログインUI
-- [ ] 初回種族選択UI
-- [ ] `profiles.display_name` と名前変更UIを接続
-- [ ] `quest_subjects` / `quest_fields` / `quest_topics` をDB読込へ移行
-- [ ] localStorage MASTERを `quest_topic_mastery` へ移行
-- [ ] MASTER ON/OFFをDB INSERT/DELETEへ変更
-- [ ] 科目★ / Lv / NEXTをDBデータから算出
-- [ ] 共通Presence表示対応
+- [x] Supabase Authクライアント導入
+- [x] ログイン / 新規登録UI
+- [x] 初回種族選択UI
+- [x] `profiles.display_name` と名前変更UIを接続
+- [x] `quest_subjects` / `quest_fields` / `quest_topics` をDB読込へ移行
+- [x] 旧localStorage MASTERの一回限りの移行処理を実装
+- [x] MASTER ON/OFFをDB INSERT/DELETEへ変更
+- [x] 科目★ / Lv / NEXTをDBデータから算出
+- [x] 表示ステータスを `player_presence` へ接続
+- [x] 種族を `profiles.race_id` へ接続
+- [x] 全チェックリセットをDB削除へ変更
+- [ ] GoogleログインUIを有効化
+- [ ] デイリー画面を現行Web版へ再接続
 
-## データ移行
+## 検証
 
-- [ ] 現行数学トピックを安定ID付きSQL/seedへ変換
-- [ ] 29学問の仮トピックをDBへ移すか廃止時期を決定
-- [ ] localStorageからSupabaseへの一回限りの移行方法を決定
+- [x] DB件数確認: races 3 / subjects 29 / math fields 20 / math topics 275
+- [x] Security Advisor警告0
+- [x] MASTERデータをRLSで本人のみに制限
+- [ ] 公開URLでメール新規登録確認
+- [ ] メール確認後ログイン確認
+- [ ] 別ブラウザで同一MASTER状態を確認
+- [ ] 旧localStorageデータ移行を実ブラウザで確認
+- [ ] 種族・Presence・名前同期を実ブラウザで確認
 
 ## デプロイ
 
+- [ ] 新ログイン版をRenderへ公開しlive確認
 - [ ] 人生クエスト専用GitHub repo作成可能になったら `apps/life-quest/` を移動
 - [ ] Renderの接続先を専用repoへ変更
 - [ ] 公開URLを維持できる場合は既存URLを継続
