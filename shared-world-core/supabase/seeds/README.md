@@ -1,22 +1,36 @@
-# Generated curriculum seeds
+# Curriculum seeds
 
-`002_math_curriculum.sql` is generated from the current Life Quest public app data.
+現行Life Quest数学データはGit上に投入可能SQLとして固定した。
 
-From repository root:
+## Current math seed
+
+- `002_math_01.sql` — 5 fields / 76 topics
+- `002_math_02.sql` — 5 fields / 80 topics
+- `002_math_03.sql` — 5 fields / 68 topics
+- `002_math_04.sql` — 5 fields / 51 topics
+
+合計:
+
+- 20 fields
+- 275 topics
+
+元データは `apps/life-quest/index.html` の現行 `MATH` 配列。
+
+再生成用スクリプト:
 
 ```bash
 python shared-world-core/scripts/generate_math_seed.py
 ```
 
-Expected current result:
+初回生成で割り当てた `topic_id` は、ユーザーMASTERデータが紐づく永続IDとして扱う。表示順変更・名称変更だけを理由にIDを変えない。
 
-- 20 math fields
-- 275 math topics
+## Apply order
 
-The initial generation assigns stable topic IDs. After these IDs are deployed and user mastery exists, do not casually regenerate IDs from a reordered list. Treat published `topic_id` values as immutable identifiers; future tooling should preserve existing IDs across display-name/order changes.
+1. `../migrations/001_initial_schema.sql`
+2. `../seed.sql` — races + 29 subjects
+3. `002_math_01.sql`
+4. `002_math_02.sql`
+5. `002_math_03.sql`
+6. `002_math_04.sql`
 
-Before applying to Supabase:
-
-1. Apply `../migrations/001_initial_schema.sql`
-2. Apply `../seed.sql` (races + 29 subjects)
-3. Generate/apply `002_math_curriculum.sql`
+前提関係とimportanceの精密化は後続migrationで追加する。現在の275トピックseedではimportanceを暫定値2としている。
