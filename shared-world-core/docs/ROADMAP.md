@@ -19,7 +19,7 @@
 想定構成例:
 
 ```text
-<root>/
+natsume-online/
 ├─ apps/
 │  ├─ life-quest/
 │  └─ summer-end/
@@ -32,6 +32,9 @@
 統合プロジェクト名（仮）:
 
 - 日本語: 夏梅出版Online
-- repository slug: 未決定
+- repository slug / 技術名: `natsume-online`
 
-repository slug候補は別途決定する。
+命名方針:
+
+- 表向きのプロジェクト名は「夏梅出版Online」。
+- GitHub repository、ルートフォルダ、技術上の識別名は `natsume-online` を使用する。
