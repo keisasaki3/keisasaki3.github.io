@@ -37,7 +37,7 @@
 - [x] 表示ステータスを `player_presence` へ接続
 - [x] 種族を `profiles.race_id` へ接続
 - [x] 全チェックリセットをDB削除へ変更
-- [ ] GoogleログインUIを有効化
+- [x] GoogleログインUIを有効化
 - [ ] デイリー画面を現行Web版へ再接続
 
 ## 検証
@@ -46,8 +46,7 @@
 - [x] Security Advisor警告0
 - [x] MASTERデータをRLSで本人のみに制限
 - [x] Renderで新ログイン版がlive
-- [ ] 公開URLでメール新規登録確認
-- [ ] メール確認後ログイン確認
+- [ ] Google OAuth実ログイン確認
 - [ ] 別ブラウザで同一MASTER状態を確認
 - [ ] 旧localStorageデータ移行を実ブラウザで確認
 - [ ] 種族・Presence・名前同期を実ブラウザで確認
