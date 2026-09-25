@@ -1,0 +1,39 @@
+name: Life Quest settings patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lifequest-settings-patch.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch Life Quest settings reset
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('apps/life-quest/index.html')
+          t=p.read_text()
+          t=t.replace('.actions .savebtn{background:#222;color:#fff;border-color:#222}@media(max-width:540px)', '.actions .savebtn{background:#222;color:#fff;border-color:#222}.settings{padding-top:8px}.settings h2{font-size:22px;margin:0 0 18px}.settingrow{padding:16px 0;border-bottom:1px solid #e6e6e1}.settingtitle{font-size:15px;font-weight:700;margin-bottom:5px}.settingnote{font-size:12px;color:#888;margin-bottom:12px}.dangerbtn{border:1px solid #c75b5b;background:#fff;color:#b64040;border-radius:6px;padding:9px 13px;font:inherit;font-weight:600;cursor:pointer}.dangerbtn:active{background:#fff2f2}@media(max-width:540px)',1)
+          t=t.replace('<nav class="tabs"><div class="tab active">学問</div><div class="tab">デイリー</div><div class="tab">設定</div></nav>', '<nav class="tabs"><div class="tab active" data-tab="subjects">学問</div><div class="tab" data-tab="daily">デイリー</div><div class="tab" data-tab="settings">設定</div></nav>',1)
+          t=t.replace("m.querySelector('.back').onclick=renderHome;const q=m.querySelector('#q');", "m.querySelector('.back').onclick=()=>{setActiveTab('subjects');renderHome()};const q=m.querySelector('#q');",1)
+          old="function renderOther(i){const s=SUBJECTS[i],done=otherDone(i),m=document.getElementById('main');m.innerHTML=`<button class=\"back\">← 学問</button><div class=\"mathhead\"><span class=\"icon\">${s.icon}</span><h2>${s.name}</h2><span class=\"en\">${s.en}</span><span class=\"stars\">★${done.length}</span></div><div id=\"topics\"></div>`;m.querySelector('.back').onclick=renderHome;const box=m.querySelector('#topics');s.topics.forEach((t,j)=>{const on=done.includes(j),d=document.createElement('div');d.className='topic'+(on?' on':'');d.innerHTML=`<div class=\"check\">${on?'✓':''}</div><div class=\"topicbody\"><div class=\"tname\">${t}</div></div>${on?'<div class=\"master\">MASTER!</div>':''}`;d.onclick=()=>{state.other[i]=on?done.filter(v=>v!==j):[...done,j];save();renderOther(i)};box.appendChild(d)})}renderProfile();renderHome();"
+          new="function renderOther(i){const s=SUBJECTS[i],done=otherDone(i),m=document.getElementById('main');m.innerHTML=`<button class=\"back\">← 学問</button><div class=\"mathhead\"><span class=\"icon\">${s.icon}</span><h2>${s.name}</h2><span class=\"en\">${s.en}</span><span class=\"stars\">★${done.length}</span></div><div id=\"topics\"></div>`;m.querySelector('.back').onclick=()=>{setActiveTab('subjects');renderHome()};const box=m.querySelector('#topics');s.topics.forEach((t,j)=>{const on=done.includes(j),d=document.createElement('div');d.className='topic'+(on?' on':'');d.innerHTML=`<div class=\"check\">${on?'✓':''}</div><div class=\"topicbody\"><div class=\"tname\">${t}</div></div>${on?'<div class=\"master\">MASTER!</div>':''}`;d.onclick=()=>{state.other[i]=on?done.filter(v=>v!==j):[...done,j];save();renderOther(i)};box.appendChild(d)})}function setActiveTab(name){document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===name))}function renderSettings(){setActiveTab('settings');const m=document.getElementById('main');m.innerHTML=`<div class=\"settings\"><h2>設定</h2><div class=\"settingrow\"><div class=\"settingtitle\">テスト用データ</div><div class=\"settingnote\">すべてのトピックのチェック状態を未習得に戻します。名前はそのまま残ります。</div><button class=\"dangerbtn\" id=\"resetChecks\">全チェックをリセット</button></div></div>`;m.querySelector('#resetChecks').onclick=()=>{if(!confirm('すべてのチェックをリセットしますか？'))return;state.math=[];state.other={};save();renderSettings()}}document.querySelector('[data-tab=\"subjects\"]').onclick=()=>{setActiveTab('subjects');renderHome()};document.querySelector('[data-tab=\"settings\"]').onclick=renderSettings;renderProfile();renderHome();"
+          if old not in t:
+              raise SystemExit('target tail not found')
+          t=t.replace(old,new,1)
+          p.write_text(t)
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name "chatgpt-lifequest"
+          git config user.email "actions@users.noreply.github.com"
+          git add apps/life-quest/index.html
+          git commit -m "Add test reset in settings"
+          git push
