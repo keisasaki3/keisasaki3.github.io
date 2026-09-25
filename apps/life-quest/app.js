@@ -30,7 +30,7 @@ let currentSearch = '';
 
 const $ = (s) => document.querySelector(s);
 const main = () => $('#main');
-const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 function setShellVisible(visible) {
   $('.top').style.display = visible ? '' : 'none';
