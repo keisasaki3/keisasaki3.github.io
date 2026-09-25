@@ -20,7 +20,7 @@
 - [x] 数学20分野・275トピック投入
 - [x] 数学以外28学問の現行3仮トピックを移行用に投入
 - [x] メール/パスワード認証を利用するクライアント実装
-- [ ] Auth Site URL / Redirect URLを公開URLへ設定
+- [x] Auth Site URL / Redirect URLを公開URLへ設定
 - [ ] Google Cloud OAuth Client作成
 - [ ] Supabase Google Provider設定
 
