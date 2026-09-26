@@ -11,6 +11,7 @@
 @media(max-width:540px){.top{padding-top:18px}.profile h1{font-size:23px}.main{padding-left:14px;padding-right:14px}.en{font-size:12px}.subjectline{gap:7px}}
 </style>
 <link rel="stylesheet" href="./subject-ui.css">
+<link rel="stylesheet" href="./newspaper.css">
 </head>
 <body>
 <div class="app">
@@ -21,7 +22,7 @@
 </header>
 <nav class="tabs">
   <div class="tab active" data-tab="subjects">学問</div>
-  <div class="tab" data-tab="daily">デイリー</div>
+  <div class="tab" data-tab="newspaper">NEWSPAPER</div>
   <div class="tab" data-tab="settings">設定</div>
 </nav>
 <main class="main" id="main"></main>
@@ -29,5 +30,7 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <script src="./app.js"></script>
 <script src="./subject-ui.js"></script>
+<script src="./newspaper-service.js"></script>
+<script src="./newspaper-ui.js"></script>
 </body>
 </html>
