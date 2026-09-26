@@ -140,29 +140,41 @@ async function ensureProfile(user) {
   return data;
 }
 
+async function fetchAllRows(queryFactory, pageSize = 1000) {
+  const rows = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await queryFactory().range(from, from + pageSize - 1);
+    if (error) throw error;
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows;
+}
+
 async function loadApp() {
   showLoading();
   const user = session.user;
   profile = await ensureProfile(user);
 
-  const [raceRes, subjectRes, fieldRes, topicRes, prereqRes, masteryRes, presenceRes] = await Promise.all([
+  const [raceRes, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
     sb.from('races').select('*').eq('active', true).order('sort_order'),
     sb.from('quest_subjects').select('*').eq('active', true).order('sort_order'),
-    sb.from('quest_fields').select('*').eq('active', true).order('sort_order'),
-    sb.from('quest_topics').select('*').eq('active', true).order('recommended_order'),
-    sb.from('quest_topic_prerequisites').select('topic_id,prerequisite_topic_id'),
-    sb.from('quest_topic_mastery').select('topic_id').eq('user_id', user.id),
+    fetchAllRows(() => sb.from('quest_fields').select('*').eq('active', true).order('sort_order').order('field_id')),
+    fetchAllRows(() => sb.from('quest_topics').select('*').eq('active', true).order('recommended_order').order('topic_id')),
+    fetchAllRows(() => sb.from('quest_topic_prerequisites').select('topic_id,prerequisite_topic_id').order('topic_id').order('prerequisite_topic_id')),
+    fetchAllRows(() => sb.from('quest_topic_mastery').select('topic_id').eq('user_id', user.id).order('topic_id')),
     sb.from('player_presence').select('*').eq('user_id', user.id).maybeSingle()
   ]);
-  const failures = [raceRes, subjectRes, fieldRes, topicRes, prereqRes, masteryRes, presenceRes].filter(r => r.error);
+  const failures = [raceRes, subjectRes, presenceRes].filter(r => r.error);
   if (failures.length) throw failures[0].error;
 
   races = raceRes.data || [];
   subjects = subjectRes.data || [];
-  fields = fieldRes.data || [];
-  topics = topicRes.data || [];
-  prerequisites = prereqRes.data || [];
-  mastery = new Set((masteryRes.data || []).map(x => x.topic_id));
+  fields = fieldRows;
+  topics = topicRows;
+  prerequisites = prereqRows;
+  mastery = new Set(masteryRows.map(x => x.topic_id));
   presence = presenceRes.data;
 
   if (!presence) {
