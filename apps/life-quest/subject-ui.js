@@ -1,45 +1,13 @@
-const SUBJECT_ICON_INDEX = Object.freeze({
-  math: 7,
-  physics: 8,
-  astronomy: 11,
-  'earth-science': 21,
-  chemistry: 9,
-  biology: 10,
-  'computer-science': 16,
-  architecture: 24,
-  design: 12,
-  agriculture: 23,
-  medicine: 22,
-  dentistry: 14,
-  pharmacy: 15,
-  'political-science': 27,
-  'military-defense': 17,
-  law: 6,
-  economics: 18,
-  'business-administration': 20,
-  sociology: 26,
-  education: 1,
-  philosophy: 3,
-  'religious-studies': 25,
-  psychology: 19,
-  'linguistics-languages': 2,
-  'anthropology-archaeology': 28,
-  history: 4,
-  geography: 5,
-  literature: 29,
-  art: 13
+const SUBJECT_ICON_PATHS = Object.freeze({
+  history: './assets/subjects/history.png'
 });
 
 const openAreaIds = new Set();
 
 function subjectIconMarkup(subjectId) {
-  const index = SUBJECT_ICON_INDEX[subjectId];
-  if (!index) return '';
-  const col = (index - 1) % 10;
-  const row = Math.floor((index - 1) / 10);
-  const x = col * (100 / 9);
-  const y = row * 50;
-  return `<span class="subject-icon" style="--icon-x:${x}%;--icon-y:${y}%" aria-hidden="true"></span>`;
+  const src = SUBJECT_ICON_PATHS[subjectId];
+  if (!src) return '';
+  return `<img class="subject-icon" src="${esc(src)}" alt="" aria-hidden="true">`;
 }
 
 renderHome = function renderHomeWithSubjectIcons() {
