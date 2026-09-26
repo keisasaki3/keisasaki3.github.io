@@ -4,7 +4,7 @@
 
 ## 方針
 
-人生クエストと「午後三時、夏の果。」は別アプリとして維持し、共通アカウントと共通プレイヤー人格だけを共有する。
+人生クエストと「午後三時、夏の果て」は別アプリとして維持し、共通アカウントと共通プレイヤー人格だけを共有する。
 
 ```text
 Supabase Auth
@@ -41,7 +41,7 @@ racesは以下を持つ。
 - visual_scale
 - move_speed
 
-人生クエストと夏の果は同じrace_idを参照し、同じキャラクターを表示する。
+人生クエストと夏の果ては同じrace_idを参照し、同じキャラクターを表示する。
 
 ## Life Quest responsibility
 
@@ -56,7 +56,7 @@ racesは以下を持つ。
 
 ## Summer End responsibility
 
-午後三時、夏の果。固有:
+午後三時、夏の果て固有:
 
 - 現在マップ
 - 最終永続座標
@@ -76,12 +76,13 @@ racesは以下を持つ。
 
 永続/共有表示ステータス:
 
+- online = オンライン（頭上は名前のみ）
 - studying = 勉強中
 - reading = 読書中
 - busy = 取り込み中
 - afk = AFK
 
-online/offlineは固定statusとして保存せず、`last_seen_at` とリアルタイム接続状態から判定する。
+接続中かどうかそのものはWebSocket接続状態と `last_seen_at` で判定する。`online` は「追加ステータスを表示しない通常状態」を表す共有表示値であり、接続有無の真偽値ではない。
 
 ## Data ownership
 
@@ -99,4 +100,4 @@ online/offlineは固定statusとして保存せず、`last_seen_at` とリアル
 
 ## Shared profile authority
 
-`profiles.display_name` and `profiles.race_id` are the single source of truth for every app. Life Quest and 午後三時、夏の果。 update the same profile row; app-specific copies must not be introduced. Concurrent edits use database last-write-wins semantics. Running clients may show a stale value until they reload/reconnect; realtime cross-app profile refresh can be added later if needed.
+`profiles.display_name` and `profiles.race_id` are the single source of truth for every app. Life Quest and 午後三時、夏の果て update the same profile row; app-specific copies must not be introduced. Concurrent edits use database last-write-wins semantics. Running clients may show a stale value until they reload/reconnect; realtime cross-app profile refresh can be added later if needed.
