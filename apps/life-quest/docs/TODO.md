@@ -46,10 +46,11 @@
 - [x] Security Advisor警告0
 - [x] MASTERデータをRLSで本人のみに制限
 - [x] Renderで新ログイン版がlive
-- [ ] Google OAuth実ログイン確認
+- [x] Google OAuth実ログイン確認
+- [x] Google初回ログイン後の profile / race / Presence DB反映確認
 - [ ] 別ブラウザで同一MASTER状態を確認
 - [ ] 旧localStorageデータ移行を実ブラウザで確認
-- [ ] 種族・Presence・名前同期を実ブラウザで確認
+- [ ] 種族・Presence・名前の別ブラウザ / 別アプリ同期確認
 
 ## デプロイ
 
