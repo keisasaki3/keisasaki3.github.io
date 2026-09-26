@@ -88,16 +88,18 @@ drawSubject = function drawSubjectWithCollapsibleAreas(subjectId, query) {
   let shown = 0;
 
   fs.forEach(f => {
-    const list = topics.filter(t => t.field_id === f.field_id)
-      .sort((a,b) => a.recommended_order - b.recommended_order || a.topic_id.localeCompare(b.topic_id))
-      .filter(t => !q || `${t.name}${t.source || ''}${f.name}`.toLowerCase().includes(q));
+    const allTopics = topics.filter(t => t.field_id === f.field_id)
+      .sort((a,b) => a.recommended_order - b.recommended_order || a.topic_id.localeCompare(b.topic_id));
+    const list = allTopics.filter(t => !q || `${t.name}${t.source || ''}${f.name}`.toLowerCase().includes(q));
     if (!list.length) return;
 
     shown += list.length;
+    const masteredCount = allTopics.reduce((count, topic) => count + (mastery.has(topic.topic_id) ? 1 : 0), 0);
+    const totalCount = allTopics.length;
     const isOpen = openAreaIds.has(f.field_id);
     const sec = document.createElement('section');
     sec.className = 'area';
-    sec.innerHTML = `<h3><button class="area-toggle" type="button" aria-expanded="${isOpen}">${esc(f.name)}</button></h3><div class="area-topics"${isOpen ? '' : ' hidden'}></div>`;
+    sec.innerHTML = `<h3><button class="area-toggle" type="button" aria-expanded="${isOpen}"><span class="area-toggle-main"><span class="area-name">${esc(f.name)}</span><span class="area-progress">${masteredCount}/${totalCount}</span></span></button></h3><div class="area-topics"${isOpen ? '' : ' hidden'}></div>`;
 
     const toggle = /** @type {HTMLButtonElement} */ (sec.querySelector('.area-toggle'));
     const topicBox = /** @type {HTMLDivElement} */ (sec.querySelector('.area-topics'));
