@@ -81,7 +81,7 @@ NEXTは推薦であり、必修順序ではない。
 
 基本表示例:
 
-`🔢  数学  Math  ★9`
+`[学問アイコン]  数学  Math  ★9`
 
 その下に:
 
@@ -89,7 +89,9 @@ NEXTは推薦であり、必修順序ではない。
 
 要件:
 
-- 学問名の左に小さな絵文字アイコン。
+- 学問名の左に、29学問それぞれに対応する画像アイコンを表示する。
+- アイコンは `assets/subjects/subjects.webp` のスプライトを使用し、subject_idとの対応は1か所で管理する。
+- 旧絵文字アイコンは表示しない。
 - 日本語名の隣に薄い英語名。
 - ★数は学問名から離しすぎず、同一情報グループとして表示。
 - パーセント進捗は表示しない。
@@ -97,6 +99,10 @@ NEXTは推薦であり、必修順序ではない。
 
 ## 7. トピックUI
 
+- 各学問のトピックは分野単位でまとめる。
+- 分野見出しをタップすると配下のトピックを開閉できる。
+- 学問画面を開いた初期状態では全分野を閉じる。
+- トピックの並び順は既存の推奨順序を維持する。
 - 各トピックはチェックでMASTER / 未MASTERを切り替える。
 - MASTERした瞬間、トピック右側に `MASTER!` を表示する。
 - MASTER解除時に `MASTER!` も即時削除する。
@@ -104,7 +110,7 @@ NEXTは推薦であり、必修順序ではない。
 - 出典は補助情報として小さく表示する。
 - トピック数が多い学問では検索を提供する。
 
-現行Web版フォントは `Zen Kaku Gothic New`。
+現行Web版フォントは、日本語に `DotGothic16`、英数に `Geist Pixel` を使用する。
 
 ## 8. プレイヤー表示・種族
 
@@ -205,16 +211,75 @@ localStorageは旧データ移行元としてのみ残し、新規MASTERの正�
 
 Supabaseスキーマ変更はGit管理migrationと実DBを同期して更新する。
 
-## 14. デイリー
+## 14. NEWSPAPER
 
-デイリーは学習動機の入口として残す。
+旧「デイリー」機構は廃止し、人生クエスト内の正式タブを `NEWSPAPER` とする。独立した製品版デイリーWebページは持たない。
 
-- デイリー教養
-- デイリー基礎学問
-- デイリーWORLD
-- デイリーQUIZ
+表示順は以下で固定する。
 
-デイリーの読了やクイズ正解を自動的にMASTERへ変換しない。MASTERは本人の理解判断で行う。
+1. NEWS
+2. MARKETS
+3. DAILY CULTURE
+4. DAILY QUIZ
+
+### データ取得
+
+人生クエスト側はコンテンツを生成せず、外部生成された公開JSONを表示する。
+
+- データrepo: `keisasaki3/life-quest-newspaper-data`
+- Base URL: `https://raw.githubusercontent.com/keisasaki3/life-quest-newspaper-data/main/`
+- 最初に `newspaper/latest.json` を取得する。
+- `latest.json` の `path` が示す日付JSONを次に取得する。
+- 毎朝6:15 JSTにデータ生成側で更新する。
+- `latest.json` と日付JSONの取得ではキャッシュを避ける。
+- 通信失敗時は架空・サンプル教材へフォールバックせず、エラー表示と再試行のみ提供する。
+- `life-quest-newspaper-data` の簡易Webビューは開発・確認用であり、人生クエスト本体の正式NEWSPAPER画面ではない。
+
+### NEWS
+
+NEWSをNEWSPAPERの主役とする。
+
+- 一覧には region / headline / 日本語summary / 英語summary を表示する。
+- 日本語summaryと英語summaryはセンテンス単位で対応させる。
+- BACKGROUND / WHY IT MATTERS / SOURCES は記事ごとの開閉領域に入れる。
+- SOURCESは外部リンクとして開けるようにする。
+
+### MARKETS
+
+- JSON内の市場カテゴリ配列を基本に描画し、UI側へ固定銘柄をハードコードしない。
+- 各項目は symbol / value / unit / change_pct または change_bp を表示する。
+- `market_moves` または互換キー `moves` が存在する場合は `MARKET MOVES` として表示する。
+
+### DAILY CULTURE
+
+旧デイリー教養を全面刷新した1日1本の読み物とする。
+
+- title
+- body
+- EXPLORE
+
+を表示し、bodyは全文読めるようにする。
+
+### DAILY QUIZ
+
+旧デイリーQUIZを全面刷新した1日1問のクイズとする。
+
+- genre
+- question
+- 「答えを見る」
+
+を初期表示し、answer / explanation / sources は開閉領域に入れる。選択肢形式にはしない。
+
+### 廃止した旧デイリー要素
+
+- 旧デイリー基礎学問
+- 旧デイリーWORLD
+- 旧教材の日付ローテーション
+- 旧教材の既読・回答保存
+- 旧教材からMASTERへの自動反映
+- 旧サンプル教材・fixture・通信失敗時のサンプルフォールバック
+
+DAILY CULTURE / DAILY QUIZ の重複防止registryはデータ生成側の責務とし、人生クエスト側は生成せず表示のみ担当する。
 
 ## 15. Source of Truth
 
