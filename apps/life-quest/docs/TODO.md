@@ -21,8 +21,8 @@
 - [x] 数学以外28学問の現行3仮トピックを移行用に投入
 - [x] メール/パスワード認証を利用するクライアント実装
 - [x] Auth Site URL / Redirect URLを公開URLへ設定
-- [ ] Google Cloud OAuth Client作成
-- [ ] Supabase Google Provider設定
+- [x] Google Cloud OAuth Client作成
+- [x] Supabase Google Provider設定
 
 ## 人生クエスト実装
 
