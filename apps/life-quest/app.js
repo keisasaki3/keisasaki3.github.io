@@ -8,6 +8,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
 });
 
 const STATUS_LABELS = {
+  online: 'オンライン',
   studying: '勉強中',
   reading: '読書中',
   busy: '取り込み中',
@@ -165,7 +166,7 @@ async function loadApp() {
   presence = presenceRes.data;
 
   if (!presence) {
-    const res = await sb.from('player_presence').upsert({ user_id: user.id, status: 'afk' }).select().single();
+    const res = await sb.from('player_presence').upsert({ user_id: user.id, status: 'online' }).select().single();
     if (res.error) throw res.error;
     presence = res.data;
   }

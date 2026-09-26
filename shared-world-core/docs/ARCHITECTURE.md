@@ -96,3 +96,7 @@ online/offlineは固定statusとして保存せず、`last_seen_at` とリアル
 共通仕様変更はこのディレクトリを先に更新し、各アプリ側には共通仕様を複製しすぎない。
 
 各アプリ側ドキュメントは「共通仕様の利用方法」を記載する。
+
+## Shared profile authority
+
+`profiles.display_name` and `profiles.race_id` are the single source of truth for every app. Life Quest and 午後三時、夏の果。 update the same profile row; app-specific copies must not be introduced. Concurrent edits use database last-write-wins semantics. Running clients may show a stale value until they reload/reconnect; realtime cross-app profile refresh can be added later if needed.
