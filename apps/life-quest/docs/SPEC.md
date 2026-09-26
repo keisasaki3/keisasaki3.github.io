@@ -112,7 +112,7 @@ NEXTは推薦であり、必修順序ではない。
 
 `{display_name} Lv.{master_count}`
 
-名前は変更可能。表示名は共通 `profiles.display_name` を使用し、人生クエストと「午後三時、夏の果。」で共有する。
+名前は変更可能。表示名は共通 `profiles.display_name` を使用し、人生クエストと「午後三時、夏の果て」で共有する。
 
 共通キャラクターは `profiles.race_id` で決まる。
 
@@ -127,6 +127,7 @@ NEXTは推薦であり、必修順序ではない。
 
 以下の表示ステータスを `player_presence` で共有する。
 
+- online: オンライン
 - studying: 勉強中
 - reading: 読書中
 - busy: 取り込み中
@@ -147,7 +148,7 @@ NEXTは推薦であり、必修順序ではない。
 
 ## 11. 認証・同期
 
-人生クエストと「午後三時、夏の果。」は同じSupabaseプロジェクト `shared-world-core` を利用する。
+人生クエストと「午後三時、夏の果て」は同じSupabaseプロジェクト `shared-world-core` を利用する。
 
 - Supabase project ref: `rjydvhpqfhmlvpsykwzf`
 - 認証: Supabase Auth
