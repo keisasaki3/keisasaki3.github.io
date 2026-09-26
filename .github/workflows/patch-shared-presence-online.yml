@@ -1,0 +1,72 @@
+name: Apply shared online presence patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-shared-presence-online.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.head_commit.message == 'Stage shared online presence patch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Patch Life Quest and shared docs
+        shell: python
+        run: |
+          from pathlib import Path
+
+          app=Path('apps/life-quest/app.js')
+          text=app.read_text()
+          old="""const STATUS_LABELS = {
+            studying: '勉強中',
+            reading: '読書中',
+            busy: '取り込み中',
+            afk: 'AFK'
+          };"""
+          new="""const STATUS_LABELS = {
+            online: 'オンライン',
+            studying: '勉強中',
+            reading: '読書中',
+            busy: '取り込み中',
+            afk: 'AFK'
+          };"""
+          if old not in text:
+              raise SystemExit('STATUS_LABELS pattern missing')
+          text=text.replace(old,new)
+          text=text.replace("upsert({ user_id: user.id, status: 'afk' })", "upsert({ user_id: user.id, status: 'online' })")
+          app.write_text(text)
+
+          db=Path('shared-world-core/docs/DATABASE.md')
+          d=db.read_text()
+          marker='- status text\n'
+          if marker in d and 'online / studying / reading / busy / afk' not in d:
+              d=d.replace(marker, '- status text — `online / studying / reading / busy / afk`\n')
+          db.write_text(d)
+
+          arch=Path('shared-world-core/docs/ARCHITECTURE.md')
+          a=arch.read_text()
+          note='''\n## Shared profile authority\n\n`profiles.display_name` and `profiles.race_id` are the single source of truth for every app. Life Quest and 午後三時、夏の果。 update the same profile row; app-specific copies must not be introduced. Concurrent edits use database last-write-wins semantics. Running clients may show a stale value until they reload/reconnect; realtime cross-app profile refresh can be added later if needed.\n'''
+          if '## Shared profile authority' not in a:
+              a += note
+          arch.write_text(a)
+      - name: Syntax check
+        run: node --check apps/life-quest/app.js
+      - name: Verify patch
+        run: |
+          grep -F "online: 'オンライン'" apps/life-quest/app.js
+          grep -F "status: 'online'" apps/life-quest/app.js
+          grep -F 'single source of truth' shared-world-core/docs/ARCHITECTURE.md
+      - name: Commit shared presence update
+        run: |
+          git config user.name 'keisasaki3'
+          git config user.email '61055342+keisasaki3@users.noreply.github.com'
+          git add apps/life-quest/app.js shared-world-core/docs/DATABASE.md shared-world-core/docs/ARCHITECTURE.md
+          git commit -m 'Align shared profile and online presence semantics'
+          git push origin HEAD:main
