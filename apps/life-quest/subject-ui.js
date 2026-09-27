@@ -346,21 +346,44 @@ function isPresetVisible(subjectId) {
   return userStatuses.some(s => s.preset_subject_id === subjectId && !s.hidden);
 }
 
+// 保存中にもう一度押されると同じプリセットを二重に追加して一意制約に当たるので、
+// 実行中は受け付けない。新規分は1回の insert にまとめる（1件ずつだと30件超で数秒かかる）。
+let addingPresets = false;
+
 async function addPresets(subjectIds) {
-  for (const subjectId of sortPresetIds(subjectIds)) {
-    const existing = userStatuses.find(s => s.preset_subject_id === subjectId);
-    if (existing) {
-      if (!existing.hidden) continue;
-      const ok = await runQuery(sb.from('quest_user_statuses').update({ hidden: false }).eq('status_id', existing.status_id));
-      if (!ok) return false;
-      existing.hidden = false;
-    } else {
-      const row = await runQuery(sb.from('quest_user_statuses').insert({ user_id: session.user.id, preset_subject_id: subjectId, sort_order: nextSortOrder(userStatuses) }).select().single());
-      if (!row) return false;
-      userStatuses.push(row);
+  if (addingPresets) return false;
+  addingPresets = true;
+  try {
+    const inserts = [];
+    let order = nextSortOrder(userStatuses);
+    for (const subjectId of sortPresetIds(subjectIds)) {
+      const existing = userStatuses.find(s => s.preset_subject_id === subjectId);
+      if (existing) {
+        if (!existing.hidden) continue;
+        const ok = await runQuery(sb.from('quest_user_statuses').update({ hidden: false }).eq('status_id', existing.status_id));
+        if (!ok) return false;
+        existing.hidden = false;
+      } else if (!inserts.some(r => r.preset_subject_id === subjectId)) {
+        inserts.push({ user_id: session.user.id, preset_subject_id: subjectId, sort_order: order });
+        order += 10;
+      }
     }
+    if (inserts.length) {
+      const rows = await runQuery(sb.from('quest_user_statuses').insert(inserts).select());
+      if (!rows) return false;
+      userStatuses.push(...rows);
+    }
+    return true;
+  } finally {
+    addingPresets = false;
   }
-  return true;
+}
+
+// 押したボタンを処理中は無効にする
+async function withBusyButton(btn, fn) {
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try { return await fn(); } finally { btn.disabled = false; }
 }
 
 function openAddStatus() {
@@ -381,13 +404,13 @@ function openAddStatus() {
     </div>
     <div class="actions"><button type="button" data-close>${esc(tr('close'))}</button><button type="button" class="savebtn" id="createStatus">${esc(tr('create'))}</button></div>`);
   const done = () => { close(); renderProfile(); renderHome(); };
-  bg.querySelectorAll('[data-preset]').forEach(btn => btn.onclick = async () => {
+  bg.querySelectorAll('[data-preset]').forEach(btn => btn.onclick = () => withBusyButton(btn, async () => {
     if (await addPresets([btn.dataset.preset])) done();
-  });
-  bg.querySelectorAll('[data-group]').forEach(btn => btn.onclick = async () => {
+  }));
+  bg.querySelectorAll('[data-group]').forEach(btn => btn.onclick = () => withBusyButton(btn, async () => {
     const ids = available.filter(p => (p.preset_group || '') === btn.dataset.group).map(p => p.subject_id);
     if (await addPresets(ids)) done();
-  });
+  }));
   bg.querySelector('#createStatus').onclick = async () => {
     const name = bg.querySelector('#newStatusName').value.trim();
     if (!name) return;
@@ -418,7 +441,8 @@ function renderSetup() {
   m.querySelectorAll('[data-groupcheck]').forEach(box => box.onchange = () => {
     m.querySelectorAll(`[data-group-index="${box.dataset.groupcheck}"]`).forEach(c => { c.checked = box.checked; });
   });
-  m.querySelector('#startQuest').onclick = async () => {
+  const startBtn = /** @type {HTMLButtonElement} */ (m.querySelector('#startQuest'));
+  startBtn.onclick = () => withBusyButton(startBtn, async () => {
     const ids = [...m.querySelectorAll('[data-group-index]:checked')].map(c => c.value);
     if (!(await addPresets(ids))) return;
     const res = await runQuery(sb.from('quest_user_settings').upsert({ user_id: session.user.id, setup_completed_at: new Date().toISOString() }).select().single());
@@ -426,7 +450,7 @@ function renderSetup() {
     userSettings = res;
     renderProfile();
     renderHome();
-  };
+  });
 }
 
 // ---------- ステータス画面 ----------
