@@ -287,7 +287,7 @@ NEWSPAPERの紙面はテーマに関係なく白地に黒文字とし（枠だ�
 - Base URL: `https://raw.githubusercontent.com/keisasaki3/life-quest-newspaper-data/main/`
 - 最初に `newspaper/latest.json` を取得する。
 - `latest.json` の `path` が示す日付JSONを次に取得する。
-- 毎朝6:15 JSTにデータ生成側で更新する。
+- 毎朝6:15 JSTまでにデータ生成側で更新する。生成はClaudeのroutineが `life-quest-newspaper-data` の `GENERATE.md` に従って行う（2026-09-27 ChatGPTから移行）。
 - `latest.json` と日付JSONの取得ではキャッシュを避ける。
 - 通信失敗時は架空・サンプル教材へフォールバックせず、エラー表示と再試行のみ提供する。
 - `life-quest-newspaper-data` の簡易Webビューは開発・確認用であり、人生クエスト本体の正式NEWSPAPER画面ではない。
