@@ -24,6 +24,8 @@
 .newspaper-summary-en{margin:0;font-family:"Noto Sans",Helvetica,Arial,sans-serif;font-size:17px;line-height:1.6;color:var(--ink)}
 .newspaper-ja{padding:12px 14px;background:#efeadf;border-radius:6px;display:flex;flex-direction:column;gap:6px}
 .newspaper-summary-ja{margin:0;font-size:14px;line-height:1.8;color:var(--ink2)}
+.newspaper-summary-en span,.newspaper-summary-ja span{display:block}
+.newspaper-summary-en span+span,.newspaper-summary-ja span+span{margin-top:1em}
 .newspaper-news-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
 .newspaper-toggle,.newspaper-answer-button{min-height:46px;border:1px solid var(--ink);border-radius:6px;background:none;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer}
 .newspaper-toggle.open{background:var(--ink);color:#f5f2ea}
