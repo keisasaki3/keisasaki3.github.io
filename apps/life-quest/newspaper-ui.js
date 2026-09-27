@@ -24,25 +24,33 @@ function renderSourceLinks(sources = []) {
 /** @param {NewsArticle[]} news */
 function renderNewsSection(news) {
   const articles = news.map((article, index) => {
+    const jaId = `newspaper-news-ja-${index}`;
     const detailId = `newspaper-news-detail-${index}`;
-    const summaries = (article.summary || []).map(sentence => `
-      <div class="newspaper-summary-pair">
-        <div class="newspaper-summary-ja">${esc(sentence.ja)}</div>
-        <div class="newspaper-summary-en">${esc(sentence.en)}</div>
-      </div>`).join('');
+    const summary = article.summary || [];
+    const headlineEn = (article.headline_en || '').trim();
+    const english = summary.map(sentence => `<p class="newspaper-summary-en">${esc(sentence.en)}</p>`).join('');
+    const japanese = summary.map(sentence => `<p class="newspaper-summary-ja">${esc(sentence.ja)}</p>`).join('');
     const sources = renderSourceLinks(article.sources || []);
     return `<article class="newspaper-news-item">
-      <div class="newspaper-region">${esc((article.region || 'NEWS').toUpperCase())}</div>
-      <h3 class="newspaper-headline">${esc(article.headline)}</h3>
-      <div class="newspaper-summaries">${summaries}</div>
-      <button class="newspaper-detail-button" type="button" data-news-toggle="${detailId}" aria-expanded="false">詳細を見る</button>
-      <div class="newspaper-news-detail" id="${detailId}" hidden>
-        <div class="newspaper-detail-label">BACKGROUND</div>
-        <div class="newspaper-detail-text">${esc(article.background || '')}</div>
-        <div class="newspaper-detail-label">WHY IT MATTERS</div>
-        <div class="newspaper-detail-text">${esc(article.why_it_matters || '')}</div>
-        <div class="newspaper-detail-label">SOURCES</div>
-        <div class="newspaper-sources">${sources}</div>
+      <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region">${esc((article.region || 'NEWS').toUpperCase())}</span></div>
+      <div class="newspaper-news-body">
+        ${headlineEn
+          ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3><div class="newspaper-headline-ja">${esc(article.headline)}</div>`
+          : `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline)}</h3>`}
+        <div class="newspaper-summaries" lang="en">${english}</div>
+        <div class="newspaper-ja" id="${jaId}" hidden>${japanese}</div>
+        <div class="newspaper-news-detail" id="${detailId}" hidden>
+          <div class="newspaper-detail-label">BACKGROUND</div>
+          <div class="newspaper-detail-text">${esc(article.background || '')}</div>
+          <div class="newspaper-detail-label">WHY IT MATTERS</div>
+          <div class="newspaper-detail-text">${esc(article.why_it_matters || '')}</div>
+          <div class="newspaper-detail-label">SOURCES</div>
+          <div class="newspaper-sources">${sources}</div>
+        </div>
+        <div class="newspaper-news-actions">
+          <button class="newspaper-toggle" type="button" data-toggle="${jaId}" data-open-label="日本語を閉じる" aria-expanded="false">日本語</button>
+          <button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="閉じる" aria-expanded="false">詳細を見る</button>
+        </div>
       </div>
     </article>`;
   }).join('');
@@ -144,8 +152,8 @@ function renderQuizSection(quiz) {
 /** @param {NewspaperIssue} issue */
 function NewspaperScreen(issue) {
   return `<div class="newspaper-screen">
+    <div class="newspaper-paper">
     <div class="newspaper-header"><h2>NEWSPAPER</h2><div>${esc(issue.date)}</div></div>
-    <div class="list-window">
     ${renderNewsSection(issue.news)}
     ${renderMarketsSection(issue.markets)}
     ${renderCultureSection(issue.daily_culture)}
@@ -155,17 +163,19 @@ function NewspaperScreen(issue) {
 }
 
 function bindNewspaperInteractions() {
-  document.querySelectorAll('[data-news-toggle]').forEach(element => {
+  document.querySelectorAll('[data-toggle]').forEach(element => {
     const button = /** @type {HTMLButtonElement} */ (element);
+    const closedLabel = button.textContent || '';
     button.onclick = () => {
-      const id = button.dataset.newsToggle;
+      const id = button.dataset.toggle;
       if (!id) return;
-      const details = document.getElementById(id);
-      if (!details) return;
-      const open = details.hidden;
-      details.hidden = !open;
+      const target = document.getElementById(id);
+      if (!target) return;
+      const open = target.hidden;
+      target.hidden = !open;
       button.setAttribute('aria-expanded', String(open));
-      button.textContent = open ? '閉じる' : '詳細を見る';
+      button.classList.toggle('open', open);
+      button.textContent = open ? (button.dataset.openLabel || closedLabel) : closedLabel;
     };
   });
 
