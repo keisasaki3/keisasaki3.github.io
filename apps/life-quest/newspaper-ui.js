@@ -37,13 +37,20 @@ function regionIcon(region) {
 function renderNewsSection(news) {
   const jaMain = currentNewsLang() === 'ja';
   const articles = news.map((article, index) => {
-    const subId = `newspaper-news-sub-${index}`;
     const detailId = `newspaper-news-detail-${index}`;
-    const summary = article.summary || [];
+    const main = jaMain ? 'ja' : 'en';
+    const sub = jaMain ? 'en' : 'ja';
     const headlineEn = (article.headline_en || '').trim();
-    const hasEnSummary = summary.some(sentence => (sentence.en || '').trim());
-    const english = `<p class="newspaper-summary-en">${summary.map(sentence => `<span>${esc(sentence.en)}</span>`).join('')}</p>`;
-    const japanese = `<p class="newspaper-summary-ja">${summary.map(sentence => `<span>${esc(sentence.ja)}</span>`).join('')}</p>`;
+    const headlineJa = (article.headline || '').trim();
+    const headlineMain = jaMain ? (headlineJa || headlineEn) : (headlineEn || headlineJa);
+    const headlineSub = jaMain ? (headlineJa && headlineEn) : (headlineEn && headlineJa);
+    const headlineIsJa = headlineMain === headlineJa && headlineMain !== headlineEn;
+    const sentences = (article.summary || []).map(sentence => {
+      const mainText = (sentence[main] || '').trim();
+      const subText = (sentence[sub] || '').trim();
+      return mainText ? { text: mainText, sub: subText } : { text: subText, sub: '' };
+    }).filter(sentence => sentence.text);
+    const hasSub = Boolean(headlineSub) || sentences.some(sentence => sentence.sub);
     const allSources = article.sources || [];
     const mainSource = renderSourceLinks(allSources.slice(0, 1));
     const moreSources = renderSourceLinks(allSources.slice(1));
@@ -54,23 +61,21 @@ function renderNewsSection(news) {
       whyItMatters ? `<div class="newspaper-detail-label">WHY IT MATTERS</div><div class="newspaper-detail-text">${esc(whyItMatters)}</div>` : '',
       moreSources ? `<div class="newspaper-detail-label">SOURCES</div><div class="newspaper-sources">${moreSources}</div>` : ''
     ].join('');
-    return `<article class="newspaper-news-item">
+    return `<article class="newspaper-news-item" id="newspaper-news-${index}">
       <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
-        ${jaMain
-          ? `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline || headlineEn)}</h3>
-        <div class="newspaper-summaries"><p class="newspaper-summary-jamain">${summary.map(sentence => `<span>${esc(sentence.ja)}</span>`).join('')}</p></div>`
-          : `${headlineEn
-          ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3>`
-          : `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline)}</h3>`}
-        <div class="newspaper-summaries" lang="en">${english}</div>`}
+        <div>
+          <h3 class="newspaper-headline${headlineIsJa ? ' newspaper-headline-jaonly' : ''}" lang="${headlineIsJa ? 'ja' : 'en'}">${esc(headlineMain)}</h3>
+          ${headlineSub ? `<p class="newspaper-sub newspaper-headline-sub" lang="${sub}">${esc(headlineSub)}</p>` : ''}
+        </div>
+        <div class="newspaper-summaries">${sentences.map(sentence => `<p class="newspaper-sentence">
+          <span class="newspaper-sentence-main" lang="${main}">${esc(sentence.text)}</span>
+          ${sentence.sub ? `<span class="newspaper-sub" lang="${sub}">${esc(sentence.sub)}</span>` : ''}
+        </p>`).join('')}</div>
         ${mainSource ? `<div class="newspaper-source-main">${mainSource}</div>` : ''}
-        ${jaMain
-          ? (headlineEn || hasEnSummary ? `<div class="newspaper-ja" id="${subId}" lang="en" hidden>${headlineEn ? `<p class="newspaper-headline-sub">${esc(headlineEn)}</p>` : ''}${hasEnSummary ? `<p class="newspaper-summary-ensub">${summary.map(sentence => `<span>${esc(sentence.en)}</span>`).join('')}</p>` : ''}</div>` : '')
-          : `<div class="newspaper-ja" id="${subId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}</div>`}
         ${detail ? `<div class="newspaper-news-detail" id="${detailId}" hidden>${detail}</div>` : ''}
         <div class="newspaper-news-actions">
-          ${!jaMain || headlineEn || hasEnSummary ? `<button class="newspaper-toggle" type="button" data-toggle="${subId}" data-open-label="${esc(tr(jaMain ? 'closeEn' : 'closeJa'))}" aria-expanded="false">${esc(tr(jaMain ? 'showEn' : 'showJa'))}</button>` : ''}
+          ${hasSub ? `<button class="newspaper-toggle" type="button" data-toggle-sub="newspaper-news-${index}" data-open-label="${esc(tr(jaMain ? 'closeEn' : 'closeJa'))}" aria-expanded="false">${esc(tr(jaMain ? 'showEn' : 'showJa'))}</button>` : ''}
           ${detail ? `<button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="${esc(tr('close'))}" aria-expanded="false">${esc(tr('details'))}</button>` : ''}
         </div>
       </div>
@@ -195,6 +200,19 @@ function bindNewspaperInteractions() {
       if (!target) return;
       const open = target.hidden;
       target.hidden = !open;
+      button.setAttribute('aria-expanded', String(open));
+      button.classList.toggle('open', open);
+      button.textContent = open ? (button.dataset.openLabel || closedLabel) : closedLabel;
+    };
+  });
+
+  document.querySelectorAll('[data-toggle-sub]').forEach(element => {
+    const button = /** @type {HTMLButtonElement} */ (element);
+    const closedLabel = button.textContent || '';
+    button.onclick = () => {
+      const article = document.getElementById(button.dataset.toggleSub || '');
+      if (!article) return;
+      const open = article.classList.toggle('sub-open');
       button.setAttribute('aria-expanded', String(open));
       button.classList.toggle('open', open);
       button.textContent = open ? (button.dataset.openLabel || closedLabel) : closedLabel;
