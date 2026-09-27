@@ -22,12 +22,9 @@
 .newspaper-headline-ja{margin:0 0 4px;font-size:15px;font-weight:700;line-height:1.6;color:var(--ink)}
 .newspaper-summaries{display:flex;flex-direction:column;gap:10px}
 .newspaper-summary-en{margin:0;font-family:"Literata",Georgia,serif;font-size:17px;line-height:1.7;color:var(--ink)}
-.newspaper-comment{padding:12px 14px;border:1px dashed #b9a9d6;border-radius:6px;background:#f6f1fb}
-.newspaper-comment p{margin:0;font-family:"Literata",Georgia,serif;font-size:16px;line-height:1.7;font-style:italic;color:var(--ink)}
-.newspaper-comment-label{font-family:"JetBrains Mono",monospace;font-size:11px;font-weight:700;letter-spacing:.12em;color:#6a3fb0;margin-bottom:4px}
 .newspaper-ja{padding:12px 14px;background:#efeadf;border-radius:6px;display:flex;flex-direction:column;gap:6px}
 .newspaper-summary-ja{margin:0;font-size:14px;line-height:1.8;color:var(--ink2)}
-.newspaper-news-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.newspaper-news-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
 .newspaper-toggle,.newspaper-answer-button{min-height:46px;border:1px solid var(--ink);border-radius:6px;background:none;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer}
 .newspaper-toggle.open{background:var(--ink);color:#f5f2ea}
 .newspaper-answer-button{width:100%;margin-top:14px}
@@ -36,6 +33,7 @@
 .newspaper-detail-label:first-child{margin-top:0}
 .newspaper-detail-text{font-size:15px;line-height:1.8;color:var(--ink)}
 .newspaper-sources{display:grid;gap:6px}
+.newspaper-source-main a{font-size:13px;color:var(--mark);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
 .newspaper-sources a{font-size:13px;color:var(--mark);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
 
 /* MARKETS */
@@ -70,4 +68,3 @@
 .newspaper-error-detail{font-size:12px;color:var(--dim);margin:8px 0 16px;overflow-wrap:anywhere}
 .newspaper-error .plainbtn{margin:auto}
 [hidden]{display:none!important}
-.newspaper-ja .newspaper-comment-label{margin:8px 0 0}

@@ -40,11 +40,18 @@ function renderNewsSection(news) {
     const detailId = `newspaper-news-detail-${index}`;
     const summary = article.summary || [];
     const headlineEn = (article.headline_en || '').trim();
-    const english = summary.map(sentence => `<p class="newspaper-summary-en">${esc(sentence.en)}</p>`).join('');
-    const japanese = summary.map(sentence => `<p class="newspaper-summary-ja">${esc(sentence.ja)}</p>`).join('');
-    const sources = renderSourceLinks(article.sources || []);
-    const commentEn = (article.comment?.en || '').trim();
-    const commentJa = (article.comment?.ja || '').trim();
+    const english = `<p class="newspaper-summary-en">${summary.map(sentence => esc(sentence.en)).join(' ')}</p>`;
+    const japanese = `<p class="newspaper-summary-ja">${summary.map(sentence => esc(sentence.ja)).join('')}</p>`;
+    const allSources = article.sources || [];
+    const mainSource = renderSourceLinks(allSources.slice(0, 1));
+    const moreSources = renderSourceLinks(allSources.slice(1));
+    const background = (article.background || '').trim();
+    const whyItMatters = (article.why_it_matters || '').trim();
+    const detail = [
+      background ? `<div class="newspaper-detail-label">BACKGROUND</div><div class="newspaper-detail-text">${esc(background)}</div>` : '',
+      whyItMatters ? `<div class="newspaper-detail-label">WHY IT MATTERS</div><div class="newspaper-detail-text">${esc(whyItMatters)}</div>` : '',
+      moreSources ? `<div class="newspaper-detail-label">SOURCES</div><div class="newspaper-sources">${moreSources}</div>` : ''
+    ].join('');
     return `<article class="newspaper-news-item">
       <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
@@ -52,19 +59,12 @@ function renderNewsSection(news) {
           ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3>`
           : `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline)}</h3>`}
         <div class="newspaper-summaries" lang="en">${english}</div>
-        ${commentEn ? `<div class="newspaper-comment" lang="en"><div class="newspaper-comment-label">COMMENT</div><p>${esc(commentEn)}</p></div>` : ''}
-        <div class="newspaper-ja" id="${jaId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}${commentJa ? `<div class="newspaper-comment-label">COMMENT</div><p class="newspaper-summary-ja">${esc(commentJa)}</p>` : ''}</div>
-        <div class="newspaper-news-detail" id="${detailId}" hidden>
-          <div class="newspaper-detail-label">BACKGROUND</div>
-          <div class="newspaper-detail-text">${esc(article.background || '')}</div>
-          <div class="newspaper-detail-label">WHY IT MATTERS</div>
-          <div class="newspaper-detail-text">${esc(article.why_it_matters || '')}</div>
-          <div class="newspaper-detail-label">SOURCES</div>
-          <div class="newspaper-sources">${sources}</div>
-        </div>
+        ${mainSource ? `<div class="newspaper-source-main">${mainSource}</div>` : ''}
+        <div class="newspaper-ja" id="${jaId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}</div>
+        ${detail ? `<div class="newspaper-news-detail" id="${detailId}" hidden>${detail}</div>` : ''}
         <div class="newspaper-news-actions">
           <button class="newspaper-toggle" type="button" data-toggle="${jaId}" data-open-label="日本語を閉じる" aria-expanded="false">日本語</button>
-          <button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="閉じる" aria-expanded="false">詳細を見る</button>
+          ${detail ? `<button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="閉じる" aria-expanded="false">詳細を見る</button>` : ''}
         </div>
       </div>
     </article>`;
