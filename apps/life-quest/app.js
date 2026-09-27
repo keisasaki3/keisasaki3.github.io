@@ -7,33 +7,20 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
 
-const STATUS_LABELS = {
-  online: 'オンライン',
-  studying: '勉強中',
-  reading: '読書中',
-  busy: '取り込み中',
-  afk: 'AFK'
-};
+const STATUS_KEYS = ['online', 'studying', 'reading', 'busy', 'afk'];
 
 const THEME_KEY = 'lifeQuestTheme';
 const DEFAULT_THEME = 'dracula';
-const THEMES = {
-  'tokyo-night': 'トーキョーナイト',
-  dracula: 'ドラキュラ',
-  nord: 'ノルド',
-  synthwave: 'シンセウェイブ',
-  amber: 'アンバー端末',
-  phosphor: 'グリーン端末'
-};
+const THEMES = ['tokyo-night', 'dracula', 'nord', 'synthwave', 'amber', 'phosphor'];
 
 function currentTheme() {
   let saved = null;
   try { saved = localStorage.getItem(THEME_KEY); } catch {}
-  return saved && THEMES[saved] ? saved : DEFAULT_THEME;
+  return saved && THEMES.includes(saved) ? saved : DEFAULT_THEME;
 }
 
 function applyTheme(theme) {
-  const value = THEMES[theme] ? theme : DEFAULT_THEME;
+  const value = THEMES.includes(theme) ? theme : DEFAULT_THEME;
   document.documentElement.dataset.theme = value;
   try { localStorage.setItem(THEME_KEY, value); } catch {}
 }
@@ -80,19 +67,20 @@ function setActiveTab(name) {
 
 function totalMastery() { return mastery.size + userTopics.filter(t => t.mastered_at).length; }
 function rank(lv) {
-  if (lv >= 200) return '知の探究者';
-  if (lv >= 100) return '博識の旅人';
-  if (lv >= 50) return '学びの冒険者';
-  if (lv >= 10) return '見習い学徒';
-  return '旅のはじまり';
+  if (lv >= 200) return tr('rank.200');
+  if (lv >= 100) return tr('rank.100');
+  if (lv >= 50) return tr('rank.50');
+  if (lv >= 10) return tr('rank.10');
+  return tr('rank.0');
 }
 
 function renderProfile() {
   const lv = totalMastery();
-  $('#profileName').textContent = profile?.display_name || '名無し';
+  // '名無し' はDBに入る既定名なので、表示だけ言語に合わせる
+  $('#profileName').textContent = !profile?.display_name || profile.display_name === '名無し' ? tr('noname') : profile.display_name;
   $('#profileLv').textContent = String(lv);
   $('#rank').textContent = rank(lv);
-  $('#presenceLabel').textContent = STATUS_LABELS[presence?.status] || '';
+  $('#presenceLabel').textContent = STATUS_KEYS.includes(presence?.status) ? tr(`presence.${presence.status}`) : '';
 }
 
 function showLoading() {
@@ -116,13 +104,13 @@ function renderAuth() {
   setShellVisible(false);
   main().innerHTML = `
     <div class="authbox">
-      <div class="authbrand">人生クエスト</div>
+      <div class="authbrand">${esc(tr('brand'))}</div>
       <form id="authForm" class="authform">
-        <input id="email" type="email" autocomplete="email" placeholder="メールアドレス" required>
-        <input id="password" type="password" autocomplete="current-password" placeholder="パスワード" required minlength="6">
-        <button class="primarybtn" type="submit">ログイン</button>
-        <button class="plainbtn" type="button" id="signup">新規登録</button>
-        ${GOOGLE_AUTH_ENABLED ? `<button class="plainbtn googlebtn" type="button" id="googleLogin">${GOOGLE_G_ICON}Googleで続ける</button>` : ''}
+        <input id="email" type="email" autocomplete="email" placeholder="${esc(tr('email'))}" required>
+        <input id="password" type="password" autocomplete="current-password" placeholder="${esc(tr('password'))}" required minlength="6">
+        <button class="primarybtn" type="submit">${esc(tr('login'))}</button>
+        <button class="plainbtn" type="button" id="signup">${esc(tr('signup'))}</button>
+        ${GOOGLE_AUTH_ENABLED ? `<button class="plainbtn googlebtn" type="button" id="googleLogin">${GOOGLE_G_ICON}${esc(tr('google'))}</button>` : ''}
         <div id="authMessage" class="authmessage"></div>
       </form>
     </div>`;
@@ -141,7 +129,7 @@ function renderAuth() {
     const email = $('#email').value.trim();
     const password = $('#password').value;
     if (!email || password.length < 6) {
-      showError('メールアドレスと6文字以上のパスワードを入力してください。');
+      showError(tr('authInvalid'));
       return;
     }
     const redirectTo = `${location.origin}${location.pathname}`;
@@ -151,7 +139,7 @@ function renderAuth() {
       return;
     }
     if (!data.session) {
-      $('#authMessage').textContent = '確認メールを送信しました。';
+      $('#authMessage').textContent = tr('confirmSent');
       $('#authMessage').classList.remove('error');
     }
   };
@@ -408,7 +396,7 @@ async function toggleTopic(topicId, wasOn, subjectId, query) {
 function editName() {
   const bg = document.createElement('div');
   bg.className = 'modalbg';
-  bg.innerHTML = `<div class="modal"><h3>名前変更</h3><input id="nameinput" maxlength="20"><div class="actions"><button id="cancel">キャンセル</button><button class="savebtn" id="saveName">保存</button></div></div>`;
+  bg.innerHTML = `<div class="modal"><h3>${esc(tr('changeName'))}</h3><input id="nameinput" maxlength="20"><div class="actions"><button id="cancel">${esc(tr('cancel'))}</button><button class="savebtn" id="saveName">${esc(tr('save'))}</button></div></div>`;
   document.body.appendChild(bg);
   const input = bg.querySelector('#nameinput');
   input.value = profile.display_name === '名無し' ? '' : profile.display_name;
@@ -433,7 +421,7 @@ async function chooseRace(required = false) {
   return new Promise(resolve => {
     const bg = document.createElement('div');
     bg.className = 'modalbg';
-    bg.innerHTML = `<div class="modal"><h3>種族</h3><div class="racechoices">${races.map(r => `<button class="racebtn" data-race="${esc(r.race_id)}">${esc(r.name_ja)}</button>`).join('')}</div>${required ? '' : '<div class="actions"><button id="cancelRace">キャンセル</button></div>'}</div>`;
+    bg.innerHTML = `<div class="modal"><h3>${esc(tr('race'))}</h3><div class="racechoices">${races.map(r => `<button class="racebtn" data-race="${esc(r.race_id)}">${esc(localName(r))}</button>`).join('')}</div>${required ? '' : `<div class="actions"><button id="cancelRace">${esc(tr('cancel'))}</button></div>`}</div>`;
     document.body.appendChild(bg);
     const close = () => { bg.remove(); resolve(); };
     bg.querySelectorAll('.racebtn').forEach(btn => btn.onclick = async () => {
@@ -468,20 +456,25 @@ function renderSettings() {
   const race = races.find(r => r.race_id === profile.race_id);
   const m = main();
   const theme = currentTheme();
-  m.innerHTML = `<div class="settings"><div class="pagehead"><h2>設定</h2></div><div class="list-window">
-    <div class="settingrow"><div class="settingtitle">種族</div><button class="plainbtn small" id="raceSetting">${esc(race?.name_ja || '未設定')}</button></div>
-    <div class="settingrow"><label class="settingtitle" for="statusSetting">状態</label><select id="statusSetting" class="select">${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-    <div class="settingrow"><label class="settingtitle" for="themeSetting">テーマ</label><select id="themeSetting" class="select">${Object.entries(THEMES).map(([v,l]) => `<option value="${v}" ${theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-    <div class="settingrow"><button class="plainbtn small" id="signout">ログアウト</button></div>
-    <div class="settingrow"><button class="dangerbtn" id="resetChecks">全ステータスをリセット</button></div>
-    ${statusFeatureAvailable ? '<div class="settingrow"><button class="dangerbtn" id="resetAll">全データをリセット</button></div>' : ''}
+  const newsLang = currentNewsLang();
+  m.innerHTML = `<div class="settings"><div class="pagehead"><h2>${esc(tr('settings'))}</h2></div><div class="list-window">
+    <div class="settingrow"><div class="settingtitle">${esc(tr('race'))}</div><button class="plainbtn small" id="raceSetting">${esc(race ? localName(race) : tr('unset'))}</button></div>
+    <div class="settingrow"><label class="settingtitle" for="statusSetting">${esc(tr('presence'))}</label><select id="statusSetting" class="select">${STATUS_KEYS.map(v => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${esc(tr(`presence.${v}`))}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="themeSetting">${esc(tr('theme'))}</label><select id="themeSetting" class="select">${THEMES.map(v => `<option value="${v}" ${theme === v ? 'selected' : ''}>${esc(tr(`theme.${v}`))}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="langSetting">${esc(tr('language'))}</label><select id="langSetting" class="select">${Object.entries(LANGS).map(([v,l]) => `<option value="${v}" ${lang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="newsLangSetting">${esc(tr('newsLang'))}</label><select id="newsLangSetting" class="select">${Object.entries(NEWS_LANGS).map(([v,l]) => `<option value="${v}" ${newsLang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="settingrow"><button class="plainbtn small" id="signout">${esc(tr('logout'))}</button></div>
+    <div class="settingrow"><button class="dangerbtn" id="resetChecks">${esc(tr('resetStatuses'))}</button></div>
+    ${statusFeatureAvailable ? `<div class="settingrow"><button class="dangerbtn" id="resetAll">${esc(tr('resetAll'))}</button></div>` : ''}
   </div></div>`;
   $('#raceSetting').onclick = () => chooseRace(false);
   $('#statusSetting').onchange = e => updateStatus(e.target.value);
   $('#themeSetting').onchange = e => applyTheme(e.target.value);
+  $('#langSetting').onchange = e => { applyLang(e.target.value); renderProfile(); renderSettings(); };
+  $('#newsLangSetting').onchange = e => applyNewsLang(e.target.value);
   $('#signout').onclick = () => sb.auth.signOut();
   $('#resetChecks').onclick = async () => {
-    if (!confirmDataDelete('全ステータスのチェック（MASTER）をすべてリセットします。')) return;
+    if (!confirmDataDelete(tr('resetStatusesWhat'))) return;
     const { error } = await sb.from('quest_topic_mastery').delete().eq('user_id', session.user.id);
     if (error) { alert(error.message); return; }
     mastery.clear();
@@ -497,14 +490,14 @@ function renderSettings() {
 }
 
 function confirmDataDelete(what) {
-  return confirm(`${what}\n本当にデータを消しますか？`)
-    && confirm('本当にデータを消しますか？\n消したデータは元に戻せません。');
+  return confirm(`${what}\n${tr('reallyDelete')}`)
+    && confirm(`${tr('reallyDelete')}\n${tr('cannotUndo')}`);
 }
 
 // 人生クエストの自分のデータを全部消して、プリセット選択からやり直す。
 // display_name・race_id・状態は夏の果てと共通なので残す。
 async function resetAllData() {
-  if (!confirmDataDelete('チェック・入力の記録・ステータス（プリセットと自作）をすべて消して、プリセット選択からやり直します。')) return;
+  if (!confirmDataDelete(tr('resetAllWhat'))) return;
   const uid = session.user.id;
   for (const table of ['quest_topic_mastery', 'quest_topic_values', 'quest_user_statuses', 'quest_user_settings']) {
     const { error } = await sb.from(table).delete().eq('user_id', uid);
@@ -531,7 +524,7 @@ async function maybeOfferLegacyMigration() {
   const hasName = legacy.name && legacy.name !== '名無し';
   if (!hasMath && !hasOther && !hasName) { localStorage.setItem(flag, '1'); return; }
 
-  const ok = confirm('この端末にある既存の人生クエストデータを、このアカウントへ移行しますか？');
+  const ok = confirm(tr('legacyMigrate'));
   localStorage.setItem(flag, '1');
   if (!ok) return;
 
@@ -578,7 +571,7 @@ async function handleSession(nextSession) {
   } catch (e) {
     console.error(e);
     setShellVisible(false);
-    main().innerHTML = `<div class="authbox"><div class="authbrand">人生クエスト</div><div class="authmessage error" id="appMessage">${esc(e?.message || '読み込みに失敗しました')}</div><button class="plainbtn" id="retry">再読み込み</button></div>`;
+    main().innerHTML = `<div class="authbox"><div class="authbrand">${esc(tr('brand'))}</div><div class="authmessage error" id="appMessage">${esc(e?.message || tr('loadFailed'))}</div><button class="plainbtn" id="retry">${esc(tr('reload'))}</button></div>`;
     $('#retry').onclick = () => loadApp();
   }
 }
