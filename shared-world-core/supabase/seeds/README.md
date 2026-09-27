@@ -34,5 +34,6 @@ python shared-world-core/scripts/generate_math_seed.py
 6. `002_math_04.sql`
 7. `003_other_subject_prototypes.sql`
 8. `../migrations/002`〜`005`（005 は29学問に `preset_group` を設定し、既存アカウントへステータスを登録する）
+9. `006_english_strength_presets.sql` — 英語・筋力の単独プリセット（005 の後）
 
 前提関係とimportanceの精密化は後続migrationで追加する。現在の275トピックseedではimportanceを暫定値2としている。
