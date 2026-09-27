@@ -44,7 +44,7 @@ insert into public.quest_subjects (
   ('philosophy', '哲学', 'Philosophy', '💭', 210, true),
   ('religious-studies', '宗教学', 'Religious Studies', '🕯️', 220, true),
   ('psychology', '心理学', 'Psychology', '🧠', 230, true),
-  ('linguistics-languages', '言語学・語学', 'Linguistics & Languages', '💬', 240, true),
+  ('linguistics-languages', '言語学', 'Linguistics', '💬', 240, true),
   ('anthropology-archaeology', '人類学・考古学', 'Anthropology & Archaeology', '🏺', 250, true),
   ('history', '歴史学', 'History', '📜', 260, true),
   ('geography', '地理学', 'Geography', '🗺️', 270, true),
