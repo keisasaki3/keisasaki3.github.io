@@ -2,7 +2,7 @@
 
 /** @typedef {{name:string,url:string}} Source */
 /** @typedef {{ja:string,en:string}} NewsSummarySentence */
-/** @typedef {{id?:string,region?:string,headline:string,headline_en?:string,summary:NewsSummarySentence[],background?:string,why_it_matters?:string,sources?:Source[]}} NewsArticle */
+/** @typedef {{id?:string,region?:string,headline:string,headline_en?:string,comment?:{en?:string,ja?:string},summary:NewsSummarySentence[],background?:string,why_it_matters?:string,sources?:Source[]}} NewsArticle */
 /** @typedef {{symbol:string,value:number|string,unit?:string,change_pct?:number,change_bp?:number,source?:string,source_url?:string,note?:string}} MarketItem */
 /** @typedef {{title?:string,asset?:string,symbol?:string,body?:string,explanation?:string,summary?:string,reason?:string}} MarketMove */
 /** @typedef {Object<string, unknown> & {as_of?:string,market_moves?:MarketMove[],moves?:MarketMove[]}} MarketData */
