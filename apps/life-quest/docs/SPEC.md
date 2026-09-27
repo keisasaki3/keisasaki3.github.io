@@ -298,8 +298,9 @@ NEWSをNEWSPAPERの主役とする。
 
 - 英語をメインに読ませる（2026-09-27 Keita決定）。
 - 1記事1カード。カード上部の帯に通し番号と region を出し、記事の切れ目を明確にする。
-- 見出し: `headline_en` があれば英語見出しを大きく、その下に日本語 `headline` を小さく表示する。`headline_en` がなければ日本語 `headline` を見出しにする。
-- 一覧では英語summaryを表示する。日本語summaryは記事ごとの「日本語」ボタンで開閉する。
+- region は文字に絵文字アイコンを添える（例: 🌍 WORLD、🇯🇵 JAPAN。未知の region は 🌐）。
+- 見出し: `headline_en` があれば英語見出しを表示する。`headline_en` がなければ日本語 `headline` を見出しにする。
+- 一覧では英語summaryを表示する。日本語（`headline_en` がある日は日本語見出しも含む）は記事ごとの「日本語」ボタンで開閉し、初期状態は閉じる。
 - 日本語summaryと英語summaryはセンテンス単位で対応させる。
 - BACKGROUND / WHY IT MATTERS / SOURCES は記事ごとの「詳細を見る」で開閉する。
 - SOURCESは外部リンクとして開けるようにする。
