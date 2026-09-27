@@ -139,6 +139,19 @@ function nextStatusTopic(status) {
   return ready.reduce((best, t) => (t.importance || 0) > (best.importance || 0) ? t : best);
 }
 
+// 新しくプリセットを選んだときの並び: 資産 → 筋力 → 英語 → 29学問（学問内は quest_subjects.sort_order 順）
+const PRESET_FIRST = ['assets', 'strength', 'english'];
+
+function presetRank(subjectId) {
+  const i = PRESET_FIRST.indexOf(subjectId);
+  if (i >= 0) return i - PRESET_FIRST.length;
+  return subjects.find(s => s.subject_id === subjectId)?.sort_order ?? 9999;
+}
+
+function sortPresetIds(ids) {
+  return [...ids].sort((a, b) => presetRank(a) - presetRank(b));
+}
+
 function nextSortOrder(rows) {
   return rows.reduce((max, r) => Math.max(max, r.sort_order || 0), 0) + 10;
 }
@@ -186,10 +199,20 @@ renderHome = function renderStatusHome() {
     d.type = 'button';
     d.className = 'subject';
     d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(localName(v))}</span><span class="en">${esc(localSubName(v))}</span>${statusBadgeMarkup(status, count)}</span>${meta}</span>`;
-    d.onclick = () => renderSubject(status.status_id);
+    d.dataset.statusId = status.status_id;
+    d.onclick = () => { if (!reorderJustEnded) renderSubject(status.status_id); };
     list.appendChild(d);
   });
-  if (list.children.length) m.appendChild(list);
+  if (list.children.length) {
+    m.appendChild(list);
+    if (statusFeatureAvailable && list.children.length > 1) {
+      enableStatusReorder(list);
+      const hint = document.createElement('div');
+      hint.className = 'reorderhint';
+      hint.textContent = tr('reorderHint');
+      m.appendChild(hint);
+    }
+  }
   if (statusFeatureAvailable) {
     const add = document.createElement('button');
     add.className = 'plainbtn addstatus';
@@ -199,6 +222,114 @@ renderHome = function renderStatusHome() {
     m.appendChild(add);
   }
 };
+
+// ---------- ステータスの並べ替え（長押しでドラッグ） ----------
+
+let reorderJustEnded = false;
+let reorderActive = false;
+// ドラッグ中はスクロールさせない（passive: false でないと止められない）
+document.addEventListener('touchmove', e => { if (reorderActive) e.preventDefault(); }, { passive: false });
+
+function enableStatusReorder(list) {
+  const HOLD_MS = 450;
+  const MOVE_TOLERANCE = 8;
+  let timer = null, row = null, pointerId = null, startX = 0, startY = 0, lastY = 0, grabOffset = 0, scrollRaf = 0;
+
+  list.addEventListener('contextmenu', e => { if (row) e.preventDefault(); });
+
+  const cancelHold = () => { clearTimeout(timer); timer = null; };
+
+  const place = () => {
+    // ドラッグ中の行を指の位置に追従させ、中点を越えたら隣と入れ替える
+    row.style.transform = '';
+    let rect = row.getBoundingClientRect();
+    const box = list.getBoundingClientRect();
+    const targetTop = Math.min(Math.max(lastY - grabOffset, box.top), box.bottom - rect.height);
+    const prev = row.previousElementSibling, next = row.nextElementSibling;
+    if (prev && targetTop < prev.getBoundingClientRect().top + prev.offsetHeight / 2) list.insertBefore(row, prev);
+    else if (next && targetTop + rect.height > next.getBoundingClientRect().top + next.offsetHeight / 2) list.insertBefore(next, row);
+    rect = row.getBoundingClientRect();
+    row.style.transform = `translateY(${targetTop - rect.top}px)`;
+  };
+
+  const autoScroll = () => {
+    if (!reorderActive) return;
+    const edge = 70, bottomEdge = window.innerHeight - 110;
+    let dy = 0;
+    if (lastY < edge) dy = -Math.ceil((edge - lastY) / 6);
+    else if (lastY > bottomEdge) dy = Math.ceil((lastY - bottomEdge) / 6);
+    if (dy) { window.scrollBy(0, dy); place(); }
+    scrollRaf = requestAnimationFrame(autoScroll);
+  };
+
+  const startDrag = () => {
+    timer = null;
+    reorderActive = true;
+    const rect = row.getBoundingClientRect();
+    grabOffset = startY - rect.top;
+    lastY = startY;
+    row.classList.add('dragging');
+    list.classList.add('reordering');
+    if (navigator.vibrate) navigator.vibrate(15);
+    scrollRaf = requestAnimationFrame(autoScroll);
+  };
+
+  const finish = async () => {
+    cancelHold();
+    if (!reorderActive) { row = null; return; }
+    reorderActive = false;
+    cancelAnimationFrame(scrollRaf);
+    row.classList.remove('dragging');
+    row.style.transform = '';
+    list.classList.remove('reordering');
+    row = null;
+    reorderJustEnded = true;
+    setTimeout(() => { reorderJustEnded = false; }, 80);
+    const ids = [...list.children].map(el => el.dataset.statusId);
+    await saveStatusOrder(ids);
+  };
+
+  list.addEventListener('pointerdown', e => {
+    if (e.button !== 0 || reorderActive) return;
+    const target = /** @type {HTMLElement} */ (e.target).closest('.subject');
+    if (!target || target.parentElement !== list) return;
+    row = target; pointerId = e.pointerId; startX = e.clientX; startY = e.clientY;
+    timer = setTimeout(startDrag, HOLD_MS);
+  });
+  // 行を入れ替えるとポインタキャプチャが外れるので、移動・離す操作は window で拾う
+  const onMove = e => {
+    if (!row || e.pointerId !== pointerId) return;
+    if (timer && (Math.abs(e.clientX - startX) > MOVE_TOLERANCE || Math.abs(e.clientY - startY) > MOVE_TOLERANCE)) { cancelHold(); row = null; return; }
+    if (reorderActive) { e.preventDefault(); lastY = e.clientY; place(); }
+  };
+  const onEnd = e => {
+    if (e.pointerId !== pointerId) return;
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onEnd);
+    window.removeEventListener('pointercancel', onEnd);
+    finish();
+  };
+  list.addEventListener('pointerdown', () => {
+    if (!row) return;
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onEnd);
+    window.addEventListener('pointercancel', onEnd);
+  });
+}
+
+async function saveStatusOrder(ids) {
+  const changed = [];
+  ids.forEach((id, i) => {
+    const s = findStatus(id);
+    const order = (i + 1) * 10;
+    if (s && s.sort_order !== order) { s.sort_order = order; changed.push(s); }
+  });
+  renderHome();
+  if (!changed.length) return;
+  const results = await Promise.all(changed.map(s => sb.from('quest_user_statuses').update({ sort_order: s.sort_order }).eq('status_id', s.status_id)));
+  const failed = results.find(r => r.error);
+  if (failed) alert(failed.error.message);
+}
 
 function presetGroups(presetList) {
   const groups = [];
@@ -216,7 +347,7 @@ function isPresetVisible(subjectId) {
 }
 
 async function addPresets(subjectIds) {
-  for (const subjectId of subjectIds) {
+  for (const subjectId of sortPresetIds(subjectIds)) {
     const existing = userStatuses.find(s => s.preset_subject_id === subjectId);
     if (existing) {
       if (!existing.hidden) continue;
