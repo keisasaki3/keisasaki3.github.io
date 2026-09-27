@@ -1,6 +1,6 @@
 # 人生クエスト — 現行仕様
 
-更新日: 2026-09-26
+更新日: 2026-09-27
 
 ## 1. 目的
 
@@ -89,9 +89,10 @@ NEXTは推薦であり、必修順序ではない。
 
 要件:
 
-- 学問名の左に、29学問それぞれに対応する画像アイコンを表示する。
-- アイコンは `assets/subjects/subjects.webp` のスプライトを使用し、subject_idとの対応は1か所で管理する。
-- 旧絵文字アイコンは表示しない。
+- 学問名の左に学問アイコンを表示する。subject_idとアイコン画像の対応は `subject-ui.js` の `SUBJECT_ICON_PATHS` 1か所で管理する。
+- 現行実装で画像を持つのは歴史学（`assets/subjects/history.png`）のみ。対応画像のない学問はアイコンなしで表示する。
+- 旧29学問スプライト `assets/subjects/subjects.webp` は撤去済み。
+- 旧絵文字アイコン（`quest_subjects.icon`）は現在表示しない。絵文字へ戻す案は `IDEAS.md` §7で検討中。
 - 日本語名の隣に薄い英語名。
 - ★数は学問名から離しすぎず、同一情報グループとして表示。
 - パーセント進捗は表示しない。
@@ -176,9 +177,9 @@ Web版にログイン・新規登録UIを実装する。
 
 ### Google OAuth
 
-Googleログインは設計対象だが、Google Cloud側OAuth Client ID / Secret設定完了まではUIを無効化する。
+Googleログインは有効（`app.js` の `GOOGLE_AUTH_ENABLED = true`）。Google Cloud OAuth ClientとSupabase Google Providerは設定済み。
 
-設定完了後は同じSupabase AuthユーザーへGoogle identityを紐づける。Supabase Authの同一確認済みメールによるidentity linkingを利用できる。
+同じSupabase AuthユーザーへGoogle identityを紐づける。Supabase Authの同一確認済みメールによるidentity linkingを利用できる。
 
 当面は各アプリで一度ずつログインしてよい。将来、同一ドメイン配下または専用認証ドメインによるSSOを検討する。
 
