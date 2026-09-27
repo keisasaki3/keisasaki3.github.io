@@ -96,6 +96,8 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 ログイン版では初回ログイン後、旧データがあればローカルMASTERを `quest_topic_mastery` へupsertで一度だけ移行できる（`app.js` の `maybeOfferLegacyMigration`）。移行済みかどうかはブラウザのlocalStorageフラグで判定する。詳細は `SPEC.md` §12。
 
+テーマ選択（`SPEC.md` §16）は端末ごとのlocalStorage `lifeQuestTheme` に保存し、DBには持たない。
+
 ## 権限
 
 - 学問 / 分野 / トピック / 前提: クライアントはread-only

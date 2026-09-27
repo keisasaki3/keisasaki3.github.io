@@ -1,0 +1,124 @@
+@import url("https://fonts.googleapis.com/css2?family=DotGothic16&family=JetBrains+Mono:wght@400;600;800&family=M+PLUS+1+Code:wght@400;500;700&display=swap");
+
+/* テーマ（設定で選択。既定: dracula） */
+:root,[data-theme="dracula"]{--bg:#15131d;--bar:#100e17;--line:#2a2640;--acc:#ff79c6;--text:#f8f8f2;--dim:#8a85a8;--body2:#c3bfdb;--gold:#f1fa8c;--panel:#1d1a2a;--win2-border:#3a3552;--win2-bg:#181623;--rowline:#221f31;--gutter:#4a4566;--faint:#6f6a8f;--star0:#4d4868;--green:#50fa7b;--violet:#bd93f9;--body:#e2e0f0;--danger:#ff5555}
+[data-theme="tokyo-night"]{--bg:#0b0e14;--bar:#080a0f;--line:#1c2230;--acc:#7dcfff;--text:#e6ebf5;--dim:#707a95;--body2:#a3adc2;--gold:#e0af68;--panel:#10151f;--win2-border:#2c3548;--win2-bg:#0d1119;--rowline:#151a25;--gutter:#3b4459;--faint:#5c6680;--star0:#4a5470;--green:#9ece6a;--violet:#bb9af7;--body:#c9d1e3;--danger:#f7768e}
+[data-theme="nord"]{--bg:#242933;--bar:#1e222a;--line:#3b4252;--acc:#88c0d0;--text:#eceff4;--dim:#8a93a6;--body2:#c0c8d6;--gold:#ebcb8b;--panel:#2e3440;--win2-border:#434c5e;--win2-bg:#272c36;--rowline:#323946;--gutter:#4c566a;--faint:#737d92;--star0:#5a6378;--green:#a3be8c;--violet:#b48ead;--body:#d8dee9;--danger:#d0707a}
+[data-theme="synthwave"]{--bg:#0d0221;--bar:#08011a;--line:#2a1450;--acc:#05d9e8;--text:#f5f0ff;--dim:#8f7bb8;--body2:#c6b8e6;--gold:#f9c80e;--panel:#150533;--win2-border:#3d1f6e;--win2-bg:#11032b;--rowline:#1f0b40;--gutter:#4a2d7a;--faint:#7a62a8;--star0:#523a80;--green:#65f5a0;--violet:#ff2a6d;--body:#e4dcff;--danger:#ff5c8a}
+[data-theme="amber"]{--bg:#0c0904;--bar:#080602;--line:#2e2210;--acc:#ffb347;--text:#ffd9a0;--dim:#a8793a;--body2:#e0a860;--gold:#ffb347;--panel:#140f06;--win2-border:#4a3618;--win2-bg:#100c05;--rowline:#1f170a;--gutter:#5e4520;--faint:#8c6630;--star0:#5e4520;--green:#ffd9a0;--violet:#ffcc80;--body:#f0c078;--danger:#ff6b3d}
+[data-theme="phosphor"]{--bg:#050a06;--bar:#030703;--line:#123018;--acc:#5cff8a;--text:#c8ffd6;--dim:#4f9a64;--body2:#8fdca6;--gold:#b8ff5c;--panel:#0a140c;--win2-border:#1e4a28;--win2-bg:#07100a;--rowline:#0f2014;--gutter:#2a5a36;--faint:#3f8052;--star0:#2a5a36;--green:#b8ff5c;--violet:#7dffc0;--body:#a8f0bc;--danger:#ff6b6b}
+
+*{box-sizing:border-box}
+html{background:var(--bg);color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--body);font-family:"JetBrains Mono","M PLUS 1 Code","Hiragino Kaku Gothic ProN","Yu Gothic UI",Meiryo,monospace;-webkit-text-size-adjust:100%}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--acc)}
+.px{font-family:"DotGothic16","M PLUS 1 Code",monospace;font-weight:400}
+
+.app{max-width:760px;margin:auto;min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+
+/* 上バー */
+.topbar{height:34px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;background:var(--bar)}
+.brand{font-family:"DotGothic16",monospace;font-size:12px;letter-spacing:.24em;color:var(--dim)}
+.presence{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--body2)}
+.presence-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+
+/* プレイヤー窓（学問一覧のみ） */
+.top{display:none;margin:14px 12px 12px;padding:16px 14px 12px;border:3px double var(--acc);border-radius:4px;background:var(--panel);flex-direction:column;align-items:center;gap:4px}
+body[data-view="home"] .top{display:flex}
+.lv{display:flex;align-items:baseline;gap:8px;font-family:"DotGothic16",monospace;color:var(--gold)}
+.lv-label{font-size:22px}
+.lv-value{font-size:84px;line-height:.85}
+.profile{display:flex;align-items:center;padding-left:44px}
+.profile h1{margin:0;font-family:"DotGothic16",monospace;font-weight:400;font-size:24px;color:var(--text)}
+.rename{width:44px;height:44px;border:0;background:none;color:var(--dim);font-size:14px;cursor:pointer}
+.title{font-size:12px;color:var(--body2)}
+
+/* 下タブ */
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--bar);border-top:1px solid var(--line);padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.tab{height:56px;border:0;border-top:2px solid transparent;background:none;color:var(--dim);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.active{border-top-color:var(--acc);background:var(--panel);color:var(--text);font-weight:700}
+.tab.active::before{content:"▶";font-family:"DotGothic16",monospace;font-size:11px;font-weight:400;color:var(--acc)}
+
+.main{padding:0 12px 12px}
+
+/* 窓 */
+.window{border:3px double var(--acc);border-radius:4px;background:var(--panel)}
+.list-window{border:3px double var(--win2-border);border-radius:4px;background:var(--win2-bg);overflow:hidden}
+
+/* 学問一覧 */
+.subject{width:100%;display:flex;padding:11px 12px 11px 0;border:0;border-bottom:1px solid var(--rowline);background:none;text-align:left;cursor:pointer}
+.subject:last-child{border-bottom:0}
+.subject:active{background:var(--panel)}
+.gutter{width:38px;flex:none;text-align:right;padding-right:10px;font-size:10px;color:var(--gutter);line-height:24px}
+.subjectbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.subjectline{display:flex;align-items:center;gap:8px;min-width:0}
+.icon{font-size:16px;line-height:1;width:20px;flex:none;text-align:center}
+.name{font-size:16px;font-weight:700;color:var(--text);white-space:nowrap}
+.en{font-size:11px;color:var(--faint);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stars{font-family:"DotGothic16",monospace;font-size:19px;color:var(--gold);white-space:nowrap}
+.stars.zero{color:var(--star0)}
+.meta{padding-left:28px;font-size:11px;color:var(--body2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta .next-label{color:var(--violet);font-weight:600;margin-right:.6em}
+.meta.complete{color:var(--green)}
+
+/* 学問画面 */
+.back{height:44px;padding:0 6px 0 0;border:0;background:none;color:var(--body2);font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
+.mathhead{padding:12px 14px;display:flex;align-items:center;gap:12px}
+.mathhead .icon{font-size:28px;width:auto}
+.mathhead .headname{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mathhead h2{margin:0;font-family:"DotGothic16",monospace;font-weight:400;font-size:28px;line-height:1.1;color:var(--text)}
+.mathhead .en{font-size:12px;flex:none}
+.mathhead .stars{font-size:40px}
+.searchbox{margin:10px 0;display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:var(--panel);border:1px solid var(--win2-border);border-radius:4px;color:var(--faint)}
+.search{flex:1;min-width:0;border:0;background:none;color:var(--text);font-size:16px;outline:none}
+.search::placeholder{color:var(--faint)}
+#topics{margin-top:10px}
+.searchbox+#topics{margin-top:0}
+.area{border-bottom:1px solid var(--win2-border)}
+.area:last-child{border-bottom:0}
+.topic{display:flex;align-items:center;gap:12px;min-height:50px;padding:0 12px 0 16px;border-top:1px solid var(--rowline);cursor:pointer}
+.check{width:18px;height:18px;border-radius:3px;border:1.5px solid var(--gutter);flex:none;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.topic.on .check{background:var(--acc);border-color:var(--acc);color:var(--bg)}
+.topicbody{min-width:0;flex:1;padding:7px 0;display:flex;flex-direction:column;gap:2px}
+.tname{font-size:13px;line-height:1.5;color:var(--body2)}
+.topic.on .tname{color:var(--text)}
+.source{font-size:10px;color:var(--faint)}
+.master{margin-left:auto;flex:none;font-family:"DotGothic16",monospace;font-size:15px;color:var(--green)}
+.empty{padding:30px 0;color:var(--dim);text-align:center}
+
+/* 設定 */
+.pagehead{padding:14px 4px 10px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.pagehead h2{margin:0;font-family:"DotGothic16",monospace;font-weight:400;font-size:24px;color:var(--text)}
+.settingrow{padding:14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.settingrow:last-child{border-bottom:0}
+.settingtitle{font-size:14px;font-weight:700;color:var(--text)}
+.plainbtn,.primarybtn,.dangerbtn,.select{min-height:44px;padding:0 14px;border:1px solid var(--win2-border);border-radius:4px;background:var(--panel);color:var(--text);font-size:13px;cursor:pointer}
+.plainbtn,.primarybtn{width:100%}
+.plainbtn.small{width:auto}
+.primarybtn{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
+.dangerbtn{background:none;border-color:var(--danger);color:var(--danger);font-weight:700}
+.select{min-width:150px;padding:0 10px}
+
+/* モーダル */
+.modalbg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal{width:min(360px,100%);padding:18px;border:3px double var(--acc);border-radius:4px;background:var(--panel)}
+.modal h3{margin:0 0 12px;font-family:"DotGothic16",monospace;font-weight:400;font-size:18px;color:var(--text)}
+.modal input{width:100%;height:44px;padding:0 10px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);font-size:16px}
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.actions button{min-height:44px;padding:0 14px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);cursor:pointer}
+.actions .savebtn{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
+.racechoices{display:grid;gap:8px}
+.racebtn{min-height:44px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);padding:0 12px;font-weight:600;cursor:pointer;text-align:left}
+
+/* ログイン */
+body[data-view="auth"] .topbar,body[data-view="auth"] .tabs{display:none}
+body[data-view="auth"] .app{padding-bottom:0}
+.authmain{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.authbox{width:min(380px,100%);padding:22px 18px;border:3px double var(--acc);border-radius:4px;background:var(--panel)}
+.authbrand{text-align:center;font-family:"DotGothic16",monospace;font-size:24px;letter-spacing:.12em;color:var(--text);margin-bottom:22px}
+.authform{display:grid;gap:10px}
+.authform input{width:100%;height:46px;padding:0 12px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);font-size:16px}
+.authmessage{min-height:22px;font-size:13px;color:var(--body2);text-align:center;margin-top:2px}
+.authmessage.error{color:var(--danger)}
+.loading{width:100%;text-align:center;color:var(--dim);padding:80px 0}
