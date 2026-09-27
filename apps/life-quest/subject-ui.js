@@ -88,10 +88,34 @@ function topicValueRows(t) {
   return topicValues.filter(v => t.custom ? v.user_topic_id === t.id : v.topic_id === t.id);
 }
 
+// 円・万円は「1,000,000 YEN」表記（万円は円に換算）
+const YEN_UNITS = { '円': 1, '万円': 10000 };
+
 function formatValue(value, unit) {
   const n = Number(value);
+  if (Number.isFinite(n) && unit && YEN_UNITS[unit]) {
+    return `${Math.round(n * YEN_UNITS[unit]).toLocaleString('en-US')} YEN`;
+  }
   const text = Number.isFinite(n) ? n.toLocaleString('ja-JP', { maximumFractionDigits: 6 }) : String(value);
   return unit ? `${text} ${unit}` : text;
+}
+
+// チェック項目がなく入力項目だけのステータス（資産など）は★の代わりに最新の値を出す
+function statusHeadlineValue(status) {
+  if (statusCheckTopics(status).length) return null;
+  const nums = statusFields(status).flatMap(f => f.topics).filter(t => t.type === 'number');
+  if (!nums.length) return null;
+  for (const t of nums) {
+    const latest = topicValueRows(t)[0];
+    if (latest) return formatValue(latest.value, t.unit);
+  }
+  return '—';
+}
+
+function statusBadgeMarkup(status, count) {
+  const value = statusHeadlineValue(status);
+  if (value !== null) return `<span class="stars amount${value === '—' ? ' zero' : ''}">${esc(value)}</span>`;
+  return `<span class="stars${count ? '' : ' zero'}">★${count}</span>`;
 }
 
 function statusCheckTopics(status) {
@@ -161,7 +185,7 @@ renderHome = function renderStatusHome() {
     const d = document.createElement('button');
     d.type = 'button';
     d.className = 'subject';
-    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(localName(v))}</span><span class="en">${esc(localSubName(v))}</span><span class="stars${count ? '' : ' zero'}">★${count}</span></span>${meta}</span>`;
+    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(localName(v))}</span><span class="en">${esc(localSubName(v))}</span>${statusBadgeMarkup(status, count)}</span>${meta}</span>`;
     d.onclick = () => renderSubject(status.status_id);
     list.appendChild(d);
   });
@@ -288,7 +312,7 @@ renderSubject = function renderStatusScreen(statusId) {
   setView('subject');
   window.scrollTo(0, 0);
   const m = main();
-  m.innerHTML = `<button class="back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>${esc(tr('back'))}</button><div class="mathhead window">${subjectIconMarkup(v)}<div class="headname"><h2>${esc(localName(v))}</h2><span class="en">${esc(localSubName(v))}</span></div><span class="stars${count ? '' : ' zero'}">★${count}</span>${statusFeatureAvailable ? `<button type="button" class="plainbtn small editmode" id="editMode">${esc(tr(editMode ? 'done' : 'edit'))}</button>` : ''}</div>${editMode ? `<div class="edittools"><button type="button" class="plainbtn small" id="editStatus">${esc(tr('editStatus'))}</button><button type="button" class="plainbtn small" id="addField">${esc(tr('addFieldBtn'))}</button></div>` : ''}${searchable ? `<label class="searchbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input class="search" placeholder="${esc(tr('searchTopics'))}" id="q"></label>` : ''}<div id="topics" class="list-window"></div>`;
+  m.innerHTML = `<button class="back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>${esc(tr('back'))}</button><div class="mathhead window">${subjectIconMarkup(v)}<div class="headname"><h2>${esc(localName(v))}</h2><span class="en">${esc(localSubName(v))}</span></div>${statusBadgeMarkup(status, count)}${statusFeatureAvailable ? `<button type="button" class="plainbtn small editmode" id="editMode">${esc(tr(editMode ? 'done' : 'edit'))}</button>` : ''}</div>${editMode ? `<div class="edittools"><button type="button" class="plainbtn small" id="editStatus">${esc(tr('editStatus'))}</button><button type="button" class="plainbtn small" id="addField">${esc(tr('addFieldBtn'))}</button></div>` : ''}${searchable ? `<label class="searchbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input class="search" placeholder="${esc(tr('searchTopics'))}" id="q"></label>` : ''}<div id="topics" class="list-window"></div>`;
   const back = /** @type {HTMLButtonElement} */ (m.querySelector('.back'));
   back.onclick = () => { setActiveTab('subjects'); renderHome(); };
   if (statusFeatureAvailable) {
