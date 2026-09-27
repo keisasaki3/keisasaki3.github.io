@@ -21,6 +21,18 @@ function renderSourceLinks(sources = []) {
   }).filter(Boolean).join('');
 }
 
+const REGION_ICONS = {
+  world: '🌍', global: '🌍', japan: '🇯🇵', us: '🇺🇸', usa: '🇺🇸', 'united states': '🇺🇸', americas: '🌎',
+  china: '🇨🇳', taiwan: '🇹🇼', korea: '🇰🇷', 'south korea': '🇰🇷', india: '🇮🇳', asia: '🌏',
+  europe: '🇪🇺', eu: '🇪🇺', uk: '🇬🇧', 'united kingdom': '🇬🇧', russia: '🇷🇺', ukraine: '🇺🇦',
+  'middle east': '🌍', africa: '🌍'
+};
+
+/** @param {string} region */
+function regionIcon(region) {
+  return REGION_ICONS[region.trim().toLowerCase()] || '🌐';
+}
+
 /** @param {NewsArticle[]} news */
 function renderNewsSection(news) {
   const articles = news.map((article, index) => {
@@ -32,13 +44,13 @@ function renderNewsSection(news) {
     const japanese = summary.map(sentence => `<p class="newspaper-summary-ja">${esc(sentence.ja)}</p>`).join('');
     const sources = renderSourceLinks(article.sources || []);
     return `<article class="newspaper-news-item">
-      <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region">${esc((article.region || 'NEWS').toUpperCase())}</span></div>
+      <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
         ${headlineEn
-          ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3><div class="newspaper-headline-ja">${esc(article.headline)}</div>`
+          ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3>`
           : `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline)}</h3>`}
         <div class="newspaper-summaries" lang="en">${english}</div>
-        <div class="newspaper-ja" id="${jaId}" hidden>${japanese}</div>
+        <div class="newspaper-ja" id="${jaId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}</div>
         <div class="newspaper-news-detail" id="${detailId}" hidden>
           <div class="newspaper-detail-label">BACKGROUND</div>
           <div class="newspaper-detail-text">${esc(article.background || '')}</div>
