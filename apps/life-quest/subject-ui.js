@@ -2,7 +2,7 @@ const openAreaIds = new Set();
 let editMode = false;
 
 // プリセットのドット絵アイコン（icons/<subject_id>.svg）。無いプリセットと自作ステータスは絵文字。
-const PIXEL_ICON_IDS = new Set(['math', 'physics', 'astronomy', 'earth-science', 'chemistry', 'biology', 'computer-science', 'architecture', 'design', 'agriculture', 'medicine', 'dentistry', 'pharmacy', 'political-science', 'military-defense', 'law', 'economics', 'business-administration', 'sociology', 'education', 'philosophy', 'religious-studies', 'psychology', 'linguistics-languages', 'anthropology-archaeology', 'history', 'geography', 'literature', 'art', 'english', 'strength']);
+const PIXEL_ICON_IDS = new Set(['math', 'physics', 'astronomy', 'earth-science', 'chemistry', 'biology', 'computer-science', 'architecture', 'design', 'agriculture', 'medicine', 'dentistry', 'pharmacy', 'political-science', 'military-defense', 'law', 'economics', 'business-administration', 'sociology', 'education', 'philosophy', 'religious-studies', 'psychology', 'linguistics-languages', 'anthropology-archaeology', 'history', 'geography', 'literature', 'art', 'english', 'strength', 'assets']);
 
 function presetIconMarkup(preset) {
   return PIXEL_ICON_IDS.has(preset.subject_id)
