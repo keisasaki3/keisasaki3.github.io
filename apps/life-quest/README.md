@@ -34,7 +34,8 @@ Claudeへ開発を引き継ぐ場合は、このREADMEを入口にして以下�
 
 ## Current deployment
 
-- Public URL: https://life-quest-keita.onrender.com
+- Public URL: https://natsume-lq.onrender.com
+- 旧URL https://life-quest-keita.onrender.com は使用しない
 - Current source: `apps/life-quest/index.html`
 
 ## Related
