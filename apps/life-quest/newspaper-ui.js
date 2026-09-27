@@ -35,11 +35,13 @@ function regionIcon(region) {
 
 /** @param {NewsArticle[]} news */
 function renderNewsSection(news) {
+  const jaMain = currentNewsLang() === 'ja';
   const articles = news.map((article, index) => {
-    const jaId = `newspaper-news-ja-${index}`;
+    const subId = `newspaper-news-sub-${index}`;
     const detailId = `newspaper-news-detail-${index}`;
     const summary = article.summary || [];
     const headlineEn = (article.headline_en || '').trim();
+    const hasEnSummary = summary.some(sentence => (sentence.en || '').trim());
     const english = `<p class="newspaper-summary-en">${summary.map(sentence => `<span>${esc(sentence.en)}</span>`).join('')}</p>`;
     const japanese = `<p class="newspaper-summary-ja">${summary.map(sentence => `<span>${esc(sentence.ja)}</span>`).join('')}</p>`;
     const allSources = article.sources || [];
@@ -55,16 +57,21 @@ function renderNewsSection(news) {
     return `<article class="newspaper-news-item">
       <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
-        ${headlineEn
+        ${jaMain
+          ? `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline || headlineEn)}</h3>
+        <div class="newspaper-summaries"><p class="newspaper-summary-jamain">${summary.map(sentence => `<span>${esc(sentence.ja)}</span>`).join('')}</p></div>`
+          : `${headlineEn
           ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3>`
           : `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline)}</h3>`}
-        <div class="newspaper-summaries" lang="en">${english}</div>
+        <div class="newspaper-summaries" lang="en">${english}</div>`}
         ${mainSource ? `<div class="newspaper-source-main">${mainSource}</div>` : ''}
-        <div class="newspaper-ja" id="${jaId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}</div>
+        ${jaMain
+          ? (headlineEn || hasEnSummary ? `<div class="newspaper-ja" id="${subId}" lang="en" hidden>${headlineEn ? `<p class="newspaper-headline-sub">${esc(headlineEn)}</p>` : ''}${hasEnSummary ? `<p class="newspaper-summary-ensub">${summary.map(sentence => `<span>${esc(sentence.en)}</span>`).join('')}</p>` : ''}</div>` : '')
+          : `<div class="newspaper-ja" id="${subId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}</div>`}
         ${detail ? `<div class="newspaper-news-detail" id="${detailId}" hidden>${detail}</div>` : ''}
         <div class="newspaper-news-actions">
-          <button class="newspaper-toggle" type="button" data-toggle="${jaId}" data-open-label="日本語を閉じる" aria-expanded="false">日本語</button>
-          ${detail ? `<button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="閉じる" aria-expanded="false">詳細を見る</button>` : ''}
+          ${!jaMain || headlineEn || hasEnSummary ? `<button class="newspaper-toggle" type="button" data-toggle="${subId}" data-open-label="${esc(tr(jaMain ? 'closeEn' : 'closeJa'))}" aria-expanded="false">${esc(tr(jaMain ? 'showEn' : 'showJa'))}</button>` : ''}
+          ${detail ? `<button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="${esc(tr('close'))}" aria-expanded="false">${esc(tr('details'))}</button>` : ''}
         </div>
       </div>
     </article>`;
@@ -153,7 +160,7 @@ function renderQuizSection(quiz) {
     <h2>DAILY QUIZ</h2>
     <div class="newspaper-quiz-genre">${esc(quiz.genre || '')}</div>
     <div class="newspaper-quiz-question">${esc(quiz.question || '')}</div>
-    <button class="newspaper-answer-button" id="newspaperAnswerToggle" type="button" aria-expanded="false">答えを見る</button>
+    <button class="newspaper-answer-button" id="newspaperAnswerToggle" type="button" aria-expanded="false">${esc(tr('showAnswer'))}</button>
     <div class="newspaper-answer" id="newspaperAnswer" hidden>
       <div class="newspaper-detail-label">ANSWER</div>
       <div class="newspaper-answer-text">${esc(quiz.answer || '')}</div>
@@ -201,14 +208,14 @@ function bindNewspaperInteractions() {
       const open = answer.hidden;
       answer.hidden = !open;
       answerButton.setAttribute('aria-expanded', String(open));
-      answerButton.textContent = open ? '答えを閉じる' : '答えを見る';
+      answerButton.textContent = open ? tr('hideAnswer') : tr('showAnswer');
     };
   }
 }
 
 function renderNewspaperError(error) {
-  const message = error instanceof Error ? error.message : '取得に失敗しました。';
-  main().innerHTML = `<div class="newspaper-error"><div>NEWSPAPERを読み込めませんでした。</div><div class="newspaper-error-detail">${esc(message)}</div><button class="plainbtn small" id="newspaperRetry" type="button">再試行</button></div>`;
+  const message = error instanceof Error ? error.message : tr('fetchFailed');
+  main().innerHTML = `<div class="newspaper-error"><div>${esc(tr('newsFailed'))}</div><div class="newspaper-error-detail">${esc(message)}</div><button class="plainbtn small" id="newspaperRetry" type="button">${esc(tr('retry'))}</button></div>`;
   const retry = /** @type {HTMLButtonElement|null} */ (document.getElementById('newspaperRetry'));
   if (retry) retry.onclick = renderNewspaper;
 }

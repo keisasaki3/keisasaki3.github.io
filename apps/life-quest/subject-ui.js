@@ -159,7 +159,7 @@ renderHome = function renderStatusHome() {
     const d = document.createElement('button');
     d.type = 'button';
     d.className = 'subject';
-    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(v.name_ja)}</span><span class="en">${esc(v.name_en)}</span><span class="stars${count ? '' : ' zero'}">★${count}</span></span>${meta}</span>`;
+    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(localName(v))}</span><span class="en">${esc(localSubName(v))}</span><span class="stars${count ? '' : ' zero'}">★${count}</span></span>${meta}</span>`;
     d.onclick = () => renderSubject(status.status_id);
     list.appendChild(d);
   });
@@ -168,7 +168,7 @@ renderHome = function renderStatusHome() {
     const add = document.createElement('button');
     add.className = 'plainbtn addstatus';
     add.type = 'button';
-    add.textContent = '＋ ステータスを追加';
+    add.textContent = tr('addStatusBtn');
     add.onclick = openAddStatus;
     m.appendChild(add);
   }
@@ -210,19 +210,19 @@ function openAddStatus() {
   const available = subjects.filter(s => !isPresetVisible(s.subject_id));
   const groupsHtml = presetGroups(available).map(g => `
     <div class="presetgroup">
-      ${g.key ? `<div class="presetgrouphead"><span>${esc(g.key)}</span><button type="button" class="plainbtn small" data-group="${esc(g.key)}">まとめて追加</button></div>` : ''}
-      <div class="presetchoices">${g.items.map(p => `<button type="button" class="racebtn" data-preset="${esc(p.subject_id)}">${presetIconMarkup(p)} ${esc(p.name_ja)}</button>`).join('')}</div>
+      ${g.key ? `<div class="presetgrouphead"><span>${esc(groupLabel(g.key))}</span><button type="button" class="plainbtn small" data-group="${esc(g.key)}">${esc(tr('addAll'))}</button></div>` : ''}
+      <div class="presetchoices">${g.items.map(p => `<button type="button" class="racebtn" data-preset="${esc(p.subject_id)}">${presetIconMarkup(p)} ${esc(localName(p))}</button>`).join('')}</div>
     </div>`).join('');
-  const { bg, close } = openModal(`<h3>ステータスを追加</h3>
-    <div class="modallabel">プリセット</div>
-    ${groupsHtml || '<div class="modalnote">追加できるプリセットはありません</div>'}
-    <div class="modallabel">自分で作る</div>
+  const { bg, close } = openModal(`<h3>${esc(tr('addStatus'))}</h3>
+    <div class="modallabel">${esc(tr('presets'))}</div>
+    ${groupsHtml || `<div class="modalnote">${esc(tr('noPresets'))}</div>`}
+    <div class="modallabel">${esc(tr('makeOwn'))}</div>
     <div class="modalform">
-      <input id="newStatusIcon" maxlength="8" placeholder="アイコン（絵文字）">
-      <input id="newStatusName" maxlength="40" placeholder="名前">
-      <input id="newStatusEn" maxlength="60" placeholder="英語名（任意）">
+      <input id="newStatusIcon" maxlength="8" placeholder="${esc(tr('phIcon'))}">
+      <input id="newStatusName" maxlength="40" placeholder="${esc(tr('phName'))}">
+      <input id="newStatusEn" maxlength="60" placeholder="${esc(tr('phNameEn'))}">
     </div>
-    <div class="actions"><button type="button" data-close>閉じる</button><button type="button" class="savebtn" id="createStatus">作成</button></div>`);
+    <div class="actions"><button type="button" data-close>${esc(tr('close'))}</button><button type="button" class="savebtn" id="createStatus">${esc(tr('create'))}</button></div>`);
   const done = () => { close(); renderProfile(); renderHome(); };
   bg.querySelectorAll('[data-preset]').forEach(btn => btn.onclick = async () => {
     if (await addPresets([btn.dataset.preset])) done();
@@ -254,10 +254,10 @@ function renderSetup() {
   const m = main();
   const groupsHtml = presetGroups(subjects).map((g, gi) => `
     <div class="presetgroup">
-      ${g.key ? `<label class="setupcheck setupgroup"><input type="checkbox" data-groupcheck="${gi}"><span>${esc(g.key)}（すべて）</span></label>` : ''}
-      <div class="setuplist">${g.items.map(p => `<label class="setupcheck"><input type="checkbox" data-group-index="${gi}" value="${esc(p.subject_id)}"><span>${presetIconMarkup(p)} ${esc(p.name_ja)}</span></label>`).join('')}</div>
+      ${g.key ? `<label class="setupcheck setupgroup"><input type="checkbox" data-groupcheck="${gi}"><span>${esc(tr('groupAll', { group: groupLabel(g.key) }))}</span></label>` : ''}
+      <div class="setuplist">${g.items.map(p => `<label class="setupcheck"><input type="checkbox" data-group-index="${gi}" value="${esc(p.subject_id)}"><span>${presetIconMarkup(p)} ${esc(localName(p))}</span></label>`).join('')}</div>
     </div>`).join('');
-  m.innerHTML = `<div class="settings setup"><div class="pagehead"><h2>プリセットを選ぶ</h2></div><div class="list-window setupwin">${groupsHtml}</div><button type="button" class="primarybtn" id="startQuest">はじめる</button></div>`;
+  m.innerHTML = `<div class="settings setup"><div class="pagehead"><h2>${esc(tr('choosePresets'))}</h2></div><div class="list-window setupwin">${groupsHtml}</div><button type="button" class="primarybtn" id="startQuest">${esc(tr('start'))}</button></div>`;
   m.querySelectorAll('[data-groupcheck]').forEach(box => box.onchange = () => {
     m.querySelectorAll(`[data-group-index="${box.dataset.groupcheck}"]`).forEach(c => { c.checked = box.checked; });
   });
@@ -286,7 +286,7 @@ renderSubject = function renderStatusScreen(statusId) {
   setView('subject');
   window.scrollTo(0, 0);
   const m = main();
-  m.innerHTML = `<button class="back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>ステータス</button><div class="mathhead window">${subjectIconMarkup(v)}<div class="headname"><h2>${esc(v.name_ja)}</h2><span class="en">${esc(v.name_en)}</span></div><span class="stars${count ? '' : ' zero'}">★${count}</span>${statusFeatureAvailable ? `<button type="button" class="plainbtn small editmode" id="editMode">${editMode ? '完了' : '編集'}</button>` : ''}</div>${editMode ? '<div class="edittools"><button type="button" class="plainbtn small" id="editStatus">ステータスを編集</button><button type="button" class="plainbtn small" id="addField">＋ 分野を追加</button></div>' : ''}${searchable ? '<label class="searchbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input class="search" placeholder="トピックを検索" id="q"></label>' : ''}<div id="topics" class="list-window"></div>`;
+  m.innerHTML = `<button class="back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>${esc(tr('back'))}</button><div class="mathhead window">${subjectIconMarkup(v)}<div class="headname"><h2>${esc(localName(v))}</h2><span class="en">${esc(localSubName(v))}</span></div><span class="stars${count ? '' : ' zero'}">★${count}</span>${statusFeatureAvailable ? `<button type="button" class="plainbtn small editmode" id="editMode">${esc(tr(editMode ? 'done' : 'edit'))}</button>` : ''}</div>${editMode ? `<div class="edittools"><button type="button" class="plainbtn small" id="editStatus">${esc(tr('editStatus'))}</button><button type="button" class="plainbtn small" id="addField">${esc(tr('addFieldBtn'))}</button></div>` : ''}${searchable ? `<label class="searchbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input class="search" placeholder="${esc(tr('searchTopics'))}" id="q"></label>` : ''}<div id="topics" class="list-window"></div>`;
   const back = /** @type {HTMLButtonElement} */ (m.querySelector('.back'));
   back.onclick = () => { setActiveTab('subjects'); renderHome(); };
   if (statusFeatureAvailable) {
@@ -328,7 +328,7 @@ drawSubject = function drawStatusTopics(statusId, query) {
     const isOpen = openAreaIds.has(f.id);
     const sec = document.createElement('section');
     sec.className = 'area';
-    sec.innerHTML = `<h3><button class="area-toggle" type="button" aria-expanded="${isOpen}"><span class="area-toggle-main"><span class="area-name">${esc(f.name)}</span>${progress}</span></button></h3>${editMode && f.custom ? '<div class="edittools"><button type="button" class="plainbtn small" data-act="addTopic">＋ トピックを追加</button><button type="button" class="plainbtn small" data-act="editField">分野を編集</button></div>' : ''}<div class="area-topics"${isOpen ? '' : ' hidden'}></div>`;
+    sec.innerHTML = `<h3><button class="area-toggle" type="button" aria-expanded="${isOpen}"><span class="area-toggle-main"><span class="area-name">${esc(f.name)}</span>${progress}</span></button></h3>${editMode && f.custom ? `<div class="edittools"><button type="button" class="plainbtn small" data-act="addTopic">${esc(tr('addTopicBtn'))}</button><button type="button" class="plainbtn small" data-act="editField">${esc(tr('editField'))}</button></div>` : ''}<div class="area-topics"${isOpen ? '' : ' hidden'}></div>`;
 
     const toggle = /** @type {HTMLButtonElement} */ (sec.querySelector('.area-toggle'));
     const topicBox = /** @type {HTMLDivElement} */ (sec.querySelector('.area-topics'));
@@ -366,7 +366,7 @@ drawSubject = function drawStatusTopics(statusId, query) {
     box.appendChild(sec);
   });
 
-  if (!shown && !(editMode && fs.some(f => f.custom))) box.innerHTML = '<div class="empty">該当なし</div>';
+  if (!shown && !(editMode && fs.some(f => f.custom))) box.innerHTML = `<div class="empty">${esc(tr('noResults'))}</div>`;
 };
 
 async function toggleUserTopic(row, statusId, query) {
@@ -387,8 +387,8 @@ function openValueModal(t, statusId, query) {
   const history = topicValueRows(t).slice(0, 5);
   const { bg, close } = openModal(`<h3>${esc(t.name)}</h3>
     <div class="valueinput"><input id="valueInput" type="number" step="any" inputmode="decimal">${t.unit ? `<span>${esc(t.unit)}</span>` : ''}</div>
-    ${history.length ? `<div class="valuehistory">${history.map(h => `<div><span>${esc(new Date(h.recorded_at).toLocaleDateString('ja-JP'))}</span><span>${esc(formatValue(h.value, t.unit))}</span></div>`).join('')}</div>` : ''}
-    <div class="actions"><button type="button" data-close>キャンセル</button><button type="button" class="savebtn" id="saveValue">記録</button></div>`);
+    ${history.length ? `<div class="valuehistory">${history.map(h => `<div><span>${esc(new Date(h.recorded_at).toLocaleDateString(tr('dateLocale')))}</span><span>${esc(formatValue(h.value, t.unit))}</span></div>`).join('')}</div>` : ''}
+    <div class="actions"><button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveValue">${esc(tr('record'))}</button></div>`);
   const input = bg.querySelector('#valueInput');
   input.focus();
   const commit = async () => {
@@ -413,8 +413,8 @@ function openValueModal(t, statusId, query) {
 function openEditStatus(status) {
   const v = statusView(status);
   if (status.preset_subject_id) {
-    const { bg, close } = openModal(`<h3>${esc(v.name_ja)}</h3>
-      <div class="actions"><button type="button" data-close>キャンセル</button><button type="button" class="dangerbtn" id="hideStatus">非表示にする</button></div>`);
+    const { bg, close } = openModal(`<h3>${esc(localName(v))}</h3>
+      <div class="actions"><button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="dangerbtn" id="hideStatus">${esc(tr('hide'))}</button></div>`);
     bg.querySelector('#hideStatus').onclick = async () => {
       if (!(await runQuery(sb.from('quest_user_statuses').update({ hidden: true }).eq('status_id', status.status_id)))) return;
       status.hidden = true;
@@ -424,13 +424,13 @@ function openEditStatus(status) {
     };
     return;
   }
-  const { bg, close } = openModal(`<h3>ステータスを編集</h3>
+  const { bg, close } = openModal(`<h3>${esc(tr('editStatus'))}</h3>
     <div class="modalform">
-      <input id="editStatusIcon" maxlength="8" placeholder="アイコン（絵文字）">
-      <input id="editStatusName" maxlength="40" placeholder="名前">
-      <input id="editStatusEn" maxlength="60" placeholder="英語名（任意）">
+      <input id="editStatusIcon" maxlength="8" placeholder="${esc(tr('phIcon'))}">
+      <input id="editStatusName" maxlength="40" placeholder="${esc(tr('phName'))}">
+      <input id="editStatusEn" maxlength="60" placeholder="${esc(tr('phNameEn'))}">
     </div>
-    <div class="actions"><button type="button" class="dangerbtn" id="deleteStatus">削除</button><button type="button" data-close>キャンセル</button><button type="button" class="savebtn" id="saveStatus">保存</button></div>`);
+    <div class="actions"><button type="button" class="dangerbtn" id="deleteStatus">${esc(tr('delete'))}</button><button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveStatus">${esc(tr('save'))}</button></div>`);
   bg.querySelector('#editStatusIcon').value = status.icon || '';
   bg.querySelector('#editStatusName').value = status.name_ja || '';
   bg.querySelector('#editStatusEn').value = status.name_en || '';
@@ -448,7 +448,7 @@ function openEditStatus(status) {
     renderSubject(status.status_id);
   };
   bg.querySelector('#deleteStatus').onclick = async () => {
-    if (!confirm(`「${status.name_ja}」を削除しますか？`)) return;
+    if (!confirm(tr('confirmDelete', { name: localName(status) }))) return;
     if (!(await runQuery(sb.from('quest_user_statuses').delete().eq('status_id', status.status_id)))) return;
     const fieldIds = new Set(userFields.filter(f => f.status_id === status.status_id).map(f => f.field_id));
     removeUserTopics(userTopics.filter(t => fieldIds.has(t.field_id)).map(t => t.topic_id));
@@ -468,9 +468,9 @@ function removeUserTopics(topicIds) {
 }
 
 function openFieldModal(status, field) {
-  const { bg, close } = openModal(`<h3>${field ? '分野を編集' : '分野を追加'}</h3>
-    <div class="modalform"><input id="fieldName" maxlength="60" placeholder="分野名"></div>
-    <div class="actions">${field ? '<button type="button" class="dangerbtn" id="deleteField">削除</button>' : ''}<button type="button" data-close>キャンセル</button><button type="button" class="savebtn" id="saveField">保存</button></div>`);
+  const { bg, close } = openModal(`<h3>${esc(tr(field ? 'editField' : 'addField'))}</h3>
+    <div class="modalform"><input id="fieldName" maxlength="60" placeholder="${esc(tr('fieldName'))}"></div>
+    <div class="actions">${field ? `<button type="button" class="dangerbtn" id="deleteField">${esc(tr('delete'))}</button>` : ''}<button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveField">${esc(tr('save'))}</button></div>`);
   const input = bg.querySelector('#fieldName');
   input.value = field?.name || '';
   input.focus();
@@ -496,7 +496,7 @@ function openFieldModal(status, field) {
   };
   if (field) {
     bg.querySelector('#deleteField').onclick = async () => {
-      if (!confirm(`「${field.name}」を削除しますか？`)) return;
+      if (!confirm(tr('confirmDelete', { name: field.name }))) return;
       if (!(await runQuery(sb.from('quest_user_fields').delete().eq('field_id', field.field_id)))) return;
       removeUserTopics(userTopics.filter(t => t.field_id === field.field_id).map(t => t.topic_id));
       userFields = userFields.filter(f => f.field_id !== field.field_id);
@@ -508,13 +508,13 @@ function openFieldModal(status, field) {
 }
 
 function openTopicModal(status, field, topic) {
-  const { bg, close } = openModal(`<h3>${topic ? 'トピックを編集' : 'トピックを追加'}</h3>
+  const { bg, close } = openModal(`<h3>${esc(tr(topic ? 'editTopic' : 'addTopic'))}</h3>
     <div class="modalform">
-      <input id="topicName" maxlength="120" placeholder="トピック名">
-      ${topic ? '' : '<select id="topicType" class="select"><option value="check">チェック</option><option value="number">入力</option></select>'}
-      <input id="topicUnit" maxlength="20" placeholder="単位（例: kg）">
+      <input id="topicName" maxlength="120" placeholder="${esc(tr('topicName'))}">
+      ${topic ? '' : `<select id="topicType" class="select"><option value="check">${esc(tr('typeCheck'))}</option><option value="number">${esc(tr('typeNumber'))}</option></select>`}
+      <input id="topicUnit" maxlength="20" placeholder="${esc(tr('unit'))}">
     </div>
-    <div class="actions">${topic ? '<button type="button" class="dangerbtn" id="deleteTopic">削除</button>' : ''}<button type="button" data-close>キャンセル</button><button type="button" class="savebtn" id="saveTopic">保存</button></div>`);
+    <div class="actions">${topic ? `<button type="button" class="dangerbtn" id="deleteTopic">${esc(tr('delete'))}</button>` : ''}<button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveTopic">${esc(tr('save'))}</button></div>`);
   const nameInput = bg.querySelector('#topicName');
   const unitInput = bg.querySelector('#topicUnit');
   const typeSelect = bg.querySelector('#topicType');
@@ -551,7 +551,7 @@ function openTopicModal(status, field, topic) {
   };
   if (topic) {
     bg.querySelector('#deleteTopic').onclick = async () => {
-      if (!confirm(`「${topic.name}」を削除しますか？`)) return;
+      if (!confirm(tr('confirmDelete', { name: topic.name }))) return;
       if (!(await runQuery(sb.from('quest_user_topics').delete().eq('topic_id', topic.topic_id)))) return;
       removeUserTopics([topic.topic_id]);
       close();
