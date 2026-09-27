@@ -64,7 +64,7 @@ function renderNewsSection(news) {
     return `<article class="newspaper-news-item" id="newspaper-news-${index}">
       <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
-        <div>
+        <div class="newspaper-headline-block">
           <h3 class="newspaper-headline${headlineIsJa ? ' newspaper-headline-jaonly' : ''}" lang="${headlineIsJa ? 'ja' : 'en'}">${esc(headlineMain)}</h3>
           ${headlineSub ? `<p class="newspaper-sub newspaper-headline-sub" lang="${sub}">${esc(headlineSub)}</p>` : ''}
         </div>
