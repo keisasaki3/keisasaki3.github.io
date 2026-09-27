@@ -92,6 +92,7 @@ status allowed:
 - field_id text PK
 - subject_id text FK
 - name text
+- name_en text nullable（英語名。migration 006）
 - sort_order integer
 - active boolean
 
@@ -100,6 +101,7 @@ status allowed:
 - topic_id text PK
 - field_id text FK
 - name text
+- name_en text nullable（英語名。migration 006）
 - source text nullable
 - importance smallint (1..3)
 - recommended_order integer
@@ -134,7 +136,7 @@ importance convention:
 
 ### quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values
 
-人生クエストの利用者ごとのステータス一覧・自作分野・自作トピック・入力型の記録。すべて本人の行のみ読み書き可。詳細は `apps/life-quest/docs/DATA_MODEL.md` と `supabase/migrations/005_life_quest_user_statuses.sql`。
+人生クエストの利用者ごとのステータス一覧・自作分野・自作トピック・入力型の記録。すべて本人の行のみ読み書き可。自作分野・自作トピックは任意の英語名 `name_en` を持つ（migration 006）。詳細は `apps/life-quest/docs/DATA_MODEL.md` と `supabase/migrations/005_life_quest_user_statuses.sql`。
 
 ## 5. Derived data
 

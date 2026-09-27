@@ -31,6 +31,7 @@
 - field_id: text PK
 - subject_id: text FK -> quest_subjects.subject_id
 - name: text
+- name_en: text nullable（英語名。migration 006、中身は seed 008）
 - sort_order: integer
 - active: boolean
 
@@ -41,6 +42,7 @@ MASTER単位。
 - topic_id: text PK
 - field_id: text FK -> quest_fields.field_id
 - name: text
+- name_en: text nullable（英語名。migration 006、中身は seed 008）
 - source: text nullable
 - importance: smallint
 - recommended_order: integer
@@ -96,6 +98,7 @@ importanceはNEXT計算用。★の重みには使用しない。
 - user_id: uuid
 - status_id: uuid（(status_id, user_id) で quest_user_statuses へ複合FK）
 - name: text
+- name_en: text nullable（1〜60文字）
 - sort_order: integer
 
 ### quest_user_topics
@@ -106,6 +109,7 @@ importanceはNEXT計算用。★の重みには使用しない。
 - user_id: uuid
 - field_id: uuid（(field_id, user_id) で quest_user_fields へ複合FK）
 - name: text
+- name_en: text nullable（1〜120文字）
 - input_type: text（`'check'` / `'number'`）
 - unit: text nullable
 - sort_order: integer
