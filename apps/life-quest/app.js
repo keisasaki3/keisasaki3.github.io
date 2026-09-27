@@ -51,6 +51,12 @@ let prerequisites = [];
 let mastery = new Set();
 let topicById = new Map();
 let fieldById = new Map();
+let userSettings = null;
+let userStatuses = [];
+let userFields = [];
+let userTopics = [];
+let topicValues = [];
+let statusFeatureAvailable = true;
 let currentSubjectId = null;
 let currentSearch = '';
 
@@ -72,7 +78,7 @@ function setActiveTab(name) {
   setView(name === 'subjects' ? 'home' : name);
 }
 
-function totalMastery() { return mastery.size; }
+function totalMastery() { return mastery.size + userTopics.filter(t => t.mastered_at).length; }
 function rank(lv) {
   if (lv >= 200) return '知の探究者';
   if (lv >= 100) return '博識の旅人';
@@ -216,14 +222,47 @@ async function loadApp() {
 
   topicById = new Map(topics.map(t => [t.topic_id, t]));
   fieldById = new Map(fields.map(f => [f.field_id, f]));
+  await loadUserStatusData(user);
 
   setShellVisible(true);
   setActiveTab('subjects');
   renderProfile();
-  renderHome();
+  if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
+  else renderHome();
 
   await maybeOfferLegacyMigration();
   if (!profile.race_id) await chooseRace(true);
+}
+
+function isMissingTableError(error) {
+  return error && (error.code === 'PGRST205' || error.code === '42P01');
+}
+
+async function loadUserStatusData(user) {
+  const settingsRes = await sb.from('quest_user_settings').select('*').eq('user_id', user.id).maybeSingle();
+  if (isMissingTableError(settingsRes.error)) {
+    // migration 005 未適用のDBでは、従来どおり全学問を表示する（追加・編集は出さない）
+    statusFeatureAvailable = false;
+    userSettings = null;
+    userStatuses = subjects.map(s => ({ status_id: `preset:${s.subject_id}`, preset_subject_id: s.subject_id, sort_order: s.sort_order, hidden: false }));
+    userFields = [];
+    userTopics = [];
+    topicValues = [];
+    return;
+  }
+  if (settingsRes.error) throw settingsRes.error;
+  const [statusRows, userFieldRows, userTopicRows, valueRows] = await Promise.all([
+    fetchAllRows(() => sb.from('quest_user_statuses').select('*').eq('user_id', user.id).order('sort_order').order('status_id')),
+    fetchAllRows(() => sb.from('quest_user_fields').select('*').eq('user_id', user.id).order('sort_order').order('field_id')),
+    fetchAllRows(() => sb.from('quest_user_topics').select('*').eq('user_id', user.id).order('sort_order').order('topic_id')),
+    fetchAllRows(() => sb.from('quest_topic_values').select('*').eq('user_id', user.id).order('recorded_at', { ascending: false }).order('value_id'))
+  ]);
+  statusFeatureAvailable = true;
+  userSettings = settingsRes.data;
+  userStatuses = statusRows;
+  userFields = userFieldRows;
+  userTopics = userTopicRows;
+  topicValues = valueRows;
 }
 
 function orderedFields(subjectId) {
@@ -404,7 +443,7 @@ function renderSettings() {
   const theme = currentTheme();
   m.innerHTML = `<div class="settings"><div class="pagehead"><h2>設定</h2></div><div class="list-window">
     <div class="settingrow"><div class="settingtitle">種族</div><button class="plainbtn small" id="raceSetting">${esc(race?.name_ja || '未設定')}</button></div>
-    <div class="settingrow"><label class="settingtitle" for="statusSetting">表示ステータス</label><select id="statusSetting" class="select">${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="statusSetting">状態</label><select id="statusSetting" class="select">${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="themeSetting">テーマ</label><select id="themeSetting" class="select">${Object.entries(THEMES).map(([v,l]) => `<option value="${v}" ${theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><button class="plainbtn small" id="signout">ログアウト</button></div>
     <div class="settingrow"><button class="dangerbtn" id="resetChecks">全チェックをリセット</button></div>
@@ -418,6 +457,11 @@ function renderSettings() {
     const { error } = await sb.from('quest_topic_mastery').delete().eq('user_id', session.user.id);
     if (error) { alert(error.message); return; }
     mastery.clear();
+    if (statusFeatureAvailable && userTopics.some(t => t.mastered_at)) {
+      const res = await sb.from('quest_user_topics').update({ mastered_at: null }).eq('user_id', session.user.id).not('mastered_at', 'is', null);
+      if (res.error) { alert(res.error.message); return; }
+      userTopics.forEach(t => { t.mastered_at = null; });
+    }
     renderProfile();
     renderSettings();
   };
