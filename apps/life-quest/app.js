@@ -473,14 +473,15 @@ function renderSettings() {
     <div class="settingrow"><label class="settingtitle" for="statusSetting">状態</label><select id="statusSetting" class="select">${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="themeSetting">テーマ</label><select id="themeSetting" class="select">${Object.entries(THEMES).map(([v,l]) => `<option value="${v}" ${theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><button class="plainbtn small" id="signout">ログアウト</button></div>
-    <div class="settingrow"><button class="dangerbtn" id="resetChecks">全チェックをリセット</button></div>
+    <div class="settingrow"><button class="dangerbtn" id="resetChecks">全ステータスをリセット</button></div>
+    ${statusFeatureAvailable ? '<div class="settingrow"><button class="dangerbtn" id="resetAll">全データをリセット</button></div>' : ''}
   </div></div>`;
   $('#raceSetting').onclick = () => chooseRace(false);
   $('#statusSetting').onchange = e => updateStatus(e.target.value);
   $('#themeSetting').onchange = e => applyTheme(e.target.value);
   $('#signout').onclick = () => sb.auth.signOut();
   $('#resetChecks').onclick = async () => {
-    if (!confirm('すべてのチェックをリセットしますか？')) return;
+    if (!confirmDataDelete('全ステータスのチェック（MASTER）をすべてリセットします。')) return;
     const { error } = await sb.from('quest_topic_mastery').delete().eq('user_id', session.user.id);
     if (error) { alert(error.message); return; }
     mastery.clear();
@@ -492,6 +493,31 @@ function renderSettings() {
     renderProfile();
     renderSettings();
   };
+  if (statusFeatureAvailable) $('#resetAll').onclick = resetAllData;
+}
+
+function confirmDataDelete(what) {
+  return confirm(`${what}\n本当にデータを消しますか？`)
+    && confirm('本当にデータを消しますか？\n消したデータは元に戻せません。');
+}
+
+// 人生クエストの自分のデータを全部消して、プリセット選択からやり直す。
+// display_name・race_id・状態は夏の果てと共通なので残す。
+async function resetAllData() {
+  if (!confirmDataDelete('チェック・入力の記録・ステータス（プリセットと自作）をすべて消して、プリセット選択からやり直します。')) return;
+  const uid = session.user.id;
+  for (const table of ['quest_topic_mastery', 'quest_topic_values', 'quest_user_statuses', 'quest_user_settings']) {
+    const { error } = await sb.from(table).delete().eq('user_id', uid);
+    if (error) { alert(error.message); return; }
+  }
+  mastery.clear();
+  userSettings = null;
+  userStatuses = [];
+  userFields = [];
+  userTopics = [];
+  topicValues = [];
+  renderProfile();
+  renderSetup();
 }
 
 async function maybeOfferLegacyMigration() {
@@ -558,7 +584,11 @@ async function handleSession(nextSession) {
 }
 
 $('#rename').onclick = editName;
-document.querySelector('[data-tab="subjects"]').onclick = () => { setActiveTab('subjects'); renderHome(); };
+document.querySelector('[data-tab="subjects"]').onclick = () => {
+  setActiveTab('subjects');
+  if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
+  else renderHome();
+};
 document.querySelector('[data-tab="settings"]').onclick = renderSettings;
 
 sb.auth.onAuthStateChange((event, nextSession) => {
