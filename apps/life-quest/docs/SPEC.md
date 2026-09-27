@@ -89,10 +89,8 @@ NEXTは推薦であり、必修順序ではない。
 
 要件:
 
-- 学問名の左に学問アイコンを表示する。subject_idとアイコン画像の対応は `subject-ui.js` の `SUBJECT_ICON_PATHS` 1か所で管理する。
-- 現行実装で画像を持つのは歴史学（`assets/subjects/history.png`）のみ。対応画像のない学問はアイコンなしで表示する。
-- 旧29学問スプライト `assets/subjects/subjects.webp` は撤去済み。
-- 旧絵文字アイコン（`quest_subjects.icon`）は現在表示しない。絵文字へ戻す案は `IDEAS.md` §7で検討中。
+- 学問名の左に学問アイコンを表示する。アイコンは `quest_subjects.icon` の絵文字を使う（2026-09-27 Keita決定。`IDEAS.md` §7）。
+- 旧画像アイコン（29学問スプライト `subjects.webp`、歴史学 `history.png`）は撤去済み。
 - 日本語名の隣に薄い英語名。
 - ★数は学問名から離しすぎず、同一情報グループとして表示。
 - パーセント進捗は表示しない。
