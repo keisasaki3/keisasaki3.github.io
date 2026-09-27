@@ -44,11 +44,11 @@ function visibleStatuses() {
 }
 
 function presetTopicView(t) {
-  return { id: t.topic_id, name: t.name, source: t.source, type: t.input_type || 'check', unit: t.unit || '', custom: false, importance: t.importance || 0, row: t };
+  return { id: t.topic_id, name: t.name, name_en: t.name_en || '', source: t.source, type: t.input_type || 'check', unit: t.unit || '', custom: false, importance: t.importance || 0, row: t };
 }
 
 function userTopicView(t) {
-  return { id: t.topic_id, name: t.name, source: null, type: t.input_type, unit: t.unit || '', custom: true, importance: 2, row: t };
+  return { id: t.topic_id, name: t.name, name_en: t.name_en || '', source: null, type: t.input_type, unit: t.unit || '', custom: true, importance: 2, row: t };
 }
 
 function statusFields(status) {
@@ -56,6 +56,7 @@ function statusFields(status) {
     ? orderedFields(status.preset_subject_id).map(f => ({
         id: f.field_id,
         name: f.name,
+        name_en: f.name_en || '',
         custom: false,
         row: f,
         topics: topics.filter(t => t.field_id === f.field_id)
@@ -69,6 +70,7 @@ function statusFields(status) {
     .map(f => ({
       id: f.field_id,
       name: f.name,
+      name_en: f.name_en || '',
       custom: true,
       row: f,
       topics: userTopics.filter(t => t.field_id === f.field_id)
@@ -154,7 +156,7 @@ renderHome = function renderStatusHome() {
     const meta = !checkCount
       ? ''
       : next
-        ? `<div class="meta"><span class="next-label">NEXT</span>${esc(next.name)}</div>`
+        ? `<div class="meta"><span class="next-label">NEXT</span>${esc(pairName(next.name, next.name_en).main)}</div>`
         : '<div class="meta complete">COMPLETE</div>';
     const d = document.createElement('button');
     d.type = 'button';
@@ -317,7 +319,8 @@ drawSubject = function drawStatusTopics(statusId, query) {
   let shown = 0;
 
   fs.forEach(f => {
-    const list = f.topics.filter(t => !q || `${t.name}${t.source || ''}${f.name}`.toLowerCase().includes(q));
+    const list = f.topics.filter(t => !q || `${t.name}\n${t.name_en}\n${t.source || ''}\n${f.name}\n${f.name_en}`.toLowerCase().includes(q));
+    const fname = pairName(f.name, f.name_en);
     const showEmptyCustom = editMode && f.custom && !q;
     if (!list.length && !showEmptyCustom) return;
 
@@ -328,7 +331,7 @@ drawSubject = function drawStatusTopics(statusId, query) {
     const isOpen = openAreaIds.has(f.id);
     const sec = document.createElement('section');
     sec.className = 'area';
-    sec.innerHTML = `<h3><button class="area-toggle" type="button" aria-expanded="${isOpen}"><span class="area-toggle-main"><span class="area-name">${esc(f.name)}</span>${progress}</span></button></h3>${editMode && f.custom ? `<div class="edittools"><button type="button" class="plainbtn small" data-act="addTopic">${esc(tr('addTopicBtn'))}</button><button type="button" class="plainbtn small" data-act="editField">${esc(tr('editField'))}</button></div>` : ''}<div class="area-topics"${isOpen ? '' : ' hidden'}></div>`;
+    sec.innerHTML = `<h3><button class="area-toggle" type="button" aria-expanded="${isOpen}"><span class="area-toggle-main"><span class="area-names"><span class="area-name">${esc(fname.main)}</span>${fname.sub ? `<span class="area-sub">${esc(fname.sub)}</span>` : ''}</span>${progress}</span></button></h3>${editMode && f.custom ? `<div class="edittools"><button type="button" class="plainbtn small" data-act="addTopic">${esc(tr('addTopicBtn'))}</button><button type="button" class="plainbtn small" data-act="editField">${esc(tr('editField'))}</button></div>` : ''}<div class="area-topics"${isOpen ? '' : ' hidden'}></div>`;
 
     const toggle = /** @type {HTMLButtonElement} */ (sec.querySelector('.area-toggle'));
     const topicBox = /** @type {HTMLDivElement} */ (sec.querySelector('.area-topics'));
@@ -347,15 +350,17 @@ drawSubject = function drawStatusTopics(statusId, query) {
     list.forEach(t => {
       const d = document.createElement('div');
       const source = t.source && t.source !== '仮トピック' ? `<div class="source">${esc(t.source)}</div>` : '';
+      const tname = pairName(t.name, t.name_en);
+      const names = `<div class="tname">${esc(tname.main)}</div>${tname.sub ? `<div class="tsub">${esc(tname.sub)}</div>` : ''}`;
       if (t.type === 'number') {
         const latest = topicValueRows(t)[0];
         d.className = 'topic numtopic';
-        d.innerHTML = `<div class="topicbody"><div class="tname">${esc(t.name)}</div>${source}</div><div class="numvalue">${latest ? esc(formatValue(latest.value, t.unit)) : '—'}</div>`;
+        d.innerHTML = `<div class="topicbody">${names}${source}</div><div class="numvalue">${latest ? esc(formatValue(latest.value, t.unit)) : '—'}</div>`;
         d.onclick = () => (editMode && t.custom) ? openTopicModal(status, userFields.find(x => x.field_id === t.row.field_id), t.row) : openValueModal(t, statusId, query);
       } else {
         const on = isMastered(t);
         d.className = 'topic' + (on ? ' on' : '');
-        d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody"><div class="tname">${esc(t.name)}</div>${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}`;
+        d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody">${names}${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}`;
         if (editMode && t.custom) d.onclick = () => openTopicModal(status, userFields.find(x => x.field_id === t.row.field_id), t.row);
         else if (t.custom) d.onclick = () => toggleUserTopic(t.row, statusId, query);
         else d.onclick = () => toggleTopic(t.id, on, statusId, query);
@@ -385,7 +390,7 @@ async function toggleUserTopic(row, statusId, query) {
 
 function openValueModal(t, statusId, query) {
   const history = topicValueRows(t).slice(0, 5);
-  const { bg, close } = openModal(`<h3>${esc(t.name)}</h3>
+  const { bg, close } = openModal(`<h3>${esc(pairName(t.name, t.name_en).main)}</h3>
     <div class="valueinput"><input id="valueInput" type="number" step="any" inputmode="decimal">${t.unit ? `<span>${esc(t.unit)}</span>` : ''}</div>
     ${history.length ? `<div class="valuehistory">${history.map(h => `<div><span>${esc(new Date(h.recorded_at).toLocaleDateString(tr('dateLocale')))}</span><span>${esc(formatValue(h.value, t.unit))}</span></div>`).join('')}</div>` : ''}
     <div class="actions"><button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveValue">${esc(tr('record'))}</button></div>`);
@@ -469,22 +474,27 @@ function removeUserTopics(topicIds) {
 
 function openFieldModal(status, field) {
   const { bg, close } = openModal(`<h3>${esc(tr(field ? 'editField' : 'addField'))}</h3>
-    <div class="modalform"><input id="fieldName" maxlength="60" placeholder="${esc(tr('fieldName'))}"></div>
+    <div class="modalform"><input id="fieldName" maxlength="60" placeholder="${esc(tr('fieldName'))}"><input id="fieldNameEn" maxlength="60" placeholder="${esc(tr('fieldNameEn'))}"></div>
     <div class="actions">${field ? `<button type="button" class="dangerbtn" id="deleteField">${esc(tr('delete'))}</button>` : ''}<button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveField">${esc(tr('save'))}</button></div>`);
   const input = bg.querySelector('#fieldName');
+  const inputEn = bg.querySelector('#fieldNameEn');
   input.value = field?.name || '';
+  inputEn.value = field?.name_en || '';
   input.focus();
   bg.querySelector('#saveField').onclick = async () => {
     const name = input.value.trim().slice(0, 60);
+    const name_en = inputEn.value.trim().slice(0, 60) || null;
     if (!name) return;
     if (field) {
-      if (!(await runQuery(sb.from('quest_user_fields').update({ name }).eq('field_id', field.field_id)))) return;
+      if (!(await runQuery(sb.from('quest_user_fields').update({ name, name_en }).eq('field_id', field.field_id)))) return;
       field.name = name;
+      field.name_en = name_en;
     } else {
       const row = await runQuery(sb.from('quest_user_fields').insert({
         user_id: session.user.id,
         status_id: status.status_id,
         name,
+        name_en,
         sort_order: nextSortOrder(userFields.filter(f => f.status_id === status.status_id))
       }).select().single());
       if (!row) return;
@@ -496,7 +506,7 @@ function openFieldModal(status, field) {
   };
   if (field) {
     bg.querySelector('#deleteField').onclick = async () => {
-      if (!confirm(tr('confirmDelete', { name: field.name }))) return;
+      if (!confirm(tr('confirmDelete', { name: pairName(field.name, field.name_en).main }))) return;
       if (!(await runQuery(sb.from('quest_user_fields').delete().eq('field_id', field.field_id)))) return;
       removeUserTopics(userTopics.filter(t => t.field_id === field.field_id).map(t => t.topic_id));
       userFields = userFields.filter(f => f.field_id !== field.field_id);
@@ -511,14 +521,17 @@ function openTopicModal(status, field, topic) {
   const { bg, close } = openModal(`<h3>${esc(tr(topic ? 'editTopic' : 'addTopic'))}</h3>
     <div class="modalform">
       <input id="topicName" maxlength="120" placeholder="${esc(tr('topicName'))}">
+      <input id="topicNameEn" maxlength="120" placeholder="${esc(tr('topicNameEn'))}">
       ${topic ? '' : `<select id="topicType" class="select"><option value="check">${esc(tr('typeCheck'))}</option><option value="number">${esc(tr('typeNumber'))}</option></select>`}
       <input id="topicUnit" maxlength="20" placeholder="${esc(tr('unit'))}">
     </div>
     <div class="actions">${topic ? `<button type="button" class="dangerbtn" id="deleteTopic">${esc(tr('delete'))}</button>` : ''}<button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveTopic">${esc(tr('save'))}</button></div>`);
   const nameInput = bg.querySelector('#topicName');
+  const nameEnInput = bg.querySelector('#topicNameEn');
   const unitInput = bg.querySelector('#topicUnit');
   const typeSelect = bg.querySelector('#topicType');
   nameInput.value = topic?.name || '';
+  nameEnInput.value = topic?.name_en || '';
   unitInput.value = topic?.unit || '';
   const syncUnit = () => { unitInput.hidden = (topic ? topic.input_type : typeSelect.value) !== 'number'; };
   if (typeSelect) typeSelect.onchange = syncUnit;
@@ -526,18 +539,21 @@ function openTopicModal(status, field, topic) {
   nameInput.focus();
   bg.querySelector('#saveTopic').onclick = async () => {
     const name = nameInput.value.trim().slice(0, 120);
+    const name_en = nameEnInput.value.trim().slice(0, 120) || null;
     if (!name) return;
     const type = topic ? topic.input_type : typeSelect.value;
     const unit = type === 'number' ? unitInput.value.trim().slice(0, 20) || null : null;
     if (topic) {
-      if (!(await runQuery(sb.from('quest_user_topics').update({ name, unit }).eq('topic_id', topic.topic_id)))) return;
+      if (!(await runQuery(sb.from('quest_user_topics').update({ name, name_en, unit }).eq('topic_id', topic.topic_id)))) return;
       topic.name = name;
+      topic.name_en = name_en;
       topic.unit = unit;
     } else {
       const row = await runQuery(sb.from('quest_user_topics').insert({
         user_id: session.user.id,
         field_id: field.field_id,
         name,
+        name_en,
         input_type: type,
         unit,
         sort_order: nextSortOrder(userTopics.filter(t => t.field_id === field.field_id))
@@ -551,7 +567,7 @@ function openTopicModal(status, field, topic) {
   };
   if (topic) {
     bg.querySelector('#deleteTopic').onclick = async () => {
-      if (!confirm(tr('confirmDelete', { name: topic.name }))) return;
+      if (!confirm(tr('confirmDelete', { name: pairName(topic.name, topic.name_en).main }))) return;
       if (!(await runQuery(sb.from('quest_user_topics').delete().eq('topic_id', topic.topic_id)))) return;
       removeUserTopics([topic.topic_id]);
       close();

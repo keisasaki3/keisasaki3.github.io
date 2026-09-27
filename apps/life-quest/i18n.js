@@ -1,5 +1,5 @@
 // 表示言語（日本語 / English）とNEWSPAPERの言語。端末ごとに localStorage に保存する（テーマと同じ）。
-// トピック名・分野名・出典など、DBに日本語しかない中身は切り替えない。
+// 分野名・トピック名は日英併記（pairName）。出典など日本語しかない中身は切り替えない。
 const LANG_KEY = 'lifeQuestLang';
 const LANGS = { ja: '日本語', en: 'English' };
 // NEWSPAPERのメイン表示の言語（画面の言語とは別。初期値は英語）
@@ -69,6 +69,8 @@ const I18N = {
     phIcon: 'アイコン（絵文字）',
     phName: '名前',
     phNameEn: '英語名（任意）',
+    fieldNameEn: '英語の分野名（任意）',
+    topicNameEn: '英語のトピック名（任意）',
     groupAll: '{group}（すべて）',
     'group.29学問': '29学問',
     choosePresets: 'プリセットを選ぶ',
@@ -167,6 +169,8 @@ const I18N = {
     phIcon: 'Icon (emoji)',
     phName: 'Name',
     phNameEn: 'English name (optional)',
+    fieldNameEn: 'English field name (optional)',
+    topicNameEn: 'English topic name (optional)',
     groupAll: '{group} (all)',
     'group.29学問': '29 Academic Subjects',
     choosePresets: 'Choose presets',
@@ -237,6 +241,13 @@ function localName(obj) {
 function localSubName(obj) {
   if (lang === 'en') return obj?.name_en ? (obj.name_ja || '') : '';
   return obj?.name_en || '';
+}
+
+// 分野・トピックの日英併記。言語設定の側を主（main）、もう一方を副（sub）にする。英語名が無ければ日本語だけ
+function pairName(ja, en) {
+  ja = ja || ''; en = (en || '').trim();
+  if (lang === 'en') return en ? { main: en, sub: ja } : { main: ja, sub: '' };
+  return { main: ja || en, sub: ja ? en : '' };
 }
 
 function groupLabel(key) {
