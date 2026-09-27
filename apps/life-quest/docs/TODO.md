@@ -55,15 +55,15 @@
 - [x] Renderで新ログイン版がlive
 - [x] Google OAuth実ログイン確認
 - [x] Google初回ログイン後の profile / race / Presence DB反映確認
-- [ ] 別ブラウザで同一MASTER状態を確認
-- [ ] 旧localStorageデータ移行を実ブラウザで確認
-- [ ] 種族・Presence・名前の別ブラウザ / 別アプリ同期確認
+- [x] 別ブラウザで同一MASTER状態を確認（2026-09-27 Keita実機確認）
+- [x] 旧localStorageデータ移行を実ブラウザで確認（2026-09-27 Keita実機確認）
+- [x] 種族・Presence・名前の別ブラウザ / 別アプリ同期確認（2026-09-27 Keita実機確認）
 
 ## デプロイ
 
 - [x] 新ログイン版をRenderへ公開しlive確認
-- [ ] 人生クエスト専用GitHub repo作成可能になったら `apps/life-quest/` を移動
-- [ ] Renderの接続先を専用repoへ変更
+- [ ] （保留 2026-09-27 Keita判断）人生クエスト専用GitHub repoへ `apps/life-quest/` を移動
+- [ ] （保留）Renderの接続先を専用repoへ変更
 - [x] 既存公開URLを継続
 
 ## 運用ルール
