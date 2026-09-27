@@ -37,6 +37,12 @@ Claudeへ開発を引き継ぐ場合は、このREADMEを入口にして以下�
 - Public URL: https://life-quest-keita.onrender.com
 - Current source: `apps/life-quest/index.html`
 
+## Related
+
+- 午後三時、夏の果て: `keisasaki3/summer-end-3pm`（本番 https://summer-end-3pm.onrender.com）。`profiles` / `races` / `player_presence` を共有する。
+- NEWSPAPERデータ: `keisasaki3/life-quest-newspaper-data`
+- 両アプリを包む「なつめポータル」構想: `/shared-world-core/docs/ROADMAP.md`
+
 ## Project rule
 
 仕様変更は、実装だけを変更して終わらせず、対応するGitドキュメントも同じ作業内で更新する。

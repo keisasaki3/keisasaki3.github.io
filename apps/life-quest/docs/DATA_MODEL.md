@@ -1,6 +1,6 @@
 # 人生クエスト — データモデル
 
-更新日: 2026-09-26
+更新日: 2026-09-27
 
 ## 原則
 
@@ -17,7 +17,7 @@
 - subject_id: text PK
 - name_ja: text
 - name_en: text
-- icon: text
+- icon: text（絵文字。現行UIでは未使用）
 - sort_order: integer
 - active: boolean
 
@@ -88,11 +88,13 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 前提を満たす未MASTERトピックが存在しない場合のfallbackは仕様側で定義する。
 
+現行実装（`app.js` の `nextTopic`）は、分野の `sort_order` → トピックの `recommended_order` 順に並べ、前提をすべて満たす最初の未MASTERトピックを選ぶ。importanceはまだ使っていない。該当がない場合は並び順で最初の未MASTERトピックを表示し、未MASTERが0件なら `COMPLETE` と表示する。
+
 ## 移行
 
-現行Web版はlocalStorage `lifeQuestMathV06Public` にMASTER状態を保持している。
+旧Web版はlocalStorage `lifeQuestMathV06Public` にMASTER状態を保持していた。
 
-Supabase移行時には、初回ログイン後にローカルMASTERを `quest_topic_mastery` へ一度だけ移行できる仕組みを検討する。移行完了フラグは将来追加してよい。
+ログイン版では初回ログイン後、旧データがあればローカルMASTERを `quest_topic_mastery` へupsertで一度だけ移行できる（`app.js` の `maybeOfferLegacyMigration`）。移行済みかどうかはブラウザのlocalStorageフラグで判定する。詳細は `SPEC.md` §12。
 
 ## 権限
 
