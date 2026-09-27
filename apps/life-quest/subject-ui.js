@@ -7,17 +7,25 @@ function subjectIconMarkup(subject) {
 renderHome = function renderHomeWithSubjectIcons() {
   currentSubjectId = null;
   openAreaIds.clear();
+  setView('home');
   const m = main();
   m.innerHTML = '';
-  subjects.forEach(s => {
+  const list = document.createElement('div');
+  list.className = 'list-window';
+  subjects.forEach((s, i) => {
     const count = subjectMasteryCount(s.subject_id);
     const next = nextTopic(s.subject_id);
-    const d = document.createElement('div');
+    const d = document.createElement('button');
+    d.type = 'button';
     d.className = 'subject';
-    d.innerHTML = `<div class="subjectline">${subjectIconMarkup(s)}<span class="name">${esc(s.name_ja)}</span><span class="en">${esc(s.name_en)}</span><span class="stars">★${count}</span></div><div class="meta">マスター済：${count}トピック　${next ? 'NEXT：'+esc(next.name) : 'COMPLETE'}</div>`;
+    const meta = next
+      ? `<div class="meta"><span class="next-label">NEXT</span>${esc(next.name)}</div>`
+      : '<div class="meta complete">COMPLETE</div>';
+    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(s)}<span class="name">${esc(s.name_ja)}</span><span class="en">${esc(s.name_en)}</span><span class="stars${count ? '' : ' zero'}">★${count}</span></span>${meta}</span>`;
     d.onclick = () => renderSubject(s.subject_id);
-    m.appendChild(d);
+    list.appendChild(d);
   });
+  m.appendChild(list);
 };
 
 renderSubject = function renderSubjectWithCollapsibleAreas(subjectId) {
@@ -27,8 +35,10 @@ renderSubject = function renderSubjectWithCollapsibleAreas(subjectId) {
   const list = orderedTopics(subjectId);
   const count = subjectMasteryCount(subjectId);
   const searchable = list.length >= 10;
+  setView('subject');
+  window.scrollTo(0, 0);
   const m = main();
-  m.innerHTML = `<button class="back">← 学問</button><div class="mathhead">${subjectIconMarkup(subject)}<h2>${esc(subject.name_ja)}</h2><span class="en">${esc(subject.name_en)}</span><span class="stars">★${count}</span></div>${searchable ? '<input class="search" placeholder="トピックを検索" id="q">' : ''}<div id="topics"></div>`;
+  m.innerHTML = `<button class="back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>学問</button><div class="mathhead window">${subjectIconMarkup(subject)}<div class="headname"><h2>${esc(subject.name_ja)}</h2><span class="en">${esc(subject.name_en)}</span></div><span class="stars${count ? '' : ' zero'}">★${count}</span></div>${searchable ? '<label class="searchbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input class="search" placeholder="トピックを検索" id="q"></label>' : ''}<div id="topics" class="list-window"></div>`;
   const back = /** @type {HTMLButtonElement} */ (m.querySelector('.back'));
   back.onclick = () => { setActiveTab('subjects'); renderHome(); };
   if (searchable) {

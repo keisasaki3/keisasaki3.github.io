@@ -145,10 +145,12 @@ function renderQuizSection(quiz) {
 function NewspaperScreen(issue) {
   return `<div class="newspaper-screen">
     <div class="newspaper-header"><h2>NEWSPAPER</h2><div>${esc(issue.date)}</div></div>
+    <div class="list-window">
     ${renderNewsSection(issue.news)}
     ${renderMarketsSection(issue.markets)}
     ${renderCultureSection(issue.daily_culture)}
     ${renderQuizSection(issue.daily_quiz)}
+    </div>
   </div>`;
 }
 
