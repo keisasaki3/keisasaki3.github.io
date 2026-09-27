@@ -35,5 +35,8 @@ python shared-world-core/scripts/generate_math_seed.py
 7. `003_other_subject_prototypes.sql`
 8. `../migrations/002`〜`005`（005 は29学問に `preset_group` を設定し、既存アカウントへステータスを登録する）
 9. `006_english_strength_presets.sql` — 英語・筋力の単独プリセット（005 の後）
+10. `007_curriculum_review.sql` — 29学問の見直し（大きすぎるトピックの分割、数学の大学一般教養、名前変更、言語学への絞り込み）
+
+注意: 本番の29学問（数学以外）のトピックは、このフォルダのseedではなく本番DBで直接整備されたもの（2026-09-27時点で約4,100件）。`003_other_subject_prototypes.sql` は古い仮トピックで、本番の中身とは一致しない。`007` は本番のトピックIDを前提にしている。
 
 前提関係とimportanceの精密化は後続migrationで追加する。現在の275トピックseedではimportanceを暫定値2としている。
