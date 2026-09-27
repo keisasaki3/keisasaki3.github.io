@@ -40,8 +40,8 @@ function renderNewsSection(news) {
     const detailId = `newspaper-news-detail-${index}`;
     const summary = article.summary || [];
     const headlineEn = (article.headline_en || '').trim();
-    const english = `<p class="newspaper-summary-en">${summary.map(sentence => esc(sentence.en)).join(' ')}</p>`;
-    const japanese = `<p class="newspaper-summary-ja">${summary.map(sentence => esc(sentence.ja)).join('')}</p>`;
+    const english = `<p class="newspaper-summary-en">${summary.map(sentence => esc(sentence.en)).join('<br>')}</p>`;
+    const japanese = `<p class="newspaper-summary-ja">${summary.map(sentence => esc(sentence.ja)).join('<br>')}</p>`;
     const allSources = article.sources || [];
     const mainSource = renderSourceLinks(allSources.slice(0, 1));
     const moreSources = renderSourceLinks(allSources.slice(1));
