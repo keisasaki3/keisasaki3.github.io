@@ -219,11 +219,15 @@ Web版にログイン・新規登録UIを実装する。
 - 新規登録: `supabase.auth.signUp`
 - ログイン: `supabase.auth.signInWithPassword`
 - セッションはSupabase JSでブラウザに永続化・自動更新する
+- 起動時の読み込みは、プロフィール・共通カリキュラム・自分のステータスを並列に取得する。1000件を超える表は1ページ目で件数を取り、残りを並列取得する
+- 同じユーザーの `SIGNED_IN`（起動時・タブ復帰時にSupabase JSが出す）では全体を読み直さない
 - Supabase Hosted Authのメール確認を利用する
 
 ### Google OAuth
 
 Googleログインは有効（`app.js` の `GOOGLE_AUTH_ENABLED = true`）。Google Cloud OAuth ClientとSupabase Google Providerは設定済み。
+
+ログイン画面のボタンは「Googleで続ける」に公式のGロゴ（4色）を添える。
 
 同じSupabase AuthユーザーへGoogle identityを紐づける。Supabase Authの同一確認済みメールによるidentity linkingを利用できる。
 

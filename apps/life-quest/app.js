@@ -110,6 +110,8 @@ function showError(message) {
   }
 }
 
+const GOOGLE_G_ICON = '<svg class="googleicon" width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+
 function renderAuth() {
   setShellVisible(false);
   main().innerHTML = `
@@ -120,7 +122,7 @@ function renderAuth() {
         <input id="password" type="password" autocomplete="current-password" placeholder="パスワード" required minlength="6">
         <button class="primarybtn" type="submit">ログイン</button>
         <button class="plainbtn" type="button" id="signup">新規登録</button>
-        ${GOOGLE_AUTH_ENABLED ? '<button class="plainbtn" type="button" id="googleLogin">Googleで続ける</button>' : ''}
+        ${GOOGLE_AUTH_ENABLED ? `<button class="plainbtn googlebtn" type="button" id="googleLogin">${GOOGLE_G_ICON}Googleで続ける</button>` : ''}
         <div id="authMessage" class="authmessage"></div>
       </form>
     </div>`;
@@ -177,35 +179,54 @@ async function ensureProfile(user) {
   return data;
 }
 
+// 1ページ目で総件数を取り、残りのページはまとめて並列に取得する
 async function fetchAllRows(queryFactory, pageSize = 1000) {
-  const rows = [];
-  for (let from = 0; ; from += pageSize) {
-    const { data, error } = await queryFactory().range(from, from + pageSize - 1);
-    if (error) throw error;
-    const page = data || [];
-    rows.push(...page);
-    if (page.length < pageSize) break;
+  const first = await queryFactory({ count: 'exact' }).range(0, pageSize - 1);
+  if (first.error) throw first.error;
+  const rows = [...(first.data || [])];
+  if (rows.length < pageSize) return rows;
+  const total = Number.isFinite(first.count) ? first.count : null;
+  if (total === null) {
+    for (let from = pageSize; ; from += pageSize) {
+      const { data, error } = await queryFactory().range(from, from + pageSize - 1);
+      if (error) throw error;
+      const page = data || [];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+    }
+    return rows;
   }
+  const pages = [];
+  for (let from = pageSize; from < total; from += pageSize) {
+    pages.push(queryFactory().range(from, from + pageSize - 1));
+  }
+  const results = await Promise.all(pages);
+  results.forEach(res => {
+    if (res.error) throw res.error;
+    rows.push(...(res.data || []));
+  });
   return rows;
 }
 
 async function loadApp() {
   showLoading();
   const user = session.user;
-  profile = await ensureProfile(user);
+  const statusDataPromise = fetchUserStatusData(user);
 
-  const [raceRes, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
+  const [profileRow, raceRes, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
+    ensureProfile(user),
     sb.from('races').select('*').eq('active', true).order('sort_order'),
     sb.from('quest_subjects').select('*').eq('active', true).order('sort_order'),
-    fetchAllRows(() => sb.from('quest_fields').select('*').eq('active', true).order('sort_order').order('field_id')),
-    fetchAllRows(() => sb.from('quest_topics').select('*').eq('active', true).order('recommended_order').order('topic_id')),
-    fetchAllRows(() => sb.from('quest_topic_prerequisites').select('topic_id,prerequisite_topic_id').order('topic_id').order('prerequisite_topic_id')),
-    fetchAllRows(() => sb.from('quest_topic_mastery').select('topic_id').eq('user_id', user.id).order('topic_id')),
+    fetchAllRows(opts => sb.from('quest_fields').select('*', opts).eq('active', true).order('sort_order').order('field_id')),
+    fetchAllRows(opts => sb.from('quest_topics').select('*', opts).eq('active', true).order('recommended_order').order('topic_id')),
+    fetchAllRows(opts => sb.from('quest_topic_prerequisites').select('topic_id,prerequisite_topic_id', opts).order('topic_id').order('prerequisite_topic_id')),
+    fetchAllRows(opts => sb.from('quest_topic_mastery').select('topic_id', opts).eq('user_id', user.id).order('topic_id')),
     sb.from('player_presence').select('*').eq('user_id', user.id).maybeSingle()
   ]);
   const failures = [raceRes, subjectRes, presenceRes].filter(r => r.error);
   if (failures.length) throw failures[0].error;
 
+  profile = profileRow;
   races = raceRes.data || [];
   subjects = subjectRes.data || [];
   fields = fieldRows;
@@ -222,7 +243,7 @@ async function loadApp() {
 
   topicById = new Map(topics.map(t => [t.topic_id, t]));
   fieldById = new Map(fields.map(f => [f.field_id, f]));
-  await loadUserStatusData(user);
+  applyUserStatusData(await statusDataPromise);
 
   setShellVisible(true);
   setActiveTab('subjects');
@@ -238,9 +259,22 @@ function isMissingTableError(error) {
   return error && (error.code === 'PGRST205' || error.code === '42P01');
 }
 
-async function loadUserStatusData(user) {
+// 共通カリキュラムの取得と並列に走らせるため、取得と反映を分けている
+async function fetchUserStatusData(user) {
   const settingsRes = await sb.from('quest_user_settings').select('*').eq('user_id', user.id).maybeSingle();
-  if (isMissingTableError(settingsRes.error)) {
+  if (isMissingTableError(settingsRes.error)) return { missing: true };
+  if (settingsRes.error) throw settingsRes.error;
+  const [statusRows, userFieldRows, userTopicRows, valueRows] = await Promise.all([
+    fetchAllRows(opts => sb.from('quest_user_statuses').select('*', opts).eq('user_id', user.id).order('sort_order').order('status_id')),
+    fetchAllRows(opts => sb.from('quest_user_fields').select('*', opts).eq('user_id', user.id).order('sort_order').order('field_id')),
+    fetchAllRows(opts => sb.from('quest_user_topics').select('*', opts).eq('user_id', user.id).order('sort_order').order('topic_id')),
+    fetchAllRows(opts => sb.from('quest_topic_values').select('*', opts).eq('user_id', user.id).order('recorded_at', { ascending: false }).order('value_id'))
+  ]);
+  return { missing: false, settings: settingsRes.data, statusRows, userFieldRows, userTopicRows, valueRows };
+}
+
+function applyUserStatusData(result) {
+  if (result.missing) {
     // migration 005 未適用のDBでは、従来どおり全学問を表示する（追加・編集は出さない）
     statusFeatureAvailable = false;
     userSettings = null;
@@ -250,19 +284,12 @@ async function loadUserStatusData(user) {
     topicValues = [];
     return;
   }
-  if (settingsRes.error) throw settingsRes.error;
-  const [statusRows, userFieldRows, userTopicRows, valueRows] = await Promise.all([
-    fetchAllRows(() => sb.from('quest_user_statuses').select('*').eq('user_id', user.id).order('sort_order').order('status_id')),
-    fetchAllRows(() => sb.from('quest_user_fields').select('*').eq('user_id', user.id).order('sort_order').order('field_id')),
-    fetchAllRows(() => sb.from('quest_user_topics').select('*').eq('user_id', user.id).order('sort_order').order('topic_id')),
-    fetchAllRows(() => sb.from('quest_topic_values').select('*').eq('user_id', user.id).order('recorded_at', { ascending: false }).order('value_id'))
-  ]);
   statusFeatureAvailable = true;
-  userSettings = settingsRes.data;
-  userStatuses = statusRows;
-  userFields = userFieldRows;
-  userTopics = userTopicRows;
-  topicValues = valueRows;
+  userSettings = result.settings;
+  userStatuses = result.statusRows;
+  userFields = result.userFieldRows;
+  userTopics = result.userTopicRows;
+  topicValues = result.valueRows;
 }
 
 function orderedFields(subjectId) {
@@ -509,8 +536,11 @@ async function maybeOfferLegacyMigration() {
   renderHome();
 }
 
+let activeUserId = null;
+
 async function handleSession(nextSession) {
   session = nextSession;
+  activeUserId = session?.user?.id || null;
   if (!session) {
     profile = null;
     mastery = new Set();
@@ -532,7 +562,13 @@ document.querySelector('[data-tab="subjects"]').onclick = () => { setActiveTab('
 document.querySelector('[data-tab="settings"]').onclick = renderSettings;
 
 sb.auth.onAuthStateChange((event, nextSession) => {
+  // supabase-jsは起動時とタブ復帰時にも同じユーザーでSIGNED_INを出すので、そのときは全体を読み直さない
+  if (event === 'SIGNED_IN' && nextSession && nextSession.user.id === activeUserId) {
+    session = nextSession;
+    return;
+  }
   if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+    activeUserId = nextSession?.user?.id || null;
     setTimeout(() => handleSession(nextSession), 0);
   }
 });
@@ -546,5 +582,6 @@ document.addEventListener('DOMContentLoaded', async function boot() {
     showError(error.message);
     return;
   }
+  if (data.session && data.session.user.id === activeUserId) return;
   await handleSession(data.session);
 });

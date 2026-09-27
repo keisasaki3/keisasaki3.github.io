@@ -96,6 +96,8 @@ body[data-view="home"] .top{display:flex}
 .plainbtn,.primarybtn,.dangerbtn,.select{min-height:44px;padding:0 14px;border:1px solid var(--win2-border);border-radius:4px;background:var(--panel);color:var(--text);font-size:13px;cursor:pointer}
 .plainbtn,.primarybtn{width:100%}
 .plainbtn.small{width:auto}
+.googlebtn{display:flex;align-items:center;justify-content:center;gap:10px}
+.googleicon{flex:none}
 .primarybtn{background:var(--acc);border-color:var(--acc);color:var(--bg);font-weight:700}
 .dangerbtn{background:none;border-color:var(--danger);color:var(--danger);font-weight:700}
 .select{min-width:150px;padding:0 10px}
