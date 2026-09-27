@@ -10,6 +10,7 @@
 - `docs/AUTH.md` — 認証設計
 - `docs/DATABASE.md` — DB設計
 - `supabase/migrations/001_initial_schema.sql` — 初期DBスキーマ/RLS
+- `supabase/migrations/005_life_quest_user_statuses.sql` — 人生クエストのステータス一覧・自作分野/トピック・入力型（2026-09-27）
 - `supabase/seed.sql` — 種族・29学問の初期マスタ
 
 ## Repository placement

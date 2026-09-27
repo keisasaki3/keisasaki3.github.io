@@ -83,6 +83,9 @@ status allowed:
 - icon text
 - sort_order integer
 - active boolean
+- preset_group text nullable（例: '29学問'）
+
+人生クエストでは「プリセット」として使う。
 
 ### quest_fields
 
@@ -101,6 +104,8 @@ status allowed:
 - importance smallint (1..3)
 - recommended_order integer
 - active boolean
+- input_type text（'check' / 'number'、既定 'check'）
+- unit text nullable
 
 importance convention:
 
@@ -127,17 +132,21 @@ importance convention:
 
 解除 = DELETE。
 
+### quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values
+
+人生クエストの利用者ごとのステータス一覧・自作分野・自作トピック・入力型の記録。すべて本人の行のみ読み書き可。詳細は `apps/life-quest/docs/DATA_MODEL.md` と `supabase/migrations/005_life_quest_user_statuses.sql`。
+
 ## 5. Derived data
 
 保存しない値:
 
-### Subject stars
+### Status stars
 
-対象subject配下のMASTER数。
+対象ステータス配下のMASTER済みチェック型トピック数。
 
 ### Player level
 
-そのuserの `quest_topic_mastery` 全件数。
+そのuserの `quest_topic_mastery` 全件数 + MASTER済み `quest_user_topics` 件数。
 
 ### MASTER! label
 
@@ -160,6 +169,7 @@ mastery rowの存在で判定。
 | quest_topics | public/anon可 | server/admin only |
 | quest_topic_prerequisites | public/anon可 | server/admin only |
 | quest_topic_mastery | own rows only | own rows only |
+| quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values | own rows only | own rows only |
 
 Summer End serverはservice roleでRLSをbypassし、必要な永続位置を扱う。
 
@@ -186,6 +196,6 @@ Summer End serverはservice roleでRLSをbypassし、必要な永続位置を扱
 - life_quest_resources
 - life_quest_learning_logs
 - activities
-- custom curriculum sets
+- custom curriculum sets（→ migration 005 の quest_user_* で実装）
 
 必要になった段階でmigrationを追加する。

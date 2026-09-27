@@ -32,5 +32,7 @@ python shared-world-core/scripts/generate_math_seed.py
 4. `002_math_02.sql`
 5. `002_math_03.sql`
 6. `002_math_04.sql`
+7. `003_other_subject_prototypes.sql`
+8. `../migrations/002`〜`005`（005 は29学問に `preset_group` を設定し、既存アカウントへステータスを登録する）
 
 前提関係とimportanceの精密化は後続migrationで追加する。現在の275トピックseedではimportanceを暫定値2としている。
