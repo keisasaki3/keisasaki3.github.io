@@ -1,7 +1,17 @@
 const openAreaIds = new Set();
 let editMode = false;
 
+// プリセットのドット絵アイコン（icons/<subject_id>.svg）。無いプリセットと自作ステータスは絵文字。
+const PIXEL_ICON_IDS = new Set(['math', 'physics', 'astronomy', 'earth-science', 'chemistry', 'biology', 'computer-science', 'architecture', 'design', 'agriculture', 'medicine', 'dentistry', 'pharmacy', 'political-science', 'military-defense', 'law', 'economics', 'business-administration', 'sociology', 'education', 'philosophy', 'religious-studies', 'psychology', 'linguistics-languages', 'anthropology-archaeology', 'history', 'geography', 'literature', 'art', 'english', 'strength']);
+
+function presetIconMarkup(preset) {
+  return PIXEL_ICON_IDS.has(preset.subject_id)
+    ? `<img class="pixicon" src="./icons/${esc(preset.subject_id)}.svg" alt="" width="16" height="16">`
+    : esc(preset.icon);
+}
+
 function subjectIconMarkup(subject) {
+  if (subject.preset && !subject.status?.icon && PIXEL_ICON_IDS.has(subject.preset.subject_id)) return `<span class="icon">${presetIconMarkup(subject.preset)}</span>`;
   return `<span class="icon">${esc(subject.icon)}</span>`;
 }
 
@@ -201,7 +211,7 @@ function openAddStatus() {
   const groupsHtml = presetGroups(available).map(g => `
     <div class="presetgroup">
       ${g.key ? `<div class="presetgrouphead"><span>${esc(g.key)}</span><button type="button" class="plainbtn small" data-group="${esc(g.key)}">まとめて追加</button></div>` : ''}
-      <div class="presetchoices">${g.items.map(p => `<button type="button" class="racebtn" data-preset="${esc(p.subject_id)}">${esc(p.icon)} ${esc(p.name_ja)}</button>`).join('')}</div>
+      <div class="presetchoices">${g.items.map(p => `<button type="button" class="racebtn" data-preset="${esc(p.subject_id)}">${presetIconMarkup(p)} ${esc(p.name_ja)}</button>`).join('')}</div>
     </div>`).join('');
   const { bg, close } = openModal(`<h3>ステータスを追加</h3>
     <div class="modallabel">プリセット</div>
@@ -245,7 +255,7 @@ function renderSetup() {
   const groupsHtml = presetGroups(subjects).map((g, gi) => `
     <div class="presetgroup">
       ${g.key ? `<label class="setupcheck setupgroup"><input type="checkbox" data-groupcheck="${gi}"><span>${esc(g.key)}（すべて）</span></label>` : ''}
-      <div class="setuplist">${g.items.map(p => `<label class="setupcheck"><input type="checkbox" data-group-index="${gi}" value="${esc(p.subject_id)}"><span>${esc(p.icon)} ${esc(p.name_ja)}</span></label>`).join('')}</div>
+      <div class="setuplist">${g.items.map(p => `<label class="setupcheck"><input type="checkbox" data-group-index="${gi}" value="${esc(p.subject_id)}"><span>${presetIconMarkup(p)} ${esc(p.name_ja)}</span></label>`).join('')}</div>
     </div>`).join('');
   m.innerHTML = `<div class="settings setup"><div class="pagehead"><h2>プリセットを選ぶ</h2></div><div class="list-window setupwin">${groupsHtml}</div><button type="button" class="primarybtn" id="startQuest">はじめる</button></div>`;
   m.querySelectorAll('[data-groupcheck]').forEach(box => box.onchange = () => {
