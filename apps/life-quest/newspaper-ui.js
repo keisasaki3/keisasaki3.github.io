@@ -43,6 +43,8 @@ function renderNewsSection(news) {
     const english = summary.map(sentence => `<p class="newspaper-summary-en">${esc(sentence.en)}</p>`).join('');
     const japanese = summary.map(sentence => `<p class="newspaper-summary-ja">${esc(sentence.ja)}</p>`).join('');
     const sources = renderSourceLinks(article.sources || []);
+    const commentEn = (article.comment?.en || '').trim();
+    const commentJa = (article.comment?.ja || '').trim();
     return `<article class="newspaper-news-item">
       <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
@@ -50,7 +52,8 @@ function renderNewsSection(news) {
           ? `<h3 class="newspaper-headline" lang="en">${esc(headlineEn)}</h3>`
           : `<h3 class="newspaper-headline newspaper-headline-jaonly">${esc(article.headline)}</h3>`}
         <div class="newspaper-summaries" lang="en">${english}</div>
-        <div class="newspaper-ja" id="${jaId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}</div>
+        ${commentEn ? `<div class="newspaper-comment" lang="en"><div class="newspaper-comment-label">COMMENT</div><p>${esc(commentEn)}</p></div>` : ''}
+        <div class="newspaper-ja" id="${jaId}" hidden>${headlineEn ? `<p class="newspaper-headline-ja">${esc(article.headline)}</p>` : ''}${japanese}${commentJa ? `<div class="newspaper-comment-label">COMMENT</div><p class="newspaper-summary-ja">${esc(commentJa)}</p>` : ''}</div>
         <div class="newspaper-news-detail" id="${detailId}" hidden>
           <div class="newspaper-detail-label">BACKGROUND</div>
           <div class="newspaper-detail-text">${esc(article.background || '')}</div>

@@ -302,6 +302,7 @@ NEWSをNEWSPAPERの主役とする。
 - 見出し: `headline_en` があれば英語見出しを表示する。`headline_en` がなければ日本語 `headline` を見出しにする。
 - 一覧では英語summaryを表示する。日本語（`headline_en` がある日は日本語見出しも含む）は記事ごとの「日本語」ボタンで開閉し、初期状態は閉じる。
 - 日本語summaryと英語summaryはセンテンス単位で対応させる。
+- 任意項目 `comment`（`{en, ja}`）があれば、英語summaryの下にAIのコメントとして `COMMENT` 欄を表示する（日本語は「日本語」の中）。無い日は出さない。
 - BACKGROUND / WHY IT MATTERS / SOURCES は記事ごとの「詳細を見る」で開閉する。
 - SOURCESは外部リンクとして開けるようにする。
 
