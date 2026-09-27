@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400;7..72,600;7..72,700&family=Noto+Sans+JP:wght@400;500;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=Noto+Sans:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap");
 
 /* NEWSPAPERは白地に黒文字の紙面（テーマに関係なく同じ配色、枠だけテーマ色） */
 .newspaper-paper{--ink:#1c1a22;--ink2:#3a3644;--ink3:#5f5a6b;--paper:#fcfbf7;--paper-bg:#e8e3d6;--rule:#d4cdbd;--mark:#a8286a;--region:#e0c8ff;margin-top:12px;background:var(--paper-bg);color:var(--ink);border:3px double var(--acc);border-radius:6px;overflow:hidden;font-family:"Noto Sans JP","Hiragino Kaku Gothic ProN",sans-serif}
@@ -17,11 +17,11 @@
 .newspaper-region{display:flex;align-items:center;gap:6px}
 .newspaper-region-icon{font-size:16px;letter-spacing:0}
 .newspaper-news-body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:12px}
-.newspaper-headline{margin:0;font-family:"Literata",Georgia,serif;font-size:22px;font-weight:700;line-height:1.35;color:var(--ink)}
+.newspaper-headline{margin:0;font-family:"Source Serif 4",Georgia,serif;font-size:22px;font-weight:700;line-height:1.35;color:var(--ink)}
 .newspaper-headline-jaonly{font-family:inherit;font-size:20px;line-height:1.5}
 .newspaper-headline-ja{margin:0 0 4px;font-size:15px;font-weight:700;line-height:1.6;color:var(--ink)}
 .newspaper-summaries{display:flex;flex-direction:column;gap:10px}
-.newspaper-summary-en{margin:0;font-family:"Literata",Georgia,serif;font-size:17px;line-height:1.7;color:var(--ink)}
+.newspaper-summary-en{margin:0;font-family:"Noto Sans",Helvetica,Arial,sans-serif;font-size:17px;line-height:1.6;color:var(--ink)}
 .newspaper-ja{padding:12px 14px;background:#efeadf;border-radius:6px;display:flex;flex-direction:column;gap:6px}
 .newspaper-summary-ja{margin:0;font-size:14px;line-height:1.8;color:var(--ink2)}
 .newspaper-news-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
