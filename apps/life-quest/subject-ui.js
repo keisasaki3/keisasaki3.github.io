@@ -131,20 +131,29 @@ renderHome = function renderStatusHome() {
   currentSubjectId = null;
   openAreaIds.clear();
   editMode = false;
+  setView('home');
   const m = main();
   m.innerHTML = '';
-  visibleStatuses().forEach(status => {
+  const list = document.createElement('div');
+  list.className = 'list-window';
+  visibleStatuses().forEach((status, i) => {
     const v = statusView(status);
     const checkCount = statusCheckTopics(status).length;
     const count = statusMasteryCount(status);
     const next = nextStatusTopic(status);
-    const nextText = checkCount ? (next ? 'NEXT：' + esc(next.name) : 'COMPLETE') : '';
-    const d = document.createElement('div');
+    const meta = !checkCount
+      ? ''
+      : next
+        ? `<div class="meta"><span class="next-label">NEXT</span>${esc(next.name)}</div>`
+        : '<div class="meta complete">COMPLETE</div>';
+    const d = document.createElement('button');
+    d.type = 'button';
     d.className = 'subject';
-    d.innerHTML = `<div class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(v.name_ja)}</span><span class="en">${esc(v.name_en)}</span><span class="stars">★${count}</span></div><div class="meta">マスター済：${count}トピック　${nextText}</div>`;
+    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(v.name_ja)}</span><span class="en">${esc(v.name_en)}</span><span class="stars${count ? '' : ' zero'}">★${count}</span></span>${meta}</span>`;
     d.onclick = () => renderSubject(status.status_id);
-    m.appendChild(d);
+    list.appendChild(d);
   });
+  if (list.children.length) m.appendChild(list);
   if (statusFeatureAvailable) {
     const add = document.createElement('button');
     add.className = 'plainbtn addstatus';
@@ -238,7 +247,7 @@ function renderSetup() {
       ${g.key ? `<label class="setupcheck setupgroup"><input type="checkbox" data-groupcheck="${gi}"><span>${esc(g.key)}（すべて）</span></label>` : ''}
       <div class="setuplist">${g.items.map(p => `<label class="setupcheck"><input type="checkbox" data-group-index="${gi}" value="${esc(p.subject_id)}"><span>${esc(p.icon)} ${esc(p.name_ja)}</span></label>`).join('')}</div>
     </div>`).join('');
-  m.innerHTML = `<div class="settings setup"><h2>プリセットを選ぶ</h2>${groupsHtml}<button type="button" class="primarybtn" id="startQuest">はじめる</button></div>`;
+  m.innerHTML = `<div class="settings setup"><div class="pagehead"><h2>プリセットを選ぶ</h2></div><div class="list-window setupwin">${groupsHtml}</div><button type="button" class="primarybtn" id="startQuest">はじめる</button></div>`;
   m.querySelectorAll('[data-groupcheck]').forEach(box => box.onchange = () => {
     m.querySelectorAll(`[data-group-index="${box.dataset.groupcheck}"]`).forEach(c => { c.checked = box.checked; });
   });
@@ -264,8 +273,10 @@ renderSubject = function renderStatusScreen(statusId) {
   const all = statusFields(status).flatMap(f => f.topics);
   const count = statusMasteryCount(status);
   const searchable = all.length >= 10;
+  setView('subject');
+  window.scrollTo(0, 0);
   const m = main();
-  m.innerHTML = `<button class="back">← ステータス</button><div class="mathhead">${subjectIconMarkup(v)}<h2>${esc(v.name_ja)}</h2><span class="en">${esc(v.name_en)}</span><span class="stars">★${count}</span>${statusFeatureAvailable ? `<button type="button" class="plainbtn small editmode" id="editMode">${editMode ? '完了' : '編集'}</button>` : ''}</div>${editMode ? '<div class="edittools"><button type="button" class="plainbtn small" id="editStatus">ステータスを編集</button><button type="button" class="plainbtn small" id="addField">＋ 分野を追加</button></div>' : ''}${searchable ? '<input class="search" placeholder="トピックを検索" id="q">' : ''}<div id="topics"></div>`;
+  m.innerHTML = `<button class="back" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"></path></svg>ステータス</button><div class="mathhead window">${subjectIconMarkup(v)}<div class="headname"><h2>${esc(v.name_ja)}</h2><span class="en">${esc(v.name_en)}</span></div><span class="stars${count ? '' : ' zero'}">★${count}</span>${statusFeatureAvailable ? `<button type="button" class="plainbtn small editmode" id="editMode">${editMode ? '完了' : '編集'}</button>` : ''}</div>${editMode ? '<div class="edittools"><button type="button" class="plainbtn small" id="editStatus">ステータスを編集</button><button type="button" class="plainbtn small" id="addField">＋ 分野を追加</button></div>' : ''}${searchable ? '<label class="searchbox"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg><input class="search" placeholder="トピックを検索" id="q"></label>' : ''}<div id="topics" class="list-window"></div>`;
   const back = /** @type {HTMLButtonElement} */ (m.querySelector('.back'));
   back.onclick = () => { setActiveTab('subjects'); renderHome(); };
   if (statusFeatureAvailable) {

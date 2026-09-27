@@ -15,6 +15,31 @@ const STATUS_LABELS = {
   afk: 'AFK'
 };
 
+const THEME_KEY = 'lifeQuestTheme';
+const DEFAULT_THEME = 'dracula';
+const THEMES = {
+  'tokyo-night': 'トーキョーナイト',
+  dracula: 'ドラキュラ',
+  nord: 'ノルド',
+  synthwave: 'シンセウェイブ',
+  amber: 'アンバー端末',
+  phosphor: 'グリーン端末'
+};
+
+function currentTheme() {
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch {}
+  return saved && THEMES[saved] ? saved : DEFAULT_THEME;
+}
+
+function applyTheme(theme) {
+  const value = THEMES[theme] ? theme : DEFAULT_THEME;
+  document.documentElement.dataset.theme = value;
+  try { localStorage.setItem(THEME_KEY, value); } catch {}
+}
+
+applyTheme(currentTheme());
+
 let session = null;
 let profile = null;
 let presence = null;
@@ -39,14 +64,18 @@ const $ = (s) => document.querySelector(s);
 const main = () => $('#main');
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
+function setView(view) {
+  document.body.dataset.view = view;
+}
+
 function setShellVisible(visible) {
-  $('.top').style.display = visible ? '' : 'none';
-  $('.tabs').style.display = visible ? '' : 'none';
+  if (!visible) setView('auth');
   main().classList.toggle('authmain', !visible);
 }
 
 function setActiveTab(name) {
   document.querySelectorAll('.tab').forEach(el => el.classList.toggle('active', el.dataset.tab === name));
+  setView(name === 'subjects' ? 'home' : name);
 }
 
 function totalMastery() { return mastery.size + userTopics.filter(t => t.mastered_at).length; }
@@ -60,8 +89,10 @@ function rank(lv) {
 
 function renderProfile() {
   const lv = totalMastery();
-  $('#profile').textContent = `${profile?.display_name || '名無し'} Lv.${lv}`;
+  $('#profileName').textContent = profile?.display_name || '名無し';
+  $('#profileLv').textContent = String(lv);
   $('#rank').textContent = rank(lv);
+  $('#presenceLabel').textContent = STATUS_LABELS[presence?.status] || '';
 }
 
 function showLoading() {
@@ -402,20 +433,24 @@ async function updateStatus(status) {
   });
   if (error) { alert(error.message); return; }
   presence.status = status;
+  renderProfile();
 }
 
 function renderSettings() {
   setActiveTab('settings');
   const race = races.find(r => r.race_id === profile.race_id);
   const m = main();
-  m.innerHTML = `<div class="settings"><h2>設定</h2>
+  const theme = currentTheme();
+  m.innerHTML = `<div class="settings"><div class="pagehead"><h2>設定</h2></div><div class="list-window">
     <div class="settingrow"><div class="settingtitle">種族</div><button class="plainbtn small" id="raceSetting">${esc(race?.name_ja || '未設定')}</button></div>
-    <div class="settingrow"><div class="settingtitle">状態</div><select id="statusSetting" class="select">${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="statusSetting">状態</label><select id="statusSetting" class="select">${Object.entries(STATUS_LABELS).map(([v,l]) => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="themeSetting">テーマ</label><select id="themeSetting" class="select">${Object.entries(THEMES).map(([v,l]) => `<option value="${v}" ${theme === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><button class="plainbtn small" id="signout">ログアウト</button></div>
     <div class="settingrow"><button class="dangerbtn" id="resetChecks">全チェックをリセット</button></div>
-  </div>`;
+  </div></div>`;
   $('#raceSetting').onclick = () => chooseRace(false);
   $('#statusSetting').onchange = e => updateStatus(e.target.value);
+  $('#themeSetting').onchange = e => applyTheme(e.target.value);
   $('#signout').onclick = () => sb.auth.signOut();
   $('#resetChecks').onclick = async () => {
     if (!confirm('すべてのチェックをリセットしますか？')) return;
@@ -502,7 +537,8 @@ sb.auth.onAuthStateChange((event, nextSession) => {
   }
 });
 
-(async function boot() {
+// subject-ui.js / newspaper-ui.js が描画関数を差し替えてから起動する
+document.addEventListener('DOMContentLoaded', async function boot() {
   showLoading();
   const { data, error } = await sb.auth.getSession();
   if (error) {
@@ -511,4 +547,4 @@ sb.auth.onAuthStateChange((event, nextSession) => {
     return;
   }
   await handleSession(data.session);
-})();
+});

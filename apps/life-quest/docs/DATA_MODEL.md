@@ -166,6 +166,8 @@ topic_id / user_topic_id はどちらか一方だけを持つ。表示は最新�
 
 ログイン版では初回ログイン後、旧データがあればローカルMASTERを `quest_topic_mastery` へupsertで一度だけ移行できる（`app.js` の `maybeOfferLegacyMigration`）。移行済みかどうかはブラウザのlocalStorageフラグで判定する。詳細は `SPEC.md` §12。
 
+テーマ選択（`SPEC.md` §16）は端末ごとのlocalStorage `lifeQuestTheme` に保存し、DBには持たない。
+
 ## 権限
 
 - プリセット（学問 / 分野 / トピック / 前提）: クライアントはread-only
