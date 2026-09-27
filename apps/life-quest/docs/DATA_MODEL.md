@@ -17,7 +17,7 @@
 - subject_id: text PK
 - name_ja: text
 - name_en: text
-- icon: text（絵文字。現行UIでは未使用）
+- icon: text（絵文字。学問アイコンとして表示）
 - sort_order: integer
 - active: boolean
 
@@ -88,7 +88,7 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 前提を満たす未MASTERトピックが存在しない場合のfallbackは仕様側で定義する。
 
-現行実装（`app.js` の `nextTopic`）は、分野の `sort_order` → トピックの `recommended_order` 順に並べ、前提をすべて満たす最初の未MASTERトピックを選ぶ。importanceはまだ使っていない。該当がない場合は並び順で最初の未MASTERトピックを表示し、未MASTERが0件なら `COMPLETE` と表示する。
+現行実装（`app.js` の `nextTopic`）は、分野の `sort_order` → トピックの `recommended_order` 順に並べ、前提をすべて満たす未MASTERトピックのうちimportanceが最も高いものを選ぶ（同値なら並び順で先のもの）。該当がない場合は並び順で最初の未MASTERトピックを表示し、未MASTERが0件なら `COMPLETE` と表示する。
 
 ## 移行
 

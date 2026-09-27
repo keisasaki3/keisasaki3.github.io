@@ -222,7 +222,9 @@ function nextTopic(subjectId) {
     if (!prereqMap.has(p.topic_id)) prereqMap.set(p.topic_id, []);
     prereqMap.get(p.topic_id).push(p.prerequisite_topic_id);
   });
-  return unmastered.find(t => (prereqMap.get(t.topic_id) || []).every(id => mastery.has(id))) || unmastered[0];
+  const ready = unmastered.filter(t => (prereqMap.get(t.topic_id) || []).every(id => mastery.has(id)));
+  if (!ready.length) return unmastered[0];
+  return ready.reduce((best, t) => (t.importance || 0) > (best.importance || 0) ? t : best);
 }
 
 function renderHome() {

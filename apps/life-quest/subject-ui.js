@@ -1,13 +1,7 @@
-const SUBJECT_ICON_PATHS = Object.freeze({
-  history: './assets/subjects/history.png'
-});
-
 const openAreaIds = new Set();
 
-function subjectIconMarkup(subjectId) {
-  const src = SUBJECT_ICON_PATHS[subjectId];
-  if (!src) return '';
-  return `<img class="subject-icon" src="${esc(src)}" alt="" aria-hidden="true">`;
+function subjectIconMarkup(subject) {
+  return `<span class="icon">${esc(subject.icon)}</span>`;
 }
 
 renderHome = function renderHomeWithSubjectIcons() {
@@ -20,7 +14,7 @@ renderHome = function renderHomeWithSubjectIcons() {
     const next = nextTopic(s.subject_id);
     const d = document.createElement('div');
     d.className = 'subject';
-    d.innerHTML = `<div class="subjectline">${subjectIconMarkup(s.subject_id)}<span class="name">${esc(s.name_ja)}</span><span class="en">${esc(s.name_en)}</span><span class="stars">★${count}</span></div><div class="meta">マスター済：${count}トピック　${next ? 'NEXT：'+esc(next.name) : 'COMPLETE'}</div>`;
+    d.innerHTML = `<div class="subjectline">${subjectIconMarkup(s)}<span class="name">${esc(s.name_ja)}</span><span class="en">${esc(s.name_en)}</span><span class="stars">★${count}</span></div><div class="meta">マスター済：${count}トピック　${next ? 'NEXT：'+esc(next.name) : 'COMPLETE'}</div>`;
     d.onclick = () => renderSubject(s.subject_id);
     m.appendChild(d);
   });
@@ -34,7 +28,7 @@ renderSubject = function renderSubjectWithCollapsibleAreas(subjectId) {
   const count = subjectMasteryCount(subjectId);
   const searchable = list.length >= 10;
   const m = main();
-  m.innerHTML = `<button class="back">← 学問</button><div class="mathhead">${subjectIconMarkup(subject.subject_id)}<h2>${esc(subject.name_ja)}</h2><span class="en">${esc(subject.name_en)}</span><span class="stars">★${count}</span></div>${searchable ? '<input class="search" placeholder="トピックを検索" id="q">' : ''}<div id="topics"></div>`;
+  m.innerHTML = `<button class="back">← 学問</button><div class="mathhead">${subjectIconMarkup(subject)}<h2>${esc(subject.name_ja)}</h2><span class="en">${esc(subject.name_en)}</span><span class="stars">★${count}</span></div>${searchable ? '<input class="search" placeholder="トピックを検索" id="q">' : ''}<div id="topics"></div>`;
   const back = /** @type {HTMLButtonElement} */ (m.querySelector('.back'));
   back.onclick = () => { setActiveTab('subjects'); renderHome(); };
   if (searchable) {
