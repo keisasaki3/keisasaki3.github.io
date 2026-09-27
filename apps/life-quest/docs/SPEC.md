@@ -270,6 +270,8 @@ Supabaseスキーマ変更はGit管理migrationと実DBを同期して更新す�
 
 旧「デイリー」機構は廃止し、人生クエスト内の正式タブを `NEWSPAPER` とする。独立した製品版デイリーWebページは持たない。
 
+NEWSPAPERの紙面はテーマに関係なく白地に黒文字とし（枠だけテーマ色）、本文は英語 `Literata`、日本語 `Noto Sans JP` を使う（§16 の等幅フォントは使わない）。
+
 表示順は以下で固定する。
 
 1. NEWS
@@ -294,9 +296,12 @@ Supabaseスキーマ変更はGit管理migrationと実DBを同期して更新す�
 
 NEWSをNEWSPAPERの主役とする。
 
-- 一覧には region / headline / 日本語summary / 英語summary を表示する。
+- 英語をメインに読ませる（2026-09-27 Keita決定）。
+- 1記事1カード。カード上部の帯に通し番号と region を出し、記事の切れ目を明確にする。
+- 見出し: `headline_en` があれば英語見出しを大きく、その下に日本語 `headline` を小さく表示する。`headline_en` がなければ日本語 `headline` を見出しにする。
+- 一覧では英語summaryを表示する。日本語summaryは記事ごとの「日本語」ボタンで開閉する。
 - 日本語summaryと英語summaryはセンテンス単位で対応させる。
-- BACKGROUND / WHY IT MATTERS / SOURCES は記事ごとの開閉領域に入れる。
+- BACKGROUND / WHY IT MATTERS / SOURCES は記事ごとの「詳細を見る」で開閉する。
 - SOURCESは外部リンクとして開けるようにする。
 
 ### MARKETS

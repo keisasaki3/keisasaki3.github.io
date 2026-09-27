@@ -80,6 +80,7 @@
 ## NEWSPAPER
 
 - [ ] 日刊NEWSPAPERの生成をClaudeへ移行（現状: `life-quest-newspaper-data` リポジトリ `newspaper/YYYY-MM-DD.json`・`registry/*.json`・`latest.json` をGitHub上で毎日手動コミット。生成用ワークフローはリポジトリ内になし）
+- [ ] NEWS記事に英語見出し `headline_en` を追加（Claude移行の生成で出す。アプリ側は対応済みで、無い日は日本語見出しを表示）
 
 ## 運用ルール
 
