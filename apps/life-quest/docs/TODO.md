@@ -82,9 +82,9 @@
 ## NEWSPAPER
 
 - [x] 日刊NEWSPAPERの生成をClaudeへ移行（2026-09-27。Claudeのroutineが毎朝5:20 JSTに `life-quest-newspaper-data` の `GENERATE.md` どおり生成し、`scripts/validate_issue.py` で検証してからmainへマージ）
-- [ ] ChatGPT側の毎朝の生成を止める（Keita。二重に公開されないように）
-- [ ] NEWS記事に英語見出し `headline_en` を追加（Claude移行の生成で出す。アプリ側は対応済みで、無い日は日本語見出しを表示）
-- [ ] NEWS記事を life-quest-newspaper-data の `STYLE.md` の基準で書く（ひとこと見出し＋事実とAIの解説で2〜3文＋出典、英日両方。2026-09-27 Keita決定。Claude移行の生成で出す。アプリ側は対応済み）
+- [x] ChatGPT側の毎朝の生成を止める（2026-09-27 Keita対応）
+- [x] NEWS記事に英語見出し `headline_en` を追加（2026-09-27のClaude版から出している。アプリ側は対応済みで、無い日は日本語見出しを表示）
+- [x] NEWS記事を life-quest-newspaper-data の `STYLE.md` の基準で書く（ひとこと見出し＋事実とAIの解説で2〜3文＋出典、英日両方。2026-09-27 Keita決定。2026-09-27のClaude版から出している。アプリ側は対応済み）
 
 ## 運用ルール
 
