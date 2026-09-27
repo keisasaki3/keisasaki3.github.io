@@ -77,6 +77,10 @@
 - [ ] （保留）Renderの接続先を専用repoへ変更
 - [x] 既存公開URLを継続
 
+## NEWSPAPER
+
+- [ ] 日刊NEWSPAPERの生成をClaudeへ移行（現状: `life-quest-newspaper-data` リポジトリ `newspaper/YYYY-MM-DD.json`・`registry/*.json`・`latest.json` をGitHub上で毎日手動コミット。生成用ワークフローはリポジトリ内になし）
+
 ## 運用ルール
 
 仕様変更時は以下を同じ作業内で行う。
