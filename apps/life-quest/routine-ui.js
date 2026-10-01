@@ -24,6 +24,7 @@ const ROUTINE_ICONS = {
   money: { emoji: '💰', color: '#f1c40f' },
   hobby: { emoji: '🎸', color: '#ff7ab6' },
   create: { emoji: '🎨', color: '#ff6fd8' },
+  meet: { emoji: '🤝', color: '#ff8fa3' },
   other: { emoji: '🌱', color: '#5ed37c' }
 };
 
