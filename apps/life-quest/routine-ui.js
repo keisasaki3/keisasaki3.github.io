@@ -31,6 +31,38 @@ function routineIcon(r) {
   return ROUTINE_ICONS[r?.icon] || ROUTINE_ICONS.other;
 }
 
+// 日付の上に出す日替わりの金言（今努力すると人生がよくなる、に関わる言葉）。出典がはっきりしたものだけ
+const ROUTINE_QUOTES = [
+  { ja: '千里の行も足下に始まる', en: 'A journey of a thousand miles begins beneath one\'s feet.', by: '老子', by_en: 'Laozi' },
+  { ja: '為せば成る 為さねば成らぬ何事も 成らぬは人の為さぬなりけり', en: 'Do it and it can be done; leave it and nothing will be. What fails is only what we fail to do.', by: '上杉鷹山', by_en: 'Uesugi Yozan' },
+  { ja: '天才とは1%のひらめきと99%の汗である', en: 'Genius is one per cent inspiration and ninety-nine per cent perspiration.', by: 'トーマス・エジソン', by_en: 'Thomas Edison' },
+  { ja: '我々は繰り返し行うことの産物である。ゆえに卓越とは行為ではなく習慣である', en: 'We are what we repeatedly do. Excellence, then, is not an act but a habit.', by: 'ウィル・デュラント', by_en: 'Will Durant' },
+  { ja: '習慣は第二の天性なり', en: 'Habit is a second nature.', by: 'キケロ', by_en: 'Cicero' },
+  { ja: '急がず、だが休まず', en: 'Without haste, but without rest.', by: 'ゲーテ', by_en: 'Goethe' },
+  { ja: '人間は努力する限り迷うものだ', en: 'Man errs as long as he strives.', by: 'ゲーテ', by_en: 'Goethe' },
+  { ja: '天は自ら助くる者を助く', en: 'Heaven helps those who help themselves.', by: 'サミュエル・スマイルズ', by_en: 'Samuel Smiles' },
+  { ja: '小さいことを積み重ねるのが、とんでもないところへ行くただ一つの道だと思っています', en: 'Piling up small things is the only way to get somewhere extraordinary.', by: 'イチロー', by_en: 'Ichiro Suzuki' },
+  { ja: '明日やることがあるなら、今日やれ', en: 'Have you somewhat to do to-morrow, do it to-day.', by: 'ベンジャミン・フランクリン', by_en: 'Benjamin Franklin' },
+  { ja: '時は金なり', en: 'Time is money.', by: 'ベンジャミン・フランクリン', by_en: 'Benjamin Franklin' },
+  { ja: 'ただ学問を勤めて物事をよく知る者は貴人となり富人となる', en: 'Those who work at learning and come to know things well become honored and rich.', by: '福沢諭吉', by_en: 'Fukuzawa Yukichi' },
+  { ja: '成功とは、毎日繰り返される小さな努力の積み重ねである', en: 'Success is the sum of small efforts, repeated day in and day out.', by: 'ロバート・コリアー', by_en: 'Robert Collier' },
+  { ja: '志を立てて以て万事の源と為す', en: 'Setting your purpose is the source of all things.', by: '吉田松陰', by_en: 'Yoshida Shoin' },
+  { ja: '一日一字を記さば一年にして三百六十字を得、一夜一時を怠らば百歳の間三万六千時を失う', en: 'Write one character a day and in a year you have 360; waste one hour a night and in a hundred years you lose 36,000.', by: '吉田松陰', by_en: 'Yoshida Shoin' },
+  { ja: '凡事徹底', en: 'Do ordinary things thoroughly.', by: '鍵山秀三郎', by_en: 'Kagiyama Hidesaburo' },
+  { ja: '千日の稽古を鍛とし、万日の稽古を錬とす', en: 'A thousand days of practice forge you; ten thousand days refine you.', by: '宮本武蔵', by_en: 'Miyamoto Musashi' },
+  { ja: '始めは全体の半分である', en: 'The beginning is half of the whole.', by: 'アリストテレス', by_en: 'Aristotle' },
+  { ja: '学びて時に之を習う、亦説ばしからずや', en: 'Is it not a pleasure to learn and to practice what you have learned?', by: '孔子', by_en: 'Confucius' },
+  { ja: '木を植えるのに一番良い時期は20年前だった。次に良いのは今だ', en: 'The best time to plant a tree was 20 years ago. The second best time is now.', by: 'ことわざ', by_en: 'Proverb' },
+  { ja: '雨垂れ石を穿つ', en: 'Dripping water wears away the stone.', by: 'ことわざ', by_en: 'Proverb' },
+  { ja: '今日の一針、明日の十針', en: 'A stitch in time saves nine.', by: 'ことわざ', by_en: 'Proverb' }
+];
+
+function routineQuote(day) {
+  const n = Math.floor(Date.parse(`${day}T00:00:00Z`) / 86400000);
+  const q = ROUTINE_QUOTES[((n % ROUTINE_QUOTES.length) + ROUTINE_QUOTES.length) % ROUTINE_QUOTES.length];
+  return lang === 'en' ? { text: q.en, by: q.by_en } : { text: q.ja, by: q.by };
+}
+
 let routineUserId = null;
 let routineAvailable = true;
 let routines = [];
@@ -202,7 +234,8 @@ function drawRoutines() {
 }
 
 function drawRoutineDay(body, day, today) {
-  const { list, total, done } = dayResult(day);
+  const { list, total } = dayResult(day);
+  const quote = routineQuote(day);
   const streak = routineStreak();
   const rate7 = routineRate(7);
   const rate30 = routineRate(30);
@@ -213,11 +246,11 @@ function drawRoutineDay(body, day, today) {
     heat.push(`<span class="heat ${cls}"></span>`);
   }
   body.innerHTML = `
+    <div class="routinequote"><div class="quotetext">${lang === 'en' ? `“${esc(quote.text)}”` : `「${esc(quote.text)}」`}</div><div class="quoteby">― ${esc(quote.by)}</div></div>
     <div class="window routinehead">
       <button type="button" class="daynav" id="prevDay" aria-label="prev">◀</button>
       <span class="routinedate">${esc(dayLabel(day))}</span>
       <button type="button" class="daynav" id="nextDay" aria-label="next"${day >= today ? ' disabled' : ''}>▶</button>
-      <span class="stars${done ? '' : ' zero'}">${done}/${total}</span>
     </div>
     <div class="list-window routinelist" id="routineList"></div>
     <div class="list-window routinestats">
