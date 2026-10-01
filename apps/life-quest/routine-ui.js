@@ -33,6 +33,7 @@ const ROUTINE_ICONS = {
   bridge: { emoji: '🌉', color: '#9d8cff' },
   travel: { emoji: '🧳', color: '#d4a373' },
   globe: { emoji: '🌐', color: '#4fc3f7' },
+  listen: { emoji: '🎧', color: '#c792ea' },
   other: { emoji: '🌱', color: '#5ed37c' }
 };
 
