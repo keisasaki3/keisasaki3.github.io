@@ -25,6 +25,14 @@ const ROUTINE_ICONS = {
   hobby: { emoji: '🎸', color: '#ff7ab6' },
   create: { emoji: '🎨', color: '#ff6fd8' },
   meet: { emoji: '🤝', color: '#ff8fa3' },
+  people: { emoji: '👥', color: '#ffb38a' },
+  city: { emoji: '🏙️', color: '#8fb8de' },
+  dusk: { emoji: '🌆', color: '#ff9e7a' },
+  sunset: { emoji: '🌇', color: '#ffb347' },
+  night: { emoji: '🌃', color: '#6c7bd9' },
+  bridge: { emoji: '🌉', color: '#9d8cff' },
+  travel: { emoji: '🧳', color: '#d4a373' },
+  globe: { emoji: '🌐', color: '#4fc3f7' },
   other: { emoji: '🌱', color: '#5ed37c' }
 };
 
