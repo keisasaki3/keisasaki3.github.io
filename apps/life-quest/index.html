@@ -11,6 +11,7 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <link rel="stylesheet" href="./theme.css">
 <link rel="stylesheet" href="./subject-ui.css">
 <link rel="stylesheet" href="./newspaper.css">
+<link rel="stylesheet" href="./routine.css">
 </head>
 <body>
 <div class="app">
@@ -26,6 +27,7 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <main class="main" id="main"></main>
 <nav class="tabs">
   <button class="tab active" type="button" data-tab="subjects" data-i18n="tab.status">ステータス</button>
+  <button class="tab" type="button" data-tab="routines" data-i18n="tab.routines">日課</button>
   <button class="tab" type="button" data-tab="newspaper" data-i18n="tab.newspaper">NEWSPAPER</button>
   <button class="tab" type="button" data-tab="settings" data-i18n="tab.settings">設定</button>
 </nav>
@@ -34,6 +36,7 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <script src="./i18n.js"></script>
 <script src="./app.js"></script>
 <script src="./subject-ui.js"></script>
+<script src="./routine-ui.js"></script>
 <script src="./newspaper-service.js"></script>
 <script src="./newspaper-ui.js"></script>
 </body>

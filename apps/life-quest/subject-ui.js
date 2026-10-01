@@ -230,7 +230,8 @@ let reorderActive = false;
 // ドラッグ中はスクロールさせない（passive: false でないと止められない）
 document.addEventListener('touchmove', e => { if (reorderActive) e.preventDefault(); }, { passive: false });
 
-function enableStatusReorder(list) {
+// 日課の並べ替え（routine-ui.js）も同じ動きを使う。onOrder に並べ替え後のIDの配列を渡す
+function enableStatusReorder(list, onOrder = saveStatusOrder) {
   const HOLD_MS = 450;
   const MOVE_TOLERANCE = 8;
   let timer = null, row = null, pointerId = null, startX = 0, startY = 0, lastY = 0, grabOffset = 0, scrollRaf = 0;
@@ -285,8 +286,8 @@ function enableStatusReorder(list) {
     row = null;
     reorderJustEnded = true;
     setTimeout(() => { reorderJustEnded = false; }, 80);
-    const ids = [...list.children].map(el => el.dataset.statusId);
-    await saveStatusOrder(ids);
+    const ids = [...list.children].map(el => el.dataset.statusId || el.dataset.routineId);
+    await onOrder(ids);
   };
 
   list.addEventListener('pointerdown', e => {

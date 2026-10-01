@@ -138,6 +138,10 @@ importance convention:
 
 人生クエストの利用者ごとのステータス一覧・自作分野・自作トピック・入力型の記録。すべて本人の行のみ読み書き可。自作分野・自作トピックは任意の英語名 `name_en` を持つ（migration 006）。詳細は `apps/life-quest/docs/DATA_MODEL.md` と `supabase/migrations/005_life_quest_user_statuses.sql`。
 
+### quest_routines / quest_routine_checks / quest_routine_settings
+
+人生クエストの日課・その日のチェック・記録先Googleカレンダー。すべて本人の行のみ読み書き可。`supabase/migrations/007_life_quest_routines.sql`。
+
 ## 5. Derived data
 
 保存しない値:
@@ -172,6 +176,7 @@ mastery rowの存在で判定。
 | quest_topic_prerequisites | public/anon可 | server/admin only |
 | quest_topic_mastery | own rows only | own rows only |
 | quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values | own rows only | own rows only |
+| quest_routines / quest_routine_checks / quest_routine_settings | own rows only | own rows only |
 
 Summer End serverはservice roleでRLSをbypassし、必要な永続位置を扱う。
 
