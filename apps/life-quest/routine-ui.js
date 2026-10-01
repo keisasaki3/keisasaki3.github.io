@@ -275,10 +275,14 @@ function drawRoutineDay(body, day, today) {
   $('#prevDay').onclick = () => { routineDay = addDays(day, -1); drawRoutines(); };
   $('#nextDay').onclick = () => { if (day < today) { routineDay = addDays(day, 1); drawRoutines(); } };
   const box = $('#routineList');
-  if (!list.length) {
+  // その日やらない日課（曜日が違う）も下に薄く出す。押せない・集計に入らない
+  const rest = routines
+    .filter(r => !list.includes(r) && tsDay(r.created_at) <= day && (!r.archived_at || tsDay(r.archived_at) > day))
+    .sort((a, b) => a.sort_order - b.sort_order || a.routine_id.localeCompare(b.routine_id));
+  if (!list.length && !rest.length) {
     box.innerHTML = `<div class="empty">${esc(tr(routines.some(r => !r.archived_at) ? 'routine.none' : 'routine.empty'))}</div>`;
   }
-  list.forEach(r => {
+  list.concat(rest).forEach(r => {
     const on = routineChecks.has(checkKey(r.routine_id, day));
     const icon = routineIcon(r);
     const streak = routineItemStreak(r);
@@ -288,12 +292,14 @@ function drawRoutineDay(body, day, today) {
       const scheduled = (r.weekdays & (1 << weekdayOf(d))) && tsDay(r.created_at) <= d;
       dots.push(`<i class="${!scheduled ? 'off' : routineChecks.has(checkKey(r.routine_id, d)) ? 'done' : ''}"></i>`);
     }
-    const row = document.createElement('button');
-    row.type = 'button';
-    row.className = 'rcard' + (on ? ' on' : '');
+    const off = rest.includes(r);
+    const row = document.createElement(off ? 'div' : 'button');
+    if (!off) row.type = 'button';
+    row.className = 'rcard' + (on ? ' on' : '') + (off ? ' rest' : '');
     row.style.setProperty('--c', icon.color);
-    row.innerHTML = `<span class="ricon">${icon.emoji}</span><span class="rbody"><span class="rname">${esc(r.name)}</span>${r.memo ? `<span class="rmemo">${esc(r.memo)}</span>` : ''}<span class="rdots">${dots.join('')}</span></span><span class="rside"><span class="rstreak${streak ? '' : ' zero'}">📚${streak}</span><span class="rchk">${on ? '✓' : ''}</span></span>`;
-    row.onclick = () => toggleRoutine(r, day);
+    const side = off ? `<span class="rrest">${esc(tr('routine.rest'))}</span>` : `<span class="rchk">${on ? '✓' : ''}</span>`;
+    row.innerHTML = `<span class="ricon">${icon.emoji}</span><span class="rbody"><span class="rname">${esc(r.name)}</span>${r.memo ? `<span class="rmemo">${esc(r.memo)}</span>` : ''}<span class="rdots">${dots.join('')}</span></span><span class="rside"><span class="rstreak${streak ? '' : ' zero'}">📚${streak}</span>${side}</span>`;
+    if (!off) row.onclick = () => toggleRoutine(r, day);
     box.appendChild(row);
   });
   const closeBtn = /** @type {HTMLButtonElement} */ ($('#closeDay'));
