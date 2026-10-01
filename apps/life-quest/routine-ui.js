@@ -34,6 +34,7 @@ const ROUTINE_ICONS = {
   travel: { emoji: '🧳', color: '#d4a373' },
   globe: { emoji: '🌐', color: '#4fc3f7' },
   listen: { emoji: '🎧', color: '#c792ea' },
+  news: { emoji: '📰', color: '#d8c39a' },
   other: { emoji: '🌱', color: '#5ed37c' }
 };
 
