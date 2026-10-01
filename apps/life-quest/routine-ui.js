@@ -235,8 +235,8 @@ function drawRoutines() {
   const today = jstDay();
   if (!routineDay || routineDay > today) routineDay = today;
   const day = routineDay;
-  m.innerHTML = `<div class="settings routines"><div class="pagehead"><h2>${esc(tr('routine.heading'))}</h2><button type="button" class="plainbtn small" id="routineEdit">${esc(tr(routineEditMode ? 'done' : 'edit'))}</button></div><div id="routineBody"></div></div>`;
-  $('#routineEdit').onclick = () => { routineEditMode = !routineEditMode; drawRoutines(); };
+  m.innerHTML = `<div class="settings routines"><div class="pagehead"><h2>${esc(tr('routine.heading'))}</h2>${routineEditMode ? `<button type="button" class="plainbtn small" id="routineEdit">${esc(tr('done'))}</button>` : ''}</div><div id="routineBody"></div></div>`;
+  if (routineEditMode) $('#routineEdit').onclick = () => { routineEditMode = false; drawRoutines(); };
   const body = $('#routineBody');
   if (routineEditMode) drawRoutineEditor(body);
   else drawRoutineDay(body, day, today);
@@ -267,7 +267,9 @@ function drawRoutineDay(body, day, today) {
       <div class="heatrow">${heat.join('')}</div>
     </div>
     <button type="button" class="primarybtn" id="closeDay"${total ? '' : ' disabled'}>${esc(tr('routine.close'))}</button>
-    <div class="authmessage" id="routineMessage"></div>`;
+    <div class="authmessage" id="routineMessage"></div>
+    <button type="button" class="plainbtn" id="openRoutineEdit">${esc(tr('routine.editBtn'))}</button>`;
+  $('#openRoutineEdit').onclick = () => { routineEditMode = true; drawRoutines(); };
   $('#prevDay').onclick = () => { routineDay = addDays(day, -1); drawRoutines(); };
   $('#nextDay').onclick = () => { if (day < today) { routineDay = addDays(day, 1); drawRoutines(); } };
   const box = $('#routineList');
