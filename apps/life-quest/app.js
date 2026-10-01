@@ -228,10 +228,11 @@ async function loadApp() {
   applyUserStatusData(await statusDataPromise);
 
   setShellVisible(true);
-  setActiveTab('subjects');
   renderProfile();
-  if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
-  else renderHome();
+  if (statusFeatureAvailable && !userSettings?.setup_completed_at) {
+    setActiveTab('subjects');
+    renderSetup();
+  } else renderRoutines();
 
   await maybeOfferLegacyMigration();
 }
