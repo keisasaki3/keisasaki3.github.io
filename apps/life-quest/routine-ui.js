@@ -255,12 +255,12 @@ function drawRoutineDay(body, day, today) {
     heat.push(`<span class="heat ${cls}"></span>`);
   }
   body.innerHTML = `
-    <div class="routinequote"><div class="quotetext">${lang === 'en' ? `“${esc(quote.text)}”` : `「${esc(quote.text)}」`}</div><div class="quoteby">― ${esc(quote.by)}</div></div>
     <div class="window routinehead">
       <button type="button" class="daynav" id="prevDay" aria-label="prev">◀</button>
       <span class="routinedate">${esc(dayLabel(day))}</span>
       <button type="button" class="daynav" id="nextDay" aria-label="next"${day >= today ? ' disabled' : ''}>▶</button>
     </div>
+    <div class="routinequote"><div class="quotetext">${lang === 'en' ? `“${esc(quote.text)}”` : `「${esc(quote.text)}」`}</div><div class="quoteby">― ${esc(quote.by)}</div></div>
     <div class="list-window routinelist" id="routineList"></div>
     <div class="list-window routinestats">
       <div class="statrow"><span>${esc(tr('routine.streak'))} <b>${esc(tr('routine.days', { n: streak }))}</b></span><span>${esc(tr('routine.rate7'))} <b>${rate7 === null ? '—' : `${rate7}%`}</b></span><span>${esc(tr('routine.rate30'))} <b>${rate30 === null ? '—' : `${rate30}%`}</b></span></div>
