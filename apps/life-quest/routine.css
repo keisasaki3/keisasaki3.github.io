@@ -5,7 +5,6 @@
 .daynav{width:44px;height:44px;border:0;background:none;color:var(--acc);font-family:"DotGothic16",monospace;font-size:14px;cursor:pointer}
 .daynav:disabled{color:var(--star0);cursor:default}
 .routinehead .stars{min-width:56px;text-align:right}
-.routinelist .topic:first-child{border-top:0}
 .routinestats{margin:10px 0;padding:12px 14px;display:grid;gap:10px}
 .statrow{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--body2)}
 .statrow b{font-family:"DotGothic16",monospace;font-weight:400;font-size:17px;color:var(--gold);margin-left:4px}
@@ -21,3 +20,23 @@
 .weekdaypick input{width:18px;height:18px;accent-color:var(--acc)}
 .modal .weekdaypick input{height:18px;width:18px;padding:0}
 .routines .primarybtn:disabled{opacity:.5;cursor:default}
+.rcard{width:100%;display:flex;gap:12px;align-items:center;padding:12px 14px;border:0;border-bottom:1px solid var(--rowline);background:none;text-align:left;cursor:pointer}
+.rcard:last-child{border-bottom:0}
+.rcard:active{background:var(--panel)}
+.ricon{width:42px;height:42px;flex:none;border:2px solid var(--c);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:22px;background:color-mix(in srgb,var(--c) 14%,transparent)}
+.rcard.on .ricon{background:var(--c)}
+.rbody{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.rname{font-size:15px;font-weight:700;color:var(--text);overflow-wrap:anywhere}
+.rmemo{font-size:11px;color:var(--faint);overflow-wrap:anywhere}
+.rdots{display:flex;gap:3px;margin-top:2px}
+.rdots i{width:9px;height:9px;border-radius:2px;background:var(--star0)}
+.rdots i.off{background:none;border:1px solid var(--rowline)}
+.rdots i.done{background:var(--c)}
+.rside{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:none}
+.rstreak{font-family:"DotGothic16",monospace;font-size:15px;color:var(--gold);white-space:nowrap}
+.rstreak.zero{color:var(--star0)}
+.rchk{width:26px;height:26px;border-radius:4px;border:2px solid var(--gutter);display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--bg)}
+.rcard.on .rchk{background:var(--c);border-color:var(--c)}
+.iconpicks{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.iconpick{aspect-ratio:1;min-height:36px;border:2px solid transparent;border-radius:6px;background:var(--bg);font-size:20px;cursor:pointer;padding:0}
+.iconpick.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,transparent)}

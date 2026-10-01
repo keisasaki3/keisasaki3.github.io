@@ -7,8 +7,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
 });
 
-const STATUS_KEYS = ['online', 'studying', 'reading', 'busy', 'afk'];
-
 const THEME_KEY = 'lifeQuestTheme';
 const DEFAULT_THEME = 'dracula';
 const THEMES = ['tokyo-night', 'dracula', 'nord', 'synthwave', 'amber', 'phosphor'];
@@ -30,7 +28,6 @@ applyTheme(currentTheme());
 let session = null;
 let profile = null;
 let presence = null;
-let races = [];
 let subjects = [];
 let fields = [];
 let topics = [];
@@ -80,7 +77,6 @@ function renderProfile() {
   $('#profileName').textContent = !profile?.display_name || profile.display_name === '名無し' ? tr('noname') : profile.display_name;
   $('#profileLv').textContent = String(lv);
   $('#rank').textContent = rank(lv);
-  $('#presenceLabel').textContent = STATUS_KEYS.includes(presence?.status) ? tr(`presence.${presence.status}`) : '';
 }
 
 function showLoading() {
@@ -201,9 +197,8 @@ async function loadApp() {
   const user = session.user;
   const statusDataPromise = fetchUserStatusData(user);
 
-  const [profileRow, raceRes, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
+  const [profileRow, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
     ensureProfile(user),
-    sb.from('races').select('*').eq('active', true).order('sort_order'),
     sb.from('quest_subjects').select('*').eq('active', true).order('sort_order'),
     fetchAllRows(opts => sb.from('quest_fields').select('*', opts).eq('active', true).order('sort_order').order('field_id')),
     fetchAllRows(opts => sb.from('quest_topics').select('*', opts).eq('active', true).order('recommended_order').order('topic_id')),
@@ -211,11 +206,10 @@ async function loadApp() {
     fetchAllRows(opts => sb.from('quest_topic_mastery').select('topic_id', opts).eq('user_id', user.id).order('topic_id')),
     sb.from('player_presence').select('*').eq('user_id', user.id).maybeSingle()
   ]);
-  const failures = [raceRes, subjectRes, presenceRes].filter(r => r.error);
+  const failures = [subjectRes, presenceRes].filter(r => r.error);
   if (failures.length) throw failures[0].error;
 
   profile = profileRow;
-  races = raceRes.data || [];
   subjects = subjectRes.data || [];
   fields = fieldRows;
   topics = topicRows;
@@ -240,7 +234,6 @@ async function loadApp() {
   else renderHome();
 
   await maybeOfferLegacyMigration();
-  if (!profile.race_id) await chooseRace(true);
 }
 
 function isMissingTableError(error) {
@@ -417,49 +410,12 @@ function editName() {
   input.onkeydown = e => { if (e.key === 'Enter') commit(); if (e.key === 'Escape') close(); };
 }
 
-async function chooseRace(required = false) {
-  return new Promise(resolve => {
-    const bg = document.createElement('div');
-    bg.className = 'modalbg';
-    bg.innerHTML = `<div class="modal"><h3>${esc(tr('race'))}</h3><div class="racechoices">${races.map(r => `<button class="racebtn" data-race="${esc(r.race_id)}">${esc(localName(r))}</button>`).join('')}</div>${required ? '' : `<div class="actions"><button id="cancelRace">${esc(tr('cancel'))}</button></div>`}</div>`;
-    document.body.appendChild(bg);
-    const close = () => { bg.remove(); resolve(); };
-    bg.querySelectorAll('.racebtn').forEach(btn => btn.onclick = async () => {
-      const raceId = btn.dataset.race;
-      const { error } = await sb.from('profiles').update({ race_id: raceId }).eq('user_id', session.user.id);
-      if (error) { alert(error.message); return; }
-      profile.race_id = raceId;
-      close();
-      if (document.querySelector('.settings')) renderSettings();
-    });
-    if (!required) {
-      bg.querySelector('#cancelRace').onclick = close;
-      bg.onclick = e => { if (e.target === bg) close(); };
-    }
-  });
-}
-
-async function updateStatus(status) {
-  const { error } = await sb.from('player_presence').upsert({
-    user_id: session.user.id,
-    status,
-    status_changed_at: new Date().toISOString(),
-    last_seen_at: new Date().toISOString()
-  });
-  if (error) { alert(error.message); return; }
-  presence.status = status;
-  renderProfile();
-}
-
 function renderSettings() {
   setActiveTab('settings');
-  const race = races.find(r => r.race_id === profile.race_id);
   const m = main();
   const theme = currentTheme();
   const newsLang = currentNewsLang();
   m.innerHTML = `<div class="settings"><div class="pagehead"><h2>${esc(tr('settings'))}</h2></div><div class="list-window">
-    <div class="settingrow"><div class="settingtitle">${esc(tr('race'))}</div><button class="plainbtn small" id="raceSetting">${esc(race ? localName(race) : tr('unset'))}</button></div>
-    <div class="settingrow"><label class="settingtitle" for="statusSetting">${esc(tr('presence'))}</label><select id="statusSetting" class="select">${STATUS_KEYS.map(v => `<option value="${v}" ${presence?.status === v ? 'selected' : ''}>${esc(tr(`presence.${v}`))}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="themeSetting">${esc(tr('theme'))}</label><select id="themeSetting" class="select">${THEMES.map(v => `<option value="${v}" ${theme === v ? 'selected' : ''}>${esc(tr(`theme.${v}`))}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="langSetting">${esc(tr('language'))}</label><select id="langSetting" class="select">${Object.entries(LANGS).map(([v,l]) => `<option value="${v}" ${lang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="newsLangSetting">${esc(tr('newsLang'))}</label><select id="newsLangSetting" class="select">${Object.entries(NEWS_LANGS).map(([v,l]) => `<option value="${v}" ${newsLang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -467,12 +423,13 @@ function renderSettings() {
     <div class="settingrow"><button class="dangerbtn" id="resetChecks">${esc(tr('resetStatuses'))}</button></div>
     ${statusFeatureAvailable ? `<div class="settingrow"><button class="dangerbtn" id="resetAll">${esc(tr('resetAll'))}</button></div>` : ''}
   </div></div>`;
-  $('#raceSetting').onclick = () => chooseRace(false);
-  $('#statusSetting').onchange = e => updateStatus(e.target.value);
   $('#themeSetting').onchange = e => applyTheme(e.target.value);
   $('#langSetting').onchange = e => { applyLang(e.target.value); renderProfile(); renderSettings(); };
   $('#newsLangSetting').onchange = e => applyNewsLang(e.target.value);
-  $('#signout').onclick = () => sb.auth.signOut();
+  $('#signout').onclick = () => {
+    try { localStorage.removeItem('lifeQuestCalendarToken'); } catch {}
+    sb.auth.signOut();
+  };
   $('#resetChecks').onclick = async () => {
     if (!confirmDataDelete(tr('resetStatusesWhat'))) return;
     const { error } = await sb.from('quest_topic_mastery').delete().eq('user_id', session.user.id);

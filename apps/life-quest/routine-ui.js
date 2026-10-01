@@ -7,6 +7,30 @@ const CALENDAR_SCOPE = 'https://www.googleapis.com/auth/calendar.app.created';
 const CALENDAR_API = 'https://www.googleapis.com/calendar/v3';
 const ROUTINE_TZ = 'Asia/Tokyo';
 
+// 日課のアイコンは決まった一覧から選ぶ。色はアイコンごとに固定（保存しない）。キーは quest_routines.icon
+const ROUTINE_ICONS = {
+  study: { emoji: '📘', color: '#5b9cff' },
+  read: { emoji: '📖', color: '#b48cff' },
+  write: { emoji: '✍️', color: '#f4d35e' },
+  speak: { emoji: '🗣️', color: '#5fd7ee' },
+  muscle: { emoji: '💪', color: '#ff5c5c' },
+  run: { emoji: '🏃', color: '#ff9f43' },
+  meditate: { emoji: '🧘', color: '#4cd98a' },
+  walk: { emoji: '🚶', color: '#b5e655' },
+  sleep: { emoji: '😴', color: '#7b7fff' },
+  water: { emoji: '💧', color: '#4fc3f7' },
+  meal: { emoji: '🥗', color: '#66d17a' },
+  tidy: { emoji: '🧹', color: '#a8a8b8' },
+  money: { emoji: '💰', color: '#f1c40f' },
+  hobby: { emoji: '🎸', color: '#ff7ab6' },
+  create: { emoji: '🎨', color: '#ff6fd8' },
+  other: { emoji: '🌱', color: '#5ed37c' }
+};
+
+function routineIcon(r) {
+  return ROUTINE_ICONS[r?.icon] || ROUTINE_ICONS.other;
+}
+
 let routineUserId = null;
 let routineAvailable = true;
 let routines = [];
@@ -83,6 +107,21 @@ function routineStreak() {
   return n;
 }
 
+// その日課だけの連続日数。やる曜日でない日は飛ばし、今日がまだなら昨日から数える
+function routineItemStreak(r) {
+  const first = tsDay(r.created_at);
+  const bits = r.weekdays;
+  let day = jstDay();
+  let n = 0;
+  if (routineChecks.has(checkKey(r.routine_id, day))) n++;
+  for (day = addDays(day, -1); day >= first; day = addDays(day, -1)) {
+    if (!(bits & (1 << weekdayOf(day)))) continue;
+    if (!routineChecks.has(checkKey(r.routine_id, day))) break;
+    n++;
+  }
+  return n;
+}
+
 function routineRate(days) {
   let total = 0, done = 0;
   const today = jstDay();
@@ -149,13 +188,13 @@ async function renderRoutines() {
 function drawRoutines() {
   const m = main();
   if (!routineAvailable) {
-    m.innerHTML = `<div class="settings"><div class="pagehead"><h2>${esc(tr('routine.title'))}</h2></div><div class="empty">${esc(tr('routine.unavailable'))}</div></div>`;
+    m.innerHTML = `<div class="settings"><div class="pagehead"><h2>${esc(tr('routine.heading'))}</h2></div><div class="empty">${esc(tr('routine.unavailable'))}</div></div>`;
     return;
   }
   const today = jstDay();
   if (!routineDay || routineDay > today) routineDay = today;
   const day = routineDay;
-  m.innerHTML = `<div class="settings routines"><div class="pagehead"><h2>${esc(tr('routine.title'))}</h2><button type="button" class="plainbtn small" id="routineEdit">${esc(tr(routineEditMode ? 'done' : 'edit'))}</button></div><div id="routineBody"></div></div>`;
+  m.innerHTML = `<div class="settings routines"><div class="pagehead"><h2>${esc(tr('routine.heading'))}</h2><button type="button" class="plainbtn small" id="routineEdit">${esc(tr(routineEditMode ? 'done' : 'edit'))}</button></div><div id="routineBody"></div></div>`;
   $('#routineEdit').onclick = () => { routineEditMode = !routineEditMode; drawRoutines(); };
   const body = $('#routineBody');
   if (routineEditMode) drawRoutineEditor(body);
@@ -195,11 +234,21 @@ function drawRoutineDay(body, day, today) {
   }
   list.forEach(r => {
     const on = routineChecks.has(checkKey(r.routine_id, day));
-    const d = document.createElement('div');
-    d.className = 'topic' + (on ? ' on' : '');
-    d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody"><div class="tname">${esc(r.name)}</div></div>`;
-    d.onclick = () => toggleRoutine(r, day);
-    box.appendChild(d);
+    const icon = routineIcon(r);
+    const streak = routineItemStreak(r);
+    const dots = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = addDays(day, -i);
+      const scheduled = (r.weekdays & (1 << weekdayOf(d))) && tsDay(r.created_at) <= d;
+      dots.push(`<i class="${!scheduled ? 'off' : routineChecks.has(checkKey(r.routine_id, d)) ? 'done' : ''}"></i>`);
+    }
+    const row = document.createElement('button');
+    row.type = 'button';
+    row.className = 'rcard' + (on ? ' on' : '');
+    row.style.setProperty('--c', icon.color);
+    row.innerHTML = `<span class="ricon">${icon.emoji}</span><span class="rbody"><span class="rname">${esc(r.name)}</span>${r.memo ? `<span class="rmemo">${esc(r.memo)}</span>` : ''}<span class="rdots">${dots.join('')}</span></span><span class="rside"><span class="rstreak${streak ? '' : ' zero'}">📚${streak}</span><span class="rchk">${on ? '✓' : ''}</span></span>`;
+    row.onclick = () => toggleRoutine(r, day);
+    box.appendChild(row);
   });
   const closeBtn = /** @type {HTMLButtonElement} */ ($('#closeDay'));
   closeBtn.onclick = () => withBusyButton(closeBtn, () => closeRoutineDay(day));
@@ -232,7 +281,7 @@ function drawRoutineEditor(body) {
     d.type = 'button';
     d.className = 'subject';
     d.dataset.routineId = r.routine_id;
-    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline"><span class="name routinename">${esc(r.name)}</span></span><span class="meta">${esc(weekdaysLabel(r.weekdays))}</span></span>`;
+    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline"><span class="icon">${routineIcon(r).emoji}</span><span class="name routinename">${esc(r.name)}</span></span><span class="meta">${esc(weekdaysLabel(r.weekdays))}${r.memo ? ` · ${esc(r.memo)}` : ''}</span></span>`;
     d.onclick = () => { if (!reorderJustEnded) openRoutineModal(r); };
     box.appendChild(d);
   });
@@ -258,27 +307,39 @@ async function saveRoutineOrder(ids) {
 function openRoutineModal(routine) {
   const names = tr('routine.wd').split(',');
   const bits = routine ? routine.weekdays : 127;
+  let iconKey = ROUTINE_ICONS[routine?.icon] ? routine.icon : 'other';
   const { bg, close } = openModal(`<h3>${esc(tr(routine ? 'routine.editTitle' : 'routine.addTitle'))}</h3>
-    <div class="modalform"><input id="routineName" maxlength="80" placeholder="${esc(tr('routine.name'))}"></div>
+    <div class="modalform"><input id="routineName" maxlength="80" placeholder="${esc(tr('routine.name'))}"><input id="routineMemo" maxlength="80" placeholder="${esc(tr('routine.memo'))}"></div>
+    <div class="modallabel">${esc(tr('routine.icon'))}</div>
+    <div class="iconpicks">${Object.entries(ROUTINE_ICONS).map(([key, ic]) => `<button type="button" class="iconpick${key === iconKey ? ' on' : ''}" data-icon="${key}" style="--c:${ic.color}">${ic.emoji}</button>`).join('')}</div>
     <div class="modallabel">${esc(tr('routine.weekdays'))}</div>
     <div class="weekdaypicks">${names.map((n, i) => `<label class="weekdaypick"><input type="checkbox" value="${i}"${bits & (1 << i) ? ' checked' : ''}><span>${esc(n)}</span></label>`).join('')}</div>
     <div class="actions">${routine ? `<button type="button" class="dangerbtn" id="deleteRoutine">${esc(tr('delete'))}</button>` : ''}<button type="button" data-close>${esc(tr('cancel'))}</button><button type="button" class="savebtn" id="saveRoutine">${esc(tr('save'))}</button></div>`);
   const input = bg.querySelector('#routineName');
+  const memoInput = bg.querySelector('#routineMemo');
   input.value = routine?.name || '';
+  memoInput.value = routine?.memo || '';
+  bg.querySelectorAll('.iconpick').forEach(btn => btn.onclick = () => {
+    iconKey = btn.dataset.icon;
+    bg.querySelectorAll('.iconpick').forEach(b => b.classList.toggle('on', b === btn));
+  });
   input.focus();
   const saveBtn = bg.querySelector('#saveRoutine');
   saveBtn.onclick = () => withBusyButton(saveBtn, async () => {
     const name = input.value.trim().slice(0, 80);
+    const memo = memoInput.value.trim().slice(0, 80) || null;
     const weekdays = [...bg.querySelectorAll('.weekdaypick input:checked')].reduce((n, c) => n | (1 << Number(c.value)), 0);
     if (!name || !weekdays) return;
     if (routine) {
-      if (!(await runQuery(sb.from('quest_routines').update({ name, weekdays }).eq('routine_id', routine.routine_id)))) return;
-      Object.assign(routine, { name, weekdays });
+      if (!(await runQuery(sb.from('quest_routines').update({ name, weekdays, icon: iconKey, memo }).eq('routine_id', routine.routine_id)))) return;
+      Object.assign(routine, { name, weekdays, icon: iconKey, memo });
     } else {
       const row = await runQuery(sb.from('quest_routines').insert({
         user_id: session.user.id,
         name,
         weekdays,
+        icon: iconKey,
+        memo,
         sort_order: nextSortOrder(activeRoutines())
       }).select().single());
       if (!row) return;
@@ -318,10 +379,21 @@ function loadGis() {
   return gisLoading;
 }
 
+// カレンダーの許可（1時間有効）。開き直すたびにポップアップが出ないよう端末に保存する
+const CALENDAR_TOKEN_KEY = 'lifeQuestCalendarToken';
 let calendarToken = null;
+try { calendarToken = JSON.parse(localStorage.getItem(CALENDAR_TOKEN_KEY) || 'null'); } catch { calendarToken = null; }
+
+function saveCalendarToken(token) {
+  calendarToken = token;
+  try {
+    if (token) localStorage.setItem(CALENDAR_TOKEN_KEY, JSON.stringify(token));
+    else localStorage.removeItem(CALENDAR_TOKEN_KEY);
+  } catch {}
+}
 
 async function getCalendarToken() {
-  if (calendarToken && calendarToken.userId === session.user.id && calendarToken.expiresAt > Date.now() + 60000) return calendarToken.value;
+  if (calendarToken?.value && calendarToken.userId === session.user.id && calendarToken.expiresAt > Date.now() + 60000) return calendarToken.value;
   await loadGis();
   return new Promise((resolve, reject) => {
     const client = google.accounts.oauth2.initTokenClient({
@@ -331,7 +403,7 @@ async function getCalendarToken() {
       callback: r => {
         if (r.error) { reject(new Error(r.error_description || r.error)); return; }
         if (!google.accounts.oauth2.hasGrantedAllScopes(r, CALENDAR_SCOPE)) { reject(new Error(tr('routine.noScope'))); return; }
-        calendarToken = { value: r.access_token, userId: session.user.id, expiresAt: Date.now() + Number(r.expires_in || 3600) * 1000 };
+        saveCalendarToken({ value: r.access_token, userId: session.user.id, expiresAt: Date.now() + Number(r.expires_in || 3600) * 1000 });
         resolve(r.access_token);
       },
       error_callback: e => reject(new Error(e?.message || e?.type || tr('routine.noScope')))
@@ -350,7 +422,7 @@ async function gcal(token, method, path, body) {
   if (res.status === 404) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    if (res.status === 401) calendarToken = null;
+    if (res.status === 401) saveCalendarToken(null);
     throw new Error(data?.error?.message || `Google Calendar ${res.status}`);
   }
   return data;
@@ -371,7 +443,7 @@ function routineEventBody(day) {
   const marks = list.map(r => routineChecks.has(checkKey(r.routine_id, day)) ? '✅' : '⬜').join('');
   return {
     summary: `${tr('routine.title')} ${done}/${total} ${marks}`,
-    description: list.map(r => `${routineChecks.has(checkKey(r.routine_id, day)) ? '✓' : '✗'} ${r.name}`).join('\n'),
+    description: list.map(r => `${routineChecks.has(checkKey(r.routine_id, day)) ? '✓' : '✗'} ${routineIcon(r).emoji} ${r.name}`).join('\n'),
     start: { date: day },
     end: { date: addDays(day, 1) },
     // 緑 = 全部、黄 = 半分以上、赤 = それ未満

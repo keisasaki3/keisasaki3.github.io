@@ -130,7 +130,7 @@ topic_id / user_topic_id はどちらか一方だけを持つ。表示は最新�
 
 ### quest_routines / quest_routine_checks / quest_routine_settings（日課、migration 007）
 
-- quest_routines: routine_id uuid PK, user_id, name, weekdays smallint（日=1 … 土=64、127=毎日）, sort_order, archived_at（削除の代わり）
+- quest_routines: routine_id uuid PK, user_id, name, weekdays smallint（日=1 … 土=64、127=毎日）, icon（アイコン一覧のキー。既定 'other'、migration 008）, memo（任意、migration 008）, sort_order, archived_at（削除の代わり）
 - quest_routine_checks: PK(routine_id, day)。行の存在 = その日（JST）にやった。(routine_id, user_id) で quest_routines へ複合FK
 - quest_routine_settings: user_id PK, calendar_id（記録先のGoogleカレンダー）
 
