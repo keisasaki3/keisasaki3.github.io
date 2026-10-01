@@ -1,0 +1,23 @@
+/* 日課タブ */
+.routines .pagehead{align-items:center}
+.routinehead{margin-bottom:10px;padding:8px 12px;display:flex;align-items:center;gap:8px}
+.routinedate{flex:1;text-align:center;font-family:"DotGothic16",monospace;font-size:18px;color:var(--text)}
+.daynav{width:44px;height:44px;border:0;background:none;color:var(--acc);font-family:"DotGothic16",monospace;font-size:14px;cursor:pointer}
+.daynav:disabled{color:var(--star0);cursor:default}
+.routinehead .stars{min-width:56px;text-align:right}
+.routinelist .topic:first-child{border-top:0}
+.routinestats{margin:10px 0;padding:12px 14px;display:grid;gap:10px}
+.statrow{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--body2)}
+.statrow b{font-family:"DotGothic16",monospace;font-weight:400;font-size:17px;color:var(--gold);margin-left:4px}
+.heatrow{display:grid;grid-template-columns:repeat(28,minmax(0,1fr));gap:2px}
+.heat{height:12px;border-radius:2px;background:var(--rowline)}
+.heat.zero{background:var(--star0)}
+.heat.part{background:var(--gold);opacity:.6}
+.heat.full{background:var(--green)}
+.routinename{overflow:hidden;text-overflow:ellipsis}
+.routines .meta{padding-left:0}
+.weekdaypicks{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.weekdaypick{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0;font-size:13px;cursor:pointer}
+.weekdaypick input{width:18px;height:18px;accent-color:var(--acc)}
+.modal .weekdaypick input{height:18px;width:18px;padding:0}
+.routines .primarybtn:disabled{opacity:.5;cursor:default}

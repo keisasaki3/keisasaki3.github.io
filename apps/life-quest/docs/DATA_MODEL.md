@@ -128,6 +128,14 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 topic_id / user_topic_id はどちらか一方だけを持つ。表示は最新の recorded_at。
 
+### quest_routines / quest_routine_checks / quest_routine_settings（日課、migration 007）
+
+- quest_routines: routine_id uuid PK, user_id, name, weekdays smallint（日=1 … 土=64、127=毎日）, sort_order, archived_at（削除の代わり）
+- quest_routine_checks: PK(routine_id, day)。行の存在 = その日（JST）にやった。(routine_id, user_id) で quest_routines へ複合FK
+- quest_routine_settings: user_id PK, calendar_id（記録先のGoogleカレンダー）
+
+達成数・連続日数・達成率はチェックから算出し、保存しない。
+
 子テーブルの user_id は複合FKで親と一致させ、他人のステータスへ分野やトピックを付けられないようにしている。削除は親からカスケードする。
 
 ## 派生値
@@ -176,7 +184,7 @@ topic_id / user_topic_id はどちらか一方だけを持つ。表示は最新�
 
 - プリセット（学問 / 分野 / トピック / 前提）: クライアントはread-only
 - MASTER: 各ユーザーは自分の行だけSELECT / INSERT / DELETE
-- quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values: 各ユーザーは自分の行だけ読み書き
+- quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values / quest_routines / quest_routine_checks / quest_routine_settings: 各ユーザーは自分の行だけ読み書き
 - 他人のMASTER状況は初期仕様では非公開
 
 具体的RLSは `/shared-world-core/supabase/migrations/001_initial_schema.sql` を正本とする。
