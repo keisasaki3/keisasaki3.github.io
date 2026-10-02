@@ -59,9 +59,7 @@ function statusFields(status) {
         name_en: f.name_en || '',
         custom: false,
         row: f,
-        topics: topics.filter(t => t.field_id === f.field_id)
-          .sort((a,b) => a.recommended_order - b.recommended_order || a.topic_id.localeCompare(b.topic_id))
-          .map(presetTopicView)
+        topics: fieldTopics(f.field_id).map(presetTopicView)
       }))
     : [];
   const ownFields = userFields
@@ -129,11 +127,6 @@ function statusMasteryCount(status) {
 function nextStatusTopic(status) {
   const unmastered = statusCheckTopics(status).filter(t => !isMastered(t));
   if (!unmastered.length) return null;
-  const prereqMap = new Map();
-  prerequisites.forEach(p => {
-    if (!prereqMap.has(p.topic_id)) prereqMap.set(p.topic_id, []);
-    prereqMap.get(p.topic_id).push(p.prerequisite_topic_id);
-  });
   const ready = unmastered.filter(t => t.custom || (prereqMap.get(t.id) || []).every(id => mastery.has(id)));
   if (!ready.length) return unmastered[0];
   return ready.reduce((best, t) => (t.importance || 0) > (best.importance || 0) ? t : best);

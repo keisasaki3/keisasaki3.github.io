@@ -35,6 +35,10 @@ let prerequisites = [];
 let mastery = new Set();
 let topicById = new Map();
 let fieldById = new Map();
+// 起動時に一度だけ作る索引（毎回の全件 filter/sort をなくす）
+let fieldsBySubject = new Map();
+let topicsByField = new Map();
+let prereqMap = new Map();
 let userSettings = null;
 let userStatuses = [];
 let userFields = [];
@@ -195,6 +199,8 @@ async function fetchAllRows(queryFactory, pageSize = 1000) {
 async function loadApp() {
   showLoading();
   const user = session.user;
+  // 最初に出る日課の読み込みをカリキュラムの取得と並列に始めておく
+  prefetchRoutines().catch(() => {});
   const statusDataPromise = fetchUserStatusData(user);
 
   const [profileRow, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
@@ -225,6 +231,7 @@ async function loadApp() {
 
   topicById = new Map(topics.map(t => [t.topic_id, t]));
   fieldById = new Map(fields.map(f => [f.field_id, f]));
+  buildCurriculumIndex();
   applyUserStatusData(await statusDataPromise);
 
   setShellVisible(true);
@@ -274,102 +281,42 @@ function applyUserStatusData(result) {
   topicValues = result.valueRows;
 }
 
-function orderedFields(subjectId) {
-  return fields.filter(f => f.subject_id === subjectId).sort((a,b) => a.sort_order - b.sort_order || a.field_id.localeCompare(b.field_id));
+function groupSorted(rows, key, compare) {
+  const map = new Map();
+  rows.forEach(r => {
+    if (!map.has(r[key])) map.set(r[key], []);
+    map.get(r[key]).push(r);
+  });
+  map.forEach(list => list.sort(compare));
+  return map;
 }
 
-function orderedTopics(subjectId) {
-  const fs = orderedFields(subjectId);
-  const fOrder = new Map(fs.map((f,i) => [f.field_id, i]));
-  return topics.filter(t => fOrder.has(t.field_id)).sort((a,b) =>
-    fOrder.get(a.field_id) - fOrder.get(b.field_id) ||
-    a.recommended_order - b.recommended_order ||
-    a.topic_id.localeCompare(b.topic_id)
-  );
-}
-
-function subjectMasteryCount(subjectId) {
-  return orderedTopics(subjectId).reduce((n,t) => n + (mastery.has(t.topic_id) ? 1 : 0), 0);
-}
-
-function nextTopic(subjectId) {
-  const list = orderedTopics(subjectId);
-  const unmastered = list.filter(t => !mastery.has(t.topic_id));
-  if (!unmastered.length) return null;
-  const prereqMap = new Map();
+function buildCurriculumIndex() {
+  fieldsBySubject = groupSorted(fields, 'subject_id', (a,b) => a.sort_order - b.sort_order || a.field_id.localeCompare(b.field_id));
+  topicsByField = groupSorted(topics, 'field_id', (a,b) => a.recommended_order - b.recommended_order || a.topic_id.localeCompare(b.topic_id));
+  prereqMap = new Map();
   prerequisites.forEach(p => {
     if (!prereqMap.has(p.topic_id)) prereqMap.set(p.topic_id, []);
     prereqMap.get(p.topic_id).push(p.prerequisite_topic_id);
   });
-  const ready = unmastered.filter(t => (prereqMap.get(t.topic_id) || []).every(id => mastery.has(id)));
-  if (!ready.length) return unmastered[0];
-  return ready.reduce((best, t) => (t.importance || 0) > (best.importance || 0) ? t : best);
 }
 
-function renderHome() {
-  currentSubjectId = null;
-  const m = main();
-  m.innerHTML = '';
-  subjects.forEach(s => {
-    const count = subjectMasteryCount(s.subject_id);
-    const next = nextTopic(s.subject_id);
-    const d = document.createElement('div');
-    d.className = 'subject';
-    d.innerHTML = `<div class="subjectline"><span class="icon">${esc(s.icon)}</span><span class="name">${esc(s.name_ja)}</span><span class="en">${esc(s.name_en)}</span><span class="stars">★${count}</span></div><div class="meta">マスター済：${count}トピック　${next ? 'NEXT：'+esc(next.name) : 'COMPLETE'}</div>`;
-    d.onclick = () => renderSubject(s.subject_id);
-    m.appendChild(d);
-  });
+function orderedFields(subjectId) {
+  return fieldsBySubject.get(subjectId) || [];
 }
 
-function renderSubject(subjectId) {
-  currentSubjectId = subjectId;
-  const subject = subjects.find(s => s.subject_id === subjectId);
-  const list = orderedTopics(subjectId);
-  const count = subjectMasteryCount(subjectId);
-  const searchable = list.length >= 10;
-  const m = main();
-  m.innerHTML = `<button class="back">← 学問</button><div class="mathhead"><span class="icon">${esc(subject.icon)}</span><h2>${esc(subject.name_ja)}</h2><span class="en">${esc(subject.name_en)}</span><span class="stars">★${count}</span></div>${searchable ? '<input class="search" placeholder="トピックを検索" id="q">' : ''}<div id="topics"></div>`;
-  m.querySelector('.back').onclick = () => { setActiveTab('subjects'); renderHome(); };
-  if (searchable) {
-    const q = $('#q');
-    q.value = currentSearch;
-    q.oninput = () => { currentSearch = q.value; drawSubject(subjectId, currentSearch); };
-  } else {
-    currentSearch = '';
-  }
-  drawSubject(subjectId, searchable ? currentSearch : '');
+function fieldTopics(fieldId) {
+  return topicsByField.get(fieldId) || [];
 }
 
-function drawSubject(subjectId, query) {
-  const box = $('#topics');
-  if (!box) return;
-  box.innerHTML = '';
-  const fs = orderedFields(subjectId);
-  const q = query.trim().toLowerCase();
-  let shown = 0;
-  fs.forEach(f => {
-    const list = topics.filter(t => t.field_id === f.field_id)
-      .sort((a,b) => a.recommended_order - b.recommended_order || a.topic_id.localeCompare(b.topic_id))
-      .filter(t => !q || `${t.name}${t.source || ''}${f.name}`.toLowerCase().includes(q));
-    if (!list.length) return;
-    shown += list.length;
-    const sec = document.createElement('section');
-    sec.className = 'area';
-    const hideHeading = fs.length === 1 && f.field_id.endsWith('-prototype');
-    if (!hideHeading) sec.innerHTML = `<h3>${esc(f.name)}</h3>`;
-    list.forEach(t => {
-      const on = mastery.has(t.topic_id);
-      const d = document.createElement('div');
-      d.className = 'topic' + (on ? ' on' : '');
-      const source = t.source && t.source !== '仮トピック' ? `<div class="source">${esc(t.source)}</div>` : '';
-      d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody"><div class="tname">${esc(t.name)}</div>${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}`;
-      d.onclick = () => toggleTopic(t.topic_id, on, subjectId, query);
-      sec.appendChild(d);
-    });
-    box.appendChild(sec);
-  });
-  if (!shown) box.innerHTML = '<div class="empty">該当なし</div>';
+function orderedTopics(subjectId) {
+  return orderedFields(subjectId).flatMap(f => fieldTopics(f.field_id));
 }
+
+// 画面は subject-ui.js が差し替える
+function renderHome() {}
+function renderSubject() {}
+function drawSubject() {}
 
 async function toggleTopic(topicId, wasOn, subjectId, query) {
   if (wasOn) mastery.delete(topicId); else mastery.add(topicId);
