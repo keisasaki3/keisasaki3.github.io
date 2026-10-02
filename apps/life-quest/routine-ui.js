@@ -184,6 +184,20 @@ function weekdaysLabel(bits) {
 
 // ---------- 読み込み ----------
 
+// 読み込み中のPromise（起動時の先読みと画面表示で共有する）
+let routineLoad = null;
+let routineLoadUserId = null;
+
+function prefetchRoutines() {
+  const uid = session.user.id;
+  if (!routineLoad || routineLoadUserId !== uid) {
+    routineLoadUserId = uid;
+    const load = loadRoutines().finally(() => { if (routineLoad === load) routineLoad = null; });
+    routineLoad = load;
+  }
+  return routineLoad;
+}
+
 async function loadRoutines() {
   const uid = session.user.id;
   const res = await sb.from('quest_routines').select('*').eq('user_id', uid).order('sort_order').order('routine_id');
@@ -215,7 +229,7 @@ async function renderRoutines() {
     routineDay = null;
     m.innerHTML = '<div class="loading">Loading...</div>';
     try {
-      await loadRoutines();
+      await prefetchRoutines();
     } catch (e) {
       if (!document.querySelector('[data-tab="routines"]')?.classList.contains('active')) return;
       m.innerHTML = `<div class="empty">${esc(e?.message || tr('loadFailed'))}</div>`;
