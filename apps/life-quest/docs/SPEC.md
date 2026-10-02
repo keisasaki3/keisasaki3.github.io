@@ -402,6 +402,10 @@ ChatGPT Library内の旧仕様書は履歴資料であり、GitHub版と矛盾�
 
 選択は端末ごとに `localStorage` の `lifeQuestTheme` へ保存する（DBには保存しない）。色は `theme.css` の CSS変数で定義する。
 
+### PWA（2026-10-02 Keita決定）
+
+ストア配布はせず、Webのまま「ホーム画面に追加」で全画面起動できるPWAにする。`manifest.webmanifest`（standalone、背景・テーマ色 `#15131d`）、`app-icons/`（スライム勇者のGB風アイコン。apple-touch-icon 180、192/512、maskable 192/512）、`sw.js`（同じオリジンのGETはネット優先、オフライン時だけキャッシュ。Supabase等の外部通信は扱わない）。
+
 ## 17. 日課
 
 2026-10-02 Keita依頼。毎日やることを登録してチェックし、一日の結果をGoogleカレンダーに残す。下タブは「日課」（いちばん左）で、アプリを開いたときに最初に出る画面（初回のプリセット選択が済んでいれば。2026-10-02 Keita依頼）。見出しは「日課🔥」（`routine-ui.js` / `routine.css`）。

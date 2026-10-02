@@ -94,9 +94,9 @@
 - [x] NEWS記事に英語見出し `headline_en` を追加（2026-09-27のClaude版から出している。アプリ側は対応済みで、無い日は日本語見出しを表示）
 - [x] NEWS記事を life-quest-newspaper-data の `STYLE.md` の基準で書く（ひとこと見出し＋事実とAIの解説で2〜3文＋出典、英日両方。2026-09-27 Keita決定。2026-09-27のClaude版から出している。アプリ側は対応済み）
 
-## PWA化（2026-10-02 相談で方針決定、「実装」待ち）
+## PWA化（2026-10-02 実装）
 
-- [ ] Webのまま PWA 化する（ストア配布はしない）。manifest.json、アプリアイコン（apple-touch-icon 180 / 192 / 512 maskable、決定済みのスライム勇者）、最小の Service Worker を追加し、ホーム画面から全画面起動できるようにする
+- [x] Webのまま PWA 化する（ストア配布はしない）。manifest.json、アプリアイコン（apple-touch-icon 180 / 192 / 512 maskable、決定済みのスライム勇者）、最小の Service Worker を追加し、ホーム画面から全画面起動できるようにする
 
 ## 運用ルール
 
