@@ -9,7 +9,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, 
 
 const THEME_KEY = 'lifeQuestTheme';
 const DEFAULT_THEME = 'dracula';
-const THEMES = ['tokyo-night', 'dracula', 'nord', 'synthwave', 'amber', 'phosphor'];
+const THEMES = ['tokyo-night', 'dracula', 'nord', 'synthwave', 'amber', 'phosphor', 'gameboya', 'gameboya-pocket', 'gameboya-light', 'gameboya-color', 'gameboya-advanz', 'famicoso', 'super-famicoso', 'virtual-boya', 'mado95', 'yusha', 'komonjo', 'sakuramochi', 'gogo3ji', 'slime-blue', 'e-paper', 'neojiwo', 'wonderswan', 'pc-enjin', 'mega-driver', 'tamagoppi', 'shinkai', 'himawari', 'uji-matcha', 'cafe-au-lait', 'hoshizora'];
 
 function currentTheme() {
   let saved = null;
@@ -20,6 +20,9 @@ function currentTheme() {
 function applyTheme(theme) {
   const value = THEMES.includes(theme) ? theme : DEFAULT_THEME;
   document.documentElement.dataset.theme = value;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  const bar = getComputedStyle(document.documentElement).getPropertyValue('--bar').trim();
+  if (meta && bar) meta.content = bar;
   try { localStorage.setItem(THEME_KEY, value); } catch {}
 }
 
