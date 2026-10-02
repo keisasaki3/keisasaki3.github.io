@@ -345,23 +345,37 @@ function celebrateCheck(r, day, streakBefore, wasAllDone) {
   const row = /** @type {HTMLElement|null} */ (document.querySelector(`.rcard[data-rid="${r.routine_id}"]`));
   if (!row) return;
   row.classList.add('pop');
-  // 一覧の枠で切れないよう、星は画面に直接重ねて飛ばす
+  // 一覧の枠で切れないよう、火の粉は画面に直接重ねて飛ばす
   const box = row.querySelector('.rchk').getBoundingClientRect();
   const burst = document.createElement('div');
   burst.className = 'rburst';
   burst.style.left = `${box.left + box.width / 2}px`;
   burst.style.top = `${box.top + box.height / 2}px`;
-  for (let i = 0; i < 10; i++) {
-    const star = document.createElement('i');
-    star.className = 'rstar';
-    star.textContent = '★';
-    const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-    star.style.setProperty('--dx', `${Math.round(Math.cos(a) * 56)}px`);
-    star.style.setProperty('--dy', `${Math.round(Math.sin(a) * 56)}px`);
-    burst.appendChild(star);
+  // 花火の火の粉: 速さと向きをばらして飛ばし、空気で減速しながら重力で少し落ちて消える
+  const colors = ['#ffd700', '#ffe866', '#fff3b0', '#ffb84d'];
+  for (let i = 0; i < 28; i++) {
+    const spark = document.createElement('i');
+    spark.className = 'rspark';
+    const size = 2 + Math.random() * 2.5;
+    spark.style.width = spark.style.height = `${size}px`;
+    spark.style.background = colors[i % colors.length];
+    spark.style.boxShadow = `0 0 ${size * 2}px ${colors[i % colors.length]}`;
+    burst.appendChild(spark);
+    const a = Math.random() * Math.PI * 2;
+    const reach = 35 + Math.random() * 40;
+    const dur = 900 + Math.random() * 500;
+    const frames = [];
+    for (let k = 0; k <= 10; k++) {
+      const t = k / 10;
+      const drag = 1 - Math.exp(-4 * t);
+      const x = Math.cos(a) * reach * drag;
+      const y = Math.sin(a) * reach * drag + 70 * t * t;
+      frames.push({ transform: `translate(${x.toFixed(1)}px,${y.toFixed(1)}px)`, opacity: t < 0.6 ? 1 : (1 - t) / 0.4 * (k % 2 ? 0.6 : 1) });
+    }
+    spark.animate(frames, { duration: dur, easing: 'linear', fill: 'forwards' });
   }
   document.body.appendChild(burst);
-  setTimeout(() => burst.remove(), 900);
+  setTimeout(() => burst.remove(), 1500);
   const gain = routineItemStreak(r) - streakBefore;
   if (gain > 0) {
     const streak = row.querySelector('.rstreak');
