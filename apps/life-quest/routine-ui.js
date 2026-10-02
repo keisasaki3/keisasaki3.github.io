@@ -345,15 +345,23 @@ function celebrateCheck(r, day, streakBefore, wasAllDone) {
   const row = /** @type {HTMLElement|null} */ (document.querySelector(`.rcard[data-rid="${r.routine_id}"]`));
   if (!row) return;
   row.classList.add('pop');
-  const chk = row.querySelector('.rchk');
-  for (let i = 0; i < 8; i++) {
+  // 一覧の枠で切れないよう、星は画面に直接重ねて飛ばす
+  const box = row.querySelector('.rchk').getBoundingClientRect();
+  const burst = document.createElement('div');
+  burst.className = 'rburst';
+  burst.style.left = `${box.left + box.width / 2}px`;
+  burst.style.top = `${box.top + box.height / 2}px`;
+  for (let i = 0; i < 10; i++) {
     const star = document.createElement('i');
     star.className = 'rstar';
-    const a = (i / 8) * Math.PI * 2;
-    star.style.setProperty('--dx', `${Math.round(Math.cos(a) * 24)}px`);
-    star.style.setProperty('--dy', `${Math.round(Math.sin(a) * 24)}px`);
-    chk.appendChild(star);
+    star.textContent = '★';
+    const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+    star.style.setProperty('--dx', `${Math.round(Math.cos(a) * 56)}px`);
+    star.style.setProperty('--dy', `${Math.round(Math.sin(a) * 56)}px`);
+    burst.appendChild(star);
   }
+  document.body.appendChild(burst);
+  setTimeout(() => burst.remove(), 900);
   const gain = routineItemStreak(r) - streakBefore;
   if (gain > 0) {
     const streak = row.querySelector('.rstreak');
