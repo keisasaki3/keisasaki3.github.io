@@ -506,7 +506,11 @@ document.querySelector('[data-tab="subjects"]').onclick = () => {
 };
 document.querySelector('[data-tab="settings"]').onclick = renderSettings;
 
+// 他のJS（routine-ui.js等）の読み込みが終わる前に起動処理が走らないよう、bootまではイベントを無視してbootに任せる
+let booted = false;
+
 sb.auth.onAuthStateChange((event, nextSession) => {
+  if (!booted) return;
   // supabase-jsは起動時とタブ復帰時にも同じユーザーでSIGNED_INを出すので、そのときは全体を読み直さない
   if (event === 'SIGNED_IN' && nextSession && nextSession.user.id === activeUserId) {
     session = nextSession;
@@ -520,6 +524,7 @@ sb.auth.onAuthStateChange((event, nextSession) => {
 
 // subject-ui.js / newspaper-ui.js が描画関数を差し替えてから起動する
 document.addEventListener('DOMContentLoaded', async function boot() {
+  booted = true;
   showLoading();
   const { data, error } = await sb.auth.getSession();
   if (error) {
