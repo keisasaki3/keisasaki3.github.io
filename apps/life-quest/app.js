@@ -3,8 +3,22 @@ const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx
 const LEGACY_KEY = 'lifeQuestMathV06Public';
 const GOOGLE_AUTH_ENABLED = true;
 
+// 応答が返らない通信で Loading... のまま止まらないよう、Supabaseの通信は15秒で打ち切ってエラーにする
+const SUPABASE_TIMEOUT_MS = 15000;
+function fetchWithTimeout(input, init = {}) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(new Error('timeout')), SUPABASE_TIMEOUT_MS);
+  const outer = init.signal;
+  if (outer) {
+    if (outer.aborted) ctrl.abort(outer.reason);
+    else outer.addEventListener('abort', () => ctrl.abort(outer.reason), { once: true });
+  }
+  return fetch(input, { ...init, signal: ctrl.signal }).finally(() => clearTimeout(timer));
+}
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  global: { fetch: fetchWithTimeout }
 });
 
 const THEME_KEY = 'lifeQuestTheme';
