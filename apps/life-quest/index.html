@@ -44,5 +44,8 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <script src="./routine-ui.js"></script>
 <script src="./newspaper-service.js"></script>
 <script src="./newspaper-ui.js"></script>
+<script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+</script>
 </body>
 </html>

@@ -406,6 +406,7 @@ ChatGPT Library内の旧仕様書は履歴資料であり、GitHub版と矛盾�
 
 2026-10-02 Keita決定。ゲームボーイ風4色ドット絵の「角帽をかぶり左手に剣を持つスライム勇者（剣先にキラリ）」。
 - `manifest.webmanifest`（`display: standalone`）と `app-icons/` の画像で、ホーム画面に追加すると全画面アプリとして起動する。
+- `sw.js`（最小のService Worker）: 同じオリジンのGETはネット優先で、オフライン時だけキャッシュを返す。Supabase等の外部通信は扱わない。ストア配布はしない（2026-10-02 Keita決定）。
 - `apple-touch-icon.png`（180）、`icon-192.png` / `icon-512.png`（purpose any）、`icon-maskable-192.png` / `icon-maskable-512.png`（Androidの丸切り抜きでも欠けないよう余白を広げた版）。
 - ブラウザのタブ用は顔と角帽だけの簡略版 `favicon-16.png` / `favicon-32.png`。
 - 元絵と書き出しスクリプトは共有フォルダ `life-quest/app-icon/`。
