@@ -399,8 +399,35 @@ ChatGPT Library内の旧仕様書は履歴資料であり、GitHub版と矛盾�
 | `synthwave` | シンセウェイブ |
 | `amber` | アンバー端末 |
 | `phosphor` | グリーン端末 |
+| `gameboya` | ゲームボーヤ（GAME BOYA） |
+| `gameboya-pocket` | ゲームボーヤ ポケッツ（GAME BOYA POCKETS） |
+| `gameboya-light` | ゲームボーヤ ライツ（GAME BOYA LIGHTS） |
+| `gameboya-color` | ゲームボーヤ カラー（GAME BOYA COLOR） |
+| `gameboya-advanz` | ゲームボーヤ アドバンズ（GAME BOYA ADVANZ） |
+| `famicoso` | ファミコソ（FAMICOSO） |
+| `super-famicoso` | スーパーファミコソ（SUPER FAMICOSO） |
+| `virtual-boya` | バーチャルボーヤ（VIRTUAL BOYA） |
+| `mado95` | まどOS 95（MADO OS 95） |
+| `yusha` | ゆうしゃのまど（YUSHA NO MADO） |
+| `komonjo` | 古地図（KOMONJO） |
+| `sakuramochi` | 桜もち（SAKURAMOCHI） |
+| `gogo3ji` | 午後三時（GOGO SANJI） |
+| `slime-blue` | スライムブルー（SLIME BLUE） |
+| `e-paper` | 電子ペーパー（E-PAPER） |
+| `neojiwo` | ネオジヲ（NEO JIWO） |
+| `wonderswan` | ワンダースワソ（WONDER SWAN） |
+| `pc-enjin` | PCエンジソ（PC ENJIN） |
+| `mega-driver` | メガドライバ（MEGA DRIVER） |
+| `tamagoppi` | たまごっぴ（TAMAGOPPI） |
+| `shinkai` | 深海（SHINKAI） |
+| `himawari` | ひまわり（HIMAWARI） |
+| `uji-matcha` | 宇治抹茶（UJI MATCHA） |
+| `cafe-au-lait` | カフェオレ（CAFE AU LAIT） |
+| `hoshizora` | 星空ドット（HOSHIZORA） |
 
 選択は端末ごとに `localStorage` の `lifeQuestTheme` へ保存する（DBには保存しない）。色は `theme.css` の CSS変数で定義する。
+
+`gameboya` 以降は2026-10-02 Keita採用の追加テーマ（名前はパロディ）。明るい地のテーマは `color-scheme: light`。ゲーム機系の一部は全体をDotGothic16にし、液晶系（ゲームボーヤ/ポケッツ/ライツ、バーチャルボーヤ、ワンダースワソ、たまごっぴ）はドット絵アイコンを `index.html` のSVGフィルタで液晶の階調に変換する。ブラウザのテーマ色（`meta theme-color`）は選択テーマの `--bar` に合わせる。NEWSPAPERの紙面はテーマに関係なく同じ配色。
 
 ### アプリアイコン
 
