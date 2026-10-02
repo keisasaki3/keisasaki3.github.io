@@ -96,7 +96,8 @@
 
 ## PWA化（2026-10-02 相談で方針決定、「実装」待ち）
 
-- [ ] Webのまま PWA 化する（ストア配布はしない）。manifest.json、アプリアイコン（apple-touch-icon 180 / 192 / 512 maskable、決定済みのスライム勇者）、最小の Service Worker を追加し、ホーム画面から全画面起動できるようにする
+- [x] manifest とアプリアイコン（apple-touch-icon 180 / 192 / 512 / maskable、スライム勇者）を追加し、ホーム画面から全画面起動できるようにする（2026-10-02）
+- [ ] 最小の Service Worker を追加する（Webのまま PWA 化、ストア配布はしない）
 
 ## 運用ルール
 
