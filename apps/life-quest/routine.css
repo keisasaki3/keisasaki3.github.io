@@ -45,3 +45,24 @@
 .iconpicks{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
 .iconpick{aspect-ratio:1;min-height:36px;border:2px solid transparent;border-radius:6px;background:var(--bg);font-size:20px;cursor:pointer;padding:0}
 .iconpick.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 22%,transparent)}
+/* チェックの演出（§17） */
+.rchk,.rstreak{position:relative}
+.rcard.pop .rchk{animation:rchkpop .35s ease-out}
+.rcard.pop .ricon{animation:riconhop .45s ease-out}
+@keyframes rchkpop{0%{transform:scale(.4)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes riconhop{0%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}70%{transform:translateY(2px)}}
+.rstar{position:absolute;left:50%;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;background:var(--gold);pointer-events:none;animation:rstarfly .55s ease-out forwards}
+.rstar:nth-child(even){background:var(--c)}
+@keyframes rstarfly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(.3);opacity:0}}
+.rstreak.bump{animation:rstreakglow .8s ease-out}
+@keyframes rstreakglow{0%{transform:scale(1);text-shadow:none}30%{transform:scale(1.35);text-shadow:0 0 10px var(--gold),0 0 4px var(--gold)}100%{transform:scale(1);text-shadow:none}}
+.rplus{position:absolute;right:0;top:-4px;font-size:13px;color:var(--gold);pointer-events:none;animation:rplusup .9s ease-out forwards}
+@keyframes rplusup{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-16px);opacity:0}}
+.rclear{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+.rconfetti{position:absolute;inset:0;pointer-events:none}
+.rconfetti i{position:absolute;top:-12px;width:8px;height:8px;animation:rconfall 1.9s ease-in forwards}
+.rconfetti i:nth-child(3n){width:6px;height:12px}
+@keyframes rconfall{0%{transform:translate(0,0) rotate(0)}100%{transform:translate(var(--drift),105vh) rotate(540deg)}}
+.rclearband{position:relative;width:100%;padding:18px 12px;text-align:center;font-family:"DotGothic16",monospace;font-size:26px;letter-spacing:.06em;color:var(--gold);background:color-mix(in srgb,var(--bg) 94%,transparent);border-top:3px solid var(--gold);border-bottom:3px solid var(--gold);animation:rbandin 2.6s ease-out forwards}
+@keyframes rbandin{0%{transform:scaleY(0);opacity:0}12%{transform:scaleY(1.1);opacity:1}20%{transform:scaleY(1)}80%{opacity:1}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.rcard.pop .rchk,.rcard.pop .ricon,.rstreak.bump{animation:none}.rstar,.rconfetti{display:none}}
