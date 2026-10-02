@@ -310,6 +310,7 @@ function drawRoutineDay(body, day, today) {
     const row = document.createElement(off ? 'div' : 'button');
     if (!off) row.type = 'button';
     row.className = 'rcard' + (on ? ' on' : '') + (off ? ' rest' : '');
+    row.dataset.rid = r.routine_id;
     row.style.setProperty('--c', icon.color);
     const side = off ? `<span class="rrest">${esc(tr('routine.rest'))}</span>` : `<span class="rchk">${on ? '✓' : ''}</span>`;
     row.innerHTML = `<span class="ricon">${icon.emoji}</span><span class="rbody"><span class="rname">${esc(r.name)}</span>${r.memo ? `<span class="rmemo">${esc(r.memo)}</span>` : ''}<span class="rdots">${dots.join('')}</span></span><span class="rside"><span class="rstreak${streak ? '' : ' zero'}">📚${streak}</span>${side}</span>`;
@@ -323,8 +324,11 @@ function drawRoutineDay(body, day, today) {
 async function toggleRoutine(r, day) {
   const key = checkKey(r.routine_id, day);
   const wasOn = routineChecks.has(key);
+  const streakBefore = routineItemStreak(r);
+  const allBefore = dayResult(day);
   if (wasOn) routineChecks.delete(key); else routineChecks.add(key);
   drawRoutines();
+  if (!wasOn) celebrateCheck(r, day, streakBefore, allBefore.total > 0 && allBefore.done === allBefore.total);
   const req = wasOn
     ? sb.from('quest_routine_checks').delete().eq('routine_id', r.routine_id).eq('day', day)
     : sb.from('quest_routine_checks').insert({ routine_id: r.routine_id, user_id: session.user.id, day });
@@ -334,6 +338,48 @@ async function toggleRoutine(r, day) {
     drawRoutines();
     alert(error.message);
   }
+}
+
+// チェックを入れたときの演出（SPEC §17）。✓が弾んで星が散る、📚が増えたら光って+1、その日を全部終えたら達成の帯と紙吹雪
+function celebrateCheck(r, day, streakBefore, wasAllDone) {
+  const row = /** @type {HTMLElement|null} */ (document.querySelector(`.rcard[data-rid="${r.routine_id}"]`));
+  if (!row) return;
+  row.classList.add('pop');
+  const chk = row.querySelector('.rchk');
+  for (let i = 0; i < 8; i++) {
+    const star = document.createElement('i');
+    star.className = 'rstar';
+    const a = (i / 8) * Math.PI * 2;
+    star.style.setProperty('--dx', `${Math.round(Math.cos(a) * 24)}px`);
+    star.style.setProperty('--dy', `${Math.round(Math.sin(a) * 24)}px`);
+    chk.appendChild(star);
+  }
+  const gain = routineItemStreak(r) - streakBefore;
+  if (gain > 0) {
+    const streak = row.querySelector('.rstreak');
+    streak.classList.add('bump');
+    const plus = document.createElement('span');
+    plus.className = 'rplus';
+    plus.textContent = `+${gain}`;
+    streak.appendChild(plus);
+  }
+  const all = dayResult(day);
+  if (!wasAllDone && all.total && all.done === all.total) showRoutineClear(day === jstDay());
+}
+
+function showRoutineClear(isToday) {
+  document.querySelector('.rclear')?.remove();
+  const box = document.createElement('div');
+  box.className = 'rclear';
+  const colors = ['var(--gold)', 'var(--acc)', 'var(--green)', 'var(--violet)'];
+  const bits = [];
+  for (let i = 0; i < 36; i++) {
+    bits.push(`<i style="left:${Math.round(Math.random() * 100)}%;background:${colors[i % 4]};animation-delay:${(Math.random() * 0.5).toFixed(2)}s;--drift:${Math.round(Math.random() * 80 - 40)}px"></i>`);
+  }
+  box.innerHTML = `<div class="rconfetti">${bits.join('')}</div><div class="rclearband">${esc(tr(isToday ? 'routine.clearToday' : 'routine.clear'))}</div>`;
+  box.onclick = () => box.remove();
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 2600);
 }
 
 // ---------- 編集 ----------
