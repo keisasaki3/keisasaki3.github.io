@@ -151,3 +151,23 @@
 - [ ] サムネを自分でアップできるようにする（Supabase Storage のバケットと本人のみのRLSを migration で作る、端末で128px程度に縮小、未設定はスライム勇者）。本番適用はKeitaに確認してから
 - [ ] 設定にジョブ名（自由入力、12文字）を追加し、`quest_user_settings` に保存する（migrationで列追加）
 - [ ] 肩書を IDEAS §10 の12段階にする（日英とも i18n.js へ）
+
+## NEWSPAPER の DAILY QUIZ / DAILY CULTURE を一時非表示（2026-10-03 Keita依頼、「実装」まで保留）
+
+現状: `newspaper-ui.js` の `renderNewspaper` 内で `renderCultureSection(issue.daily_culture)` と `renderQuizSection(issue.daily_quiz)` を MARKETS の下に並べて表示している。
+
+- [ ] 上の2行の呼び出しだけを外して表示しない（関数・CSS・`newspaper-service.js` の必須チェック・データ生成はそのまま残し、戻すときは2行を戻すだけ）
+- [ ] （任意・Keita判断）非表示が長引くなら、`life-quest-newspaper-data` の `GENERATE.md` と `scripts/validate_issue.py` から QUIZ / CULTURE の生成を外して毎朝のroutineのトークンを減らす（アプリ側の必須チェックも同時に緩める）
+
+## NEWSPAPER の MARKETS（マーケット君）を見やすく（2026-10-03 Keita依頼、「実装」まで保留）
+
+現状: `newspaper-ui.js` の `renderMarketsSection` / `formatMarketChange` / `formatMarketValue`、`newspaper.css` の `.newspaper-market-*`。前日比は「+0.73%」「-0.94%」「+3.5bp」を同じ茶色（`--ink2`）で表示し、色・記号の区別がない。値の小数桁は銘柄ごとにバラバラ（`4,091` と `68,309.46`、`0%` と `-1.5%`）。
+
+色の慣習: 海外（Yahoo Finance US・Bloomberg 等）は上昇＝緑・下落＝赤。日本の株サイトは逆で上昇＝赤・下落＝青（株探の CSS は `.up{color:#f30}` `.down{color:#06f}`）。
+
+- [ ] A. 前日比を上昇＝緑・下落＝赤・0＝灰で色分けする（推奨は海外式。紙面は全部英語表記の銘柄なので合わせる）。色は紙面固定の茶色パレットの上で読める濃さ（例 緑 `#1f7a3a`、赤 `#b3261e`）を `.newspaper-paper` の変数に足す。金利（bp）・為替も符号どおりに色を付ける
+- [ ] B. 前日比に ▲ / ▼ を付ける（例 `▲0.73%` `▼0.94%`、0 は `±0.00%`）。色が見分けにくいテーマ・色覚でも分かる
+- [ ] C. 前日比の小数を揃える（% は常に2桁: `0.0`→`0.00%`、`-1.5`→`-1.50%`。bp は1桁）
+- [ ] D. 値の小数を種類ごとに揃える（株価指数・商品 2桁、USD/JPY・EUR/JPY 2桁、EUR/USD 4桁、金利 3桁、BITCOIN 0桁）
+- [ ] E. MARKET MOVES の各項目の見出しにも、データの `move`（例 `-0.94%`）を A・B と同じ色と記号で並べる（今は銘柄名だけ）
+- [ ] F. （任意）値幅（例 日経 `-647.26`）も出す。データに無いので `life-quest-newspaper-data` の生成手順と `scripts/fetch_markets.py` に `change` 項目を足す必要がある
