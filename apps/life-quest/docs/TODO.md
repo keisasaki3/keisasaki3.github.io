@@ -131,3 +131,9 @@
 現状: `theme.css` の `[data-theme="e-paper"] .pixicon` に `grayscale` フィルタがかかり、ドット絵アイコンが白黒になっている。
 
 - [x] 電子ペーパーテーマでもステータスのアイコンを色付き（元の色）で表示する（2026-10-03 実装、フィルタを削除）
+
+## 全テーマでステータスアイコンのモノクロ加工をやめる（2026-10-03 Keita依頼、「実装」まで保留）
+
+現状: `theme.css` の `[data-theme="gameboya"|"gameboya-pocket"|"gameboya-light"|"virtual-boya"|"wonderswan"|"tamagoppi"] .pixicon` に液晶の階調フィルタ（`#lq-lcd-*`、定義は `index.html`）がかかり、アイコンが単色寄りになっている。電子ペーパーは対応済み。
+
+- [ ] 上の6テーマの `.pixicon` フィルタを削除し、全テーマで元の色のアイコンにする。使われなくなった `#lq-lcd-*` フィルタ定義も `index.html` から消す。
