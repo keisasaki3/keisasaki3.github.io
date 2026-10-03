@@ -202,7 +202,7 @@ NEXTの候補はチェック型トピックのみ。自分で追加したトピ�
 - テーマ変更（§16）
 - 言語（日本語 / English）
 - NEWSPAPERの言語（English / 日本語）
-- お世話係（メイド / 執事）の種類と名前（§14。端末ごとに `localStorage`: `lifeQuestButlerType`、`lifeQuestButlerName`）
+- コンシェルジュ（メイド / 執事）の種類と名前（§14。端末ごとに `localStorage`: `lifeQuestButlerType`、`lifeQuestButlerName`）
 - ログアウト
 - 全ステータスをリセット
 - 全データをリセット
@@ -294,7 +294,7 @@ Supabaseスキーマ変更はGit管理migrationと実DBを同期して更新す�
 
 NEWSPAPERの紙面はテーマに関係なく生成り地に茶系の文字のシックな配色とし（枠だけテーマ色。2026-09-27 Keita選択のG案）、フォントはBBC Newsに寄せて、英語見出し `Source Serif 4`、英語本文 `Noto Sans`、日本語 `Noto Sans JP` を使う（2026-09-27 Keita依頼）。文字は一回り大きめにし、幅600px以上（PCなど）では本文と見出しをもう一段大きくする（2026-09-27 Keita依頼）（§16 の等幅フォントは使わない）。
 
-NEWSPAPERの文章はすべて、ユーザーが名前をつけたメイドまたは執事が語り手を務める（2026-10-03 Keita決定。そのほうが頭に入りやすい）。口調は生成側（`life-quest-newspaper-data` の `STYLE.md`）で1種類に固定し、メイドか執事かで文章は変えない（種類は名前と同じく表示用の設定）。本文中の名乗りには目印 `{{narrator}}` を入れ、アプリが表示時に設定した名前（未設定ならメイド／執事）に置き換える（`fillNarrator`、`i18n.js`）。メイド/執事の見た目（アイコン）と冒険機能（コンシェルジュ）は未実装（`IDEAS.md` §9）。
+NEWSPAPERの文章はすべて、ユーザーが名前をつけたメイドまたは執事が語り手を務める（2026-10-03 Keita決定。そのほうが頭に入りやすい）。口調は生成側（`life-quest-newspaper-data` の `STYLE.md`）で1種類に固定し、メイドか執事かで文章は変えない（種類は名前と同じく表示用の設定）。本文中の名乗りには目印 `{{narrator}}` を入れ、アプリが表示時に設定した名前（未設定ならメイド／執事）に置き換える（`fillNarrator`、`i18n.js`）。メイド/執事のドット絵アイコン（`icons/maid.svg`、`icons/butler.svg`）は設定画面の種類の横に出す。このキャラの呼び名は「コンシェルジュ」（2026-10-03 Keita）。冒険機能は保留（`IDEAS.md` §9）。
 
 表示順は以下で固定する。
 
