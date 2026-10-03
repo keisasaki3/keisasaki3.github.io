@@ -84,17 +84,48 @@ function renderNewsSection(news) {
   return `<section class="newspaper-section newspaper-news"><h2>NEWS</h2>${articles}</section>`;
 }
 
-/** @param {number|string} value */
-function formatMarketValue(value) {
+/** 値の小数桁: 為替はEUR/USDだけ4桁・他は2桁、金利3桁、暗号資産0桁、株価・商品2桁 */
+/** @param {string} group @param {string} symbol */
+function marketValueDigits(group, symbol) {
+  if (group === 'rates') return 3;
+  if (group === 'crypto' || group === 'cryptos' || group === 'crypto_assets' || group === 'digital_assets') return 0;
+  if (group === 'fx') return /\/JPY$/.test(symbol) ? 2 : 4;
+  return 2;
+}
+
+/** @param {number|string} value @param {number} digits */
+function formatMarketValue(value, digits) {
   if (typeof value !== 'number') return esc(value);
-  return new Intl.NumberFormat('ja-JP', { maximumFractionDigits: 4 }).format(value);
+  return new Intl.NumberFormat('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+}
+
+/** 上昇=up・下落=down・変化なし=flat（海外式: 上昇が緑、下落が赤） */
+/** @param {number} n */
+function marketDir(n) {
+  return n > 0 ? 'up' : n < 0 ? 'down' : 'flat';
+}
+
+/** @param {number} n @param {number} digits @param {string} suffix */
+function formatSignedChange(n, digits, suffix) {
+  const dir = marketDir(n);
+  const mark = dir === 'up' ? '▲' : dir === 'down' ? '▼' : '±';
+  return `<span class="newspaper-change-${dir}">${mark}${Math.abs(n).toFixed(digits)}${suffix}</span>`;
 }
 
 /** @param {MarketItem} item */
 function formatMarketChange(item) {
-  if (typeof item.change_pct === 'number') return `${item.change_pct > 0 ? '+' : ''}${item.change_pct}%`;
-  if (typeof item.change_bp === 'number') return `${item.change_bp > 0 ? '+' : ''}${item.change_bp}bp`;
+  if (typeof item.change_pct === 'number') return formatSignedChange(item.change_pct, 2, '%');
+  if (typeof item.change_bp === 'number') return formatSignedChange(item.change_bp, 1, 'bp');
   return '';
+}
+
+/** "-0.94%" のような文字列を色と記号つきにする。読めなければそのまま */
+/** @param {unknown} move */
+function formatMoveText(move) {
+  const m = /^\s*([+\-−]?)\s*(\d+(?:\.\d+)?)\s*%\s*$/.exec(String(move || ''));
+  if (!m) return esc(move || '');
+  const n = Number(m[2]) * (m[1] === '-' || m[1] === '−' ? -1 : 1);
+  return formatSignedChange(n, 2, '%');
 }
 
 /** @param {string} key */
@@ -126,8 +157,8 @@ function renderMarketsSection(markets) {
       <div class="newspaper-market-list">${items.map(item => `
         <div class="newspaper-market-row">
           <div class="newspaper-market-symbol">${esc(item.symbol)}</div>
-          <div class="newspaper-market-value">${formatMarketValue(item.value)}${item.unit ? ` <span>${esc(item.unit)}</span>` : ''}</div>
-          <div class="newspaper-market-change">${esc(formatMarketChange(item))}</div>
+          <div class="newspaper-market-value">${formatMarketValue(item.value, marketValueDigits(key, String(item.symbol)))}${item.unit ? ` <span>${esc(item.unit)}</span>` : ''}</div>
+          <div class="newspaper-market-change">${formatMarketChange(item)}</div>
         </div>`).join('')}</div>
     </div>`;
   }).join('');
@@ -137,7 +168,7 @@ function renderMarketsSection(markets) {
     : Array.isArray(markets.moves) ? markets.moves : [];
   const marketMoves = moves.length ? `<div class="newspaper-market-moves">
     <div class="newspaper-detail-label">MARKET MOVES</div>
-    ${moves.map(move => `<div class="newspaper-market-move"><strong>${esc(move.title || move.asset || move.symbol || '')}</strong><div>${esc(move.body || move.explanation || move.summary || move.reason || '')}</div></div>`).join('')}
+    ${moves.map(move => `<div class="newspaper-market-move"><strong>${esc(move.title || move.asset || move.symbol || '')}${move.move ? ` ${formatMoveText(move.move)}` : ''}</strong><div>${esc(move.body || move.explanation || move.summary || move.reason || '')}</div></div>`).join('')}
   </div>` : '';
 
   return `<section class="newspaper-section newspaper-markets"><h2>MARKETS</h2>${markets.as_of ? `<div class="newspaper-as-of">${esc(markets.as_of)}</div>` : ''}${rows}${marketMoves}</section>`;
@@ -183,8 +214,6 @@ function NewspaperScreen(issue) {
     <div class="newspaper-header"><h2>NEWSPAPER</h2><div>${esc(issue.date)}</div></div>
     ${renderNewsSection(issue.news)}
     ${renderMarketsSection(issue.markets)}
-    ${renderCultureSection(issue.daily_culture)}
-    ${renderQuizSection(issue.daily_quiz)}
     </div>
   </div>`;
 }

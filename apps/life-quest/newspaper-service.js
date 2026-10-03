@@ -8,7 +8,7 @@
 /** @typedef {Object<string, unknown> & {as_of?:string,market_moves?:MarketMove[],moves?:MarketMove[]}} MarketData */
 /** @typedef {{title:string,body?:string,bodyMarkdown?:string,content?:string,text?:string,explore?:string[],explore_terms?:string[]}} DailyCulture */
 /** @typedef {{genre?:string,question:string,answer:string,explanation?:string,sources?:Source[]}} DailyQuiz */
-/** @typedef {{schemaVersion:number,date:string,timezone?:string,generated_at?:string,news:NewsArticle[],markets:MarketData,daily_culture:DailyCulture,daily_quiz:DailyQuiz}} NewspaperIssue */
+/** @typedef {{schemaVersion:number,date:string,timezone?:string,generated_at?:string,news:NewsArticle[],markets:MarketData,daily_culture?:DailyCulture,daily_quiz?:DailyQuiz}} NewspaperIssue */
 /** @typedef {{schemaVersion:number,date:string,path:string,published_at?:string}} NewspaperLatest */
 
 const NEWSPAPER_DATA_BASE = 'https://raw.githubusercontent.com/keisasaki3/life-quest-newspaper-data/main/';
@@ -40,9 +40,7 @@ function validateNewspaperIssue(value) {
     typeof data.schemaVersion !== 'number' ||
     typeof data.date !== 'string' ||
     !Array.isArray(data.news) ||
-    !isNewspaperObject(data.markets) ||
-    !isNewspaperObject(data.daily_culture) ||
-    !isNewspaperObject(data.daily_quiz)
+    !isNewspaperObject(data.markets)
   ) {
     throw new Error('NEWSPAPER JSON の必須項目が不足しています。');
   }

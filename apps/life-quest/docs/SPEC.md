@@ -300,8 +300,10 @@ NEWSPAPERの文章はすべて、ユーザーが名前をつけたメイドま�
 
 1. NEWS
 2. MARKETS
-3. DAILY CULTURE
-4. DAILY QUIZ
+3. DAILY CULTURE（2026-10-03 Keita指示で一時非表示・生成停止中。下の仕様は再開用に残す）
+4. DAILY QUIZ（同上）
+
+再開するときは `newspaper-ui.js` の `renderNewspaper` に `renderCultureSection(issue.daily_culture)` / `renderQuizSection(issue.daily_quiz)` を戻し、`life-quest-newspaper-data` の `GENERATE.md` の「停止中」記述に従って生成を戻す。データに `daily_culture` / `daily_quiz` が無い号でもアプリは表示できる。
 
 ### データ取得
 
@@ -334,6 +336,9 @@ NEWSをNEWSPAPERの主役とする。
 
 - JSON内の市場カテゴリ配列を基本に描画し、UI側へ固定銘柄をハードコードしない。
 - 各項目は symbol / value / unit / change_pct または change_bp を表示する。
+- 前日比は海外式で色分けする（上昇＝緑、下落＝赤、変化なし＝灰）。記号は ▲ / ▼ / ±、％は小数2桁、bpは小数1桁（2026-10-03 Keita）。金利（bp）・為替も符号どおり。日本の株サイトの慣習（上昇＝赤、下落＝青）とは逆。
+- 値の小数桁は種類ごとに固定: 株価指数・商品 2桁、`*/JPY` 2桁、EUR/USD 4桁、金利 3桁、暗号資産 0桁。桁区切りはカンマ。
+- `market_moves` の見出しにも、データの `move`（例 `-0.94%`）を同じ色と記号で添える。
 - `market_moves` または互換キー `moves` が存在する場合は `MARKET MOVES` として表示する。
 
 ### DAILY CULTURE
