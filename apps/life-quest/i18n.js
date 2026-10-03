@@ -13,8 +13,8 @@ const I18N = {
   ja: {
     brand: '人生クエスト',
     'tab.status': 'ステータス',
-    'tab.newspaper': 'NEWSPAPER',
-    'tab.routines': '日課',
+    'tab.newspaper': 'ニュース',
+    'tab.routines': 'デイリー',
     'tab.wishes': '学びたい',
     'tab.settings': '設定',
     rename: '名前を変更',
@@ -181,8 +181,8 @@ const I18N = {
   en: {
     brand: 'Life Quest',
     'tab.status': 'STATUS',
-    'tab.newspaper': 'NEWSPAPER',
-    'tab.routines': 'HABITS',
+    'tab.newspaper': 'NEWS',
+    'tab.routines': 'DAILY',
     'tab.wishes': 'TO LEARN',
     'tab.settings': 'SETTINGS',
     rename: 'Change name',
