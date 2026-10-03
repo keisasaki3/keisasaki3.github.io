@@ -175,6 +175,5 @@ body[data-view="auth"] .app{padding-bottom:0}
 [data-theme="tamagoppi"] .topbar{background:#ff6fa5}[data-theme="tamagoppi"] .brand{color:#fff}
 [data-theme="tamagoppi"] .tabs{background:#fde7ef;border-top-color:#ff6fa5}[data-theme="tamagoppi"] .tab{color:#b05078}
 [data-theme="tamagoppi"] .tab.active{background:#ffd3e3;color:#2a2a22}[data-theme="tamagoppi"] .tab.active::before{color:#ff6fa5}
-[data-theme="e-paper"] .pixicon{filter:grayscale(1) brightness(.35) contrast(3)}
 [data-theme="hoshizora"] body{background-image:radial-gradient(1px 1px at 20px 30px,#fff,transparent),radial-gradient(1px 1px at 120px 80px,#ffe680,transparent),radial-gradient(1.5px 1.5px at 260px 50px,#fff,transparent),radial-gradient(1px 1px at 300px 160px,#aaf,transparent),radial-gradient(1px 1px at 70px 200px,#fff,transparent);background-size:340px 240px;background-attachment:fixed}
 [data-theme="hoshizora"] .list-window{background:rgba(18,18,58,.85)}
