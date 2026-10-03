@@ -59,6 +59,8 @@
 .newspaper-change-up{color:#1f7a3a;font-weight:700}
 .newspaper-change-down{color:#b3261e;font-weight:700}
 .newspaper-change-flat{color:var(--ink3)}
+.newspaper-change-abs{display:block;font-size:13px}
+.newspaper-change-abs span{font-weight:400}
 .newspaper-market-moves{margin-top:18px}
 .newspaper-market-move{font-size:17px;line-height:1.8;padding:12px 14px;margin-top:8px;background:var(--paper);border:1px solid var(--rule);border-radius:8px}
 .newspaper-market-move strong{display:block;font-family:"JetBrains Mono",monospace;font-size:16px;margin-bottom:4px}

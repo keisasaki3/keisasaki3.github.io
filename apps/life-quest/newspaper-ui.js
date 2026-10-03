@@ -112,9 +112,14 @@ function formatSignedChange(n, digits, suffix) {
   return `<span class="newspaper-change-${dir}">${mark}${Math.abs(n).toFixed(digits)}${suffix}</span>`;
 }
 
-/** @param {MarketItem} item */
-function formatMarketChange(item) {
-  if (typeof item.change_pct === 'number') return formatSignedChange(item.change_pct, 2, '%');
+/** @param {MarketItem} item @param {number} digits */
+function formatMarketChange(item, digits) {
+  if (typeof item.change_pct === 'number') {
+    const abs = typeof item.change === 'number'
+      ? `<span class="newspaper-change-abs">${formatSignedChange(item.change, digits, '')}</span>`
+      : '';
+    return formatSignedChange(item.change_pct, 2, '%') + abs;
+  }
   if (typeof item.change_bp === 'number') return formatSignedChange(item.change_bp, 1, 'bp');
   return '';
 }
@@ -158,7 +163,7 @@ function renderMarketsSection(markets) {
         <div class="newspaper-market-row">
           <div class="newspaper-market-symbol">${esc(item.symbol)}</div>
           <div class="newspaper-market-value">${formatMarketValue(item.value, marketValueDigits(key, String(item.symbol)))}${item.unit ? ` <span>${esc(item.unit)}</span>` : ''}</div>
-          <div class="newspaper-market-change">${formatMarketChange(item)}</div>
+          <div class="newspaper-market-change">${formatMarketChange(item, marketValueDigits(key, String(item.symbol)))}</div>
         </div>`).join('')}</div>
     </div>`;
   }).join('');
