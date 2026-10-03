@@ -21,15 +21,18 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <link rel="stylesheet" href="./wish.css">
 </head>
 <body>
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="lq-lcd-gameboya" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.059 0.059 0.188 0.188"/><feFuncG type="discrete" tableValues="0.220 0.220 0.384 0.384"/><feFuncB type="discrete" tableValues="0.059 0.059 0.188 0.188"/></feComponentTransfer></filter><filter id="lq-lcd-gameboya-pocket" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.118 0.118 0.302 0.302"/><feFuncG type="discrete" tableValues="0.118 0.118 0.310 0.310"/><feFuncB type="discrete" tableValues="0.102 0.102 0.267 0.267"/></feComponentTransfer></filter><filter id="lq-lcd-gameboya-light" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.012 0.012 0.055 0.055"/><feFuncG type="discrete" tableValues="0.188 0.188 0.427 0.427"/><feFuncB type="discrete" tableValues="0.176 0.176 0.400 0.400"/></feComponentTransfer></filter><filter id="lq-lcd-virtual-boya" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.000 0.000 0.353 0.353"/><feFuncG type="discrete" tableValues="0.000 0.000 0.000 0.000"/><feFuncB type="discrete" tableValues="0.000 0.000 0.000 0.000"/></feComponentTransfer></filter><filter id="lq-lcd-wonderswan" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.110 0.110 0.306 0.306"/><feFuncG type="discrete" tableValues="0.165 0.165 0.376 0.376"/><feFuncB type="discrete" tableValues="0.188 0.188 0.408 0.408"/></feComponentTransfer></filter><filter id="lq-lcd-tamagoppi" color-interpolation-filters="sRGB"><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncR type="discrete" tableValues="0.165 0.165 0.290 0.290"/><feFuncG type="discrete" tableValues="0.165 0.165 0.290 0.290"/><feFuncB type="discrete" tableValues="0.133 0.133 0.227 0.227"/></feComponentTransfer></filter></svg>
 <div class="app">
 <div class="topbar">
   <span class="brand" data-i18n="brand">人生クエスト</span>
 </div>
 <header class="top">
-  <div class="lv"><span class="lv-label">Lv</span><span class="lv-value" id="profileLv">0</span></div>
-  <div class="profile"><h1 id="profileName">名無し</h1><button class="rename" id="rename" type="button" data-i18n-aria="rename" aria-label="名前を変更">✎</button></div>
-  <div class="title" id="rank">旅のはじまり</div>
+  <button class="avatar" id="avatarBtn" type="button" data-i18n-aria="avatarChange" aria-label="サムネを変更"><img id="avatarImg" class="default" src="./app-icons/icon-192.png" alt="" width="64" height="64"></button>
+  <input type="file" id="avatarFile" accept="image/*" hidden>
+  <div class="pinfo">
+    <div class="profile"><h1 id="profileName">名無し</h1><button class="rename" id="rename" type="button" data-i18n-aria="rename" aria-label="名前を変更">✎</button><div class="lv"><span class="lv-label">Lv</span><span class="lv-value" id="profileLv">0</span></div></div>
+    <div class="job" id="jobName" hidden></div>
+    <div class="title" id="rank">旅のはじまり</div>
+  </div>
 </header>
 <main class="main" id="main"></main>
 <nav class="tabs">

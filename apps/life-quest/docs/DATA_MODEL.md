@@ -77,6 +77,10 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 - user_id: uuid PK FK -> profiles.user_id
 - setup_completed_at: timestamptz nullable（null = 初回セットアップ未完了）
+- job_name: text nullable（プレイヤー窓のジョブ名、12文字まで。migration 010）
+- avatar_updated_at: timestamptz nullable（サムネを上げた日時。null = 未設定でスライム勇者を表示。migration 010）
+
+サムネ画像は Storage の非公開バケット `quest-avatars` の `<user_id>/avatar.jpg`（端末で128pxに縮小したJPEG、本人のフォルダのみ読み書き可。migration 010）。
 
 ### quest_user_statuses
 
