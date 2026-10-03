@@ -4,6 +4,9 @@ const LANG_KEY = 'lifeQuestLang';
 const LANGS = { ja: '日本語', en: 'English' };
 // NEWSPAPERのメイン表示の言語（画面の言語とは別。初期値は英語）
 const NEWS_LANG_KEY = 'lifeQuestNewsLang';
+// メイド/執事（NEWSPAPERの語り手）。種類と名前は端末ごとに localStorage に保存する。
+const BUTLER_TYPE_KEY = 'lifeQuestButlerType';
+const BUTLER_NAME_KEY = 'lifeQuestButlerName';
 const NEWS_LANGS = { en: 'English', ja: '日本語' };
 
 const I18N = {
@@ -118,6 +121,11 @@ const I18N = {
     showEn: 'English',
     closeEn: 'Englishを閉じる',
     newsLang: 'NEWSPAPERの言語',
+    butlerType: 'お世話係',
+    butlerMaid: 'メイド',
+    butlerButler: '執事',
+    butlerName: 'お世話係の名前',
+    butlerNamePh: '名前をつける',
     details: '詳細を見る',
     showAnswer: '答えを見る',
     hideAnswer: '答えを閉じる',
@@ -266,6 +274,11 @@ const I18N = {
     showEn: 'English',
     closeEn: 'Close English',
     newsLang: 'NEWSPAPER language',
+    butlerType: 'Attendant',
+    butlerMaid: 'Maid',
+    butlerButler: 'Butler',
+    butlerName: 'Attendant name',
+    butlerNamePh: 'Give a name',
     details: 'Details',
     showAnswer: 'Show answer',
     hideAnswer: 'Hide answer',
@@ -321,6 +334,39 @@ function currentNewsLang() {
 
 function applyNewsLang(value) {
   try { localStorage.setItem(NEWS_LANG_KEY, NEWS_LANGS[value] ? value : 'en'); } catch {}
+}
+
+function currentButlerType() {
+  let saved = null;
+  try { saved = localStorage.getItem(BUTLER_TYPE_KEY); } catch {}
+  return saved === 'butler' ? 'butler' : 'maid';
+}
+
+function currentButlerName() {
+  let saved = '';
+  try { saved = localStorage.getItem(BUTLER_NAME_KEY) || ''; } catch {}
+  return saved.trim();
+}
+
+function applyButler(type, name) {
+  try {
+    localStorage.setItem(BUTLER_TYPE_KEY, type === 'butler' ? 'butler' : 'maid');
+    localStorage.setItem(BUTLER_NAME_KEY, String(name || '').trim().slice(0, 12));
+  } catch {}
+}
+
+// NEWSPAPERの本文中の {{narrator}} を、つけた名前（未設定ならメイド/執事）に置き換える。
+function fillNarrator(value) {
+  if (typeof value === 'string') {
+    if (!value.includes('{{narrator}}')) return value;
+    const name = currentButlerName() || tr(currentButlerType() === 'butler' ? 'butlerButler' : 'butlerMaid');
+    return value.split('{{narrator}}').join(name);
+  }
+  if (Array.isArray(value)) return value.map(fillNarrator);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, fillNarrator(v)]));
+  }
+  return value;
 }
 
 function tr(key, vars) {

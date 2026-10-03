@@ -380,10 +380,14 @@ function renderSettings() {
   const m = main();
   const theme = currentTheme();
   const newsLang = currentNewsLang();
+  const butlerType = currentButlerType();
+  const butlerName = currentButlerName();
   m.innerHTML = `<div class="settings"><div class="pagehead"><h2>${esc(tr('settings'))}</h2></div><div class="list-window">
     <div class="settingrow"><label class="settingtitle" for="themeSetting">${esc(tr('theme'))}</label><select id="themeSetting" class="select">${THEMES.map((v, i) => `<option value="${v}" ${theme === v ? 'selected' : ''}>${String(i + 1).padStart(3, '0')} ${esc(tr(`theme.${v}`))}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="langSetting">${esc(tr('language'))}</label><select id="langSetting" class="select">${Object.entries(LANGS).map(([v,l]) => `<option value="${v}" ${lang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="newsLangSetting">${esc(tr('newsLang'))}</label><select id="newsLangSetting" class="select">${Object.entries(NEWS_LANGS).map(([v,l]) => `<option value="${v}" ${newsLang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="settingrow"><label class="settingtitle" for="butlerTypeSetting">${esc(tr('butlerType'))}</label><select id="butlerTypeSetting" class="select"><option value="maid" ${butlerType === 'maid' ? 'selected' : ''}>${esc(tr('butlerMaid'))}</option><option value="butler" ${butlerType === 'butler' ? 'selected' : ''}>${esc(tr('butlerButler'))}</option></select></div>
+    <div class="settingrow"><label class="settingtitle" for="butlerNameSetting">${esc(tr('butlerName'))}</label><input id="butlerNameSetting" class="select" maxlength="12" placeholder="${esc(tr('butlerNamePh'))}" value="${esc(butlerName)}"></div>
     <div class="settingrow"><button class="plainbtn small" id="signout">${esc(tr('logout'))}</button></div>
     <div class="settingrow"><button class="dangerbtn" id="resetChecks">${esc(tr('resetStatuses'))}</button></div>
     ${statusFeatureAvailable ? `<div class="settingrow"><button class="dangerbtn" id="resetAll">${esc(tr('resetAll'))}</button></div>` : ''}
@@ -391,6 +395,9 @@ function renderSettings() {
   $('#themeSetting').onchange = e => applyTheme(e.target.value);
   $('#langSetting').onchange = e => { applyLang(e.target.value); renderProfile(); renderSettings(); };
   $('#newsLangSetting').onchange = e => applyNewsLang(e.target.value);
+  const saveButler = () => applyButler($('#butlerTypeSetting').value, $('#butlerNameSetting').value);
+  $('#butlerTypeSetting').onchange = saveButler;
+  $('#butlerNameSetting').onchange = saveButler;
   $('#signout').onclick = () => {
     try { localStorage.removeItem('lifeQuestCalendarToken'); } catch {}
     sb.auth.signOut();

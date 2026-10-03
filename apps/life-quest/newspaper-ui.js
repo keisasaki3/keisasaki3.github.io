@@ -245,7 +245,7 @@ async function renderNewspaper() {
   try {
     const { issue } = await fetchLatestNewspaper();
     if (requestId !== newspaperRequestId || !document.querySelector('[data-tab="newspaper"]')?.classList.contains('active')) return;
-    main().innerHTML = NewspaperScreen(issue);
+    main().innerHTML = NewspaperScreen(fillNarrator(issue));
     bindNewspaperInteractions();
   } catch (error) {
     if (requestId !== newspaperRequestId || !document.querySelector('[data-tab="newspaper"]')?.classList.contains('active')) return;
