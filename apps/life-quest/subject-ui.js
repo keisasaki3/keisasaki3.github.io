@@ -124,14 +124,6 @@ function statusMasteryCount(status) {
   return statusCheckTopics(status).reduce((n,t) => n + (isMastered(t) ? 1 : 0), 0);
 }
 
-function nextStatusTopic(status) {
-  const unmastered = statusCheckTopics(status).filter(t => !isMastered(t));
-  if (!unmastered.length) return null;
-  const ready = unmastered.filter(t => t.custom || (prereqMap.get(t.id) || []).every(id => mastery.has(id)));
-  if (!ready.length) return unmastered[0];
-  return ready.reduce((best, t) => (t.importance || 0) > (best.importance || 0) ? t : best);
-}
-
 // 新しくプリセットを選んだときの並び: 資産 → 筋力 → 英語 → 29学問（学問内は quest_subjects.sort_order 順）
 const PRESET_FIRST = ['assets', 'strength', 'english'];
 
@@ -178,20 +170,15 @@ renderHome = function renderStatusHome() {
   m.innerHTML = '';
   const list = document.createElement('div');
   list.className = 'list-window';
-  visibleStatuses().forEach((status, i) => {
+  visibleStatuses().forEach(status => {
     const v = statusView(status);
-    const checkCount = statusCheckTopics(status).length;
     const count = statusMasteryCount(status);
-    const next = nextStatusTopic(status);
-    const meta = !checkCount
-      ? ''
-      : next
-        ? `<div class="meta"><span class="next-label">NEXT</span>${esc(pairName(next.name, next.name_en).main)}</div>`
-        : '<div class="meta complete">COMPLETE</div>';
+    const sub = localSubName(v);
+    const meta = sub ? `<div class="meta">${esc(sub)}</div>` : '';
     const d = document.createElement('button');
     d.type = 'button';
-    d.className = 'subject';
-    d.innerHTML = `<span class="gutter">${String(i + 1).padStart(2, '0')}</span><span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(localName(v))}</span><span class="en">${esc(localSubName(v))}</span>${statusBadgeMarkup(status, count)}</span>${meta}</span>`;
+    d.className = 'subject statusrow';
+    d.innerHTML = `<span class="subjectbody"><span class="subjectline">${subjectIconMarkup(v)}<span class="name">${esc(localName(v))}</span>${statusBadgeMarkup(status, count)}</span>${meta}</span>`;
     d.dataset.statusId = status.status_id;
     d.onclick = () => { if (!reorderJustEnded) renderSubject(status.status_id); };
     list.appendChild(d);

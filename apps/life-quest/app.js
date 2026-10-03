@@ -84,20 +84,80 @@ function setActiveTab(name) {
 }
 
 function totalMastery() { return mastery.size + userTopics.filter(t => t.mastered_at).length; }
-function rank(lv) {
-  if (lv >= 200) return tr('rank.200');
-  if (lv >= 100) return tr('rank.100');
-  if (lv >= 50) return tr('rank.50');
-  if (lv >= 10) return tr('rank.10');
-  return tr('rank.0');
-}
+// 肩書（IDEAS §10、2026-10-03）。Lvがこの値以上で切り替わる
+const RANK_LEVELS = [4000, 2000, 1000, 700, 400, 200, 100, 50, 25, 10, 5, 0];
+function rank(lv) { return tr(`rank.${RANK_LEVELS.find(n => lv >= n)}`); }
 
 function renderProfile() {
   const lv = totalMastery();
   // '名無し' はDBに入る既定名なので、表示だけ言語に合わせる
   $('#profileName').textContent = !profile?.display_name || profile.display_name === '名無し' ? tr('noname') : profile.display_name;
   $('#profileLv').textContent = String(lv);
+  const job = $('#profileJob');
+  job.textContent = userSettings?.job_name || '';
+  job.hidden = !userSettings?.job_name;
   $('#rank').textContent = rank(lv);
+  loadAvatar();
+}
+
+// サムネ（IDEAS §10）。非公開バケットに "{user_id}/avatar" の1枚。未設定ならスライム勇者
+const AVATAR_BUCKET = 'life-quest-avatars';
+const DEFAULT_AVATAR = './app-icons/icon-192.png';
+let avatarKey = null;
+let avatarUrl = null;
+const avatarPath = () => `${session.user.id}/avatar`;
+
+function showAvatar(url) {
+  $('#avatarImg').src = url || DEFAULT_AVATAR;
+  $('#avatarBtn').classList.toggle('photo', !!url);
+}
+
+async function loadAvatar() {
+  if (!session) return;
+  const key = userSettings?.avatar_updated_at ? `${session.user.id}:${userSettings.avatar_updated_at}` : null;
+  if (key === avatarKey) return;
+  avatarKey = key;
+  if (avatarUrl) { URL.revokeObjectURL(avatarUrl); avatarUrl = null; }
+  if (!key) { showAvatar(null); return; }
+  const { data, error } = await sb.storage.from(AVATAR_BUCKET).download(avatarPath());
+  if (avatarKey !== key) return;
+  if (error) { showAvatar(null); return; }
+  avatarUrl = URL.createObjectURL(data);
+  showAvatar(avatarUrl);
+}
+
+// 中央を正方形に切り抜いて128pxにする
+function resizeAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const size = 128;
+      const side = Math.min(img.naturalWidth, img.naturalHeight);
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const ctx = c.getContext('2d');
+      // 小さいドット絵を拡大するときはぼかさない
+      ctx.imageSmoothingEnabled = side > size;
+      ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+      // webp非対応の端末ではpngになる
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob')), 'image/webp', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load')); };
+    img.src = url;
+  });
+}
+
+async function uploadAvatar(file) {
+  let blob;
+  try { blob = await resizeAvatar(file); } catch { alert(tr('avatarTooBig')); return; }
+  const up = await sb.storage.from(AVATAR_BUCKET).upload(avatarPath(), blob, { upsert: true, contentType: blob.type });
+  if (up.error) { alert(up.error.message); return; }
+  const res = await sb.from('quest_user_settings').upsert({ user_id: session.user.id, avatar_updated_at: new Date().toISOString() }).select().single();
+  if (res.error) { alert(res.error.message); return; }
+  userSettings = res.data;
+  renderProfile();
 }
 
 function showLoading() {
@@ -382,6 +442,7 @@ function renderSettings() {
   const butlerType = currentButlerType();
   const butlerName = currentButlerName();
   m.innerHTML = `<div class="settings"><div class="pagehead"><h2>${esc(tr('settings'))}</h2></div><div class="list-window">
+    ${statusFeatureAvailable ? `<div class="settingrow"><label class="settingtitle" for="jobSetting">${esc(tr('jobName'))}</label><input id="jobSetting" class="select" maxlength="12" placeholder="${esc(tr('jobNamePh'))}" value="${esc(userSettings?.job_name || '')}"></div>` : ''}
     <div class="settingrow"><label class="settingtitle" for="themeSetting">${esc(tr('theme'))}</label><select id="themeSetting" class="select">${THEMES.map((v, i) => `<option value="${v}" ${theme === v ? 'selected' : ''}>${String(i + 1).padStart(3, '0')} ${esc(tr(`theme.${v}`))}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="langSetting">${esc(tr('language'))}</label><select id="langSetting" class="select">${Object.entries(LANGS).map(([v,l]) => `<option value="${v}" ${lang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="newsLangSetting">${esc(tr('newsLang'))}</label><select id="newsLangSetting" class="select">${Object.entries(NEWS_LANGS).map(([v,l]) => `<option value="${v}" ${newsLang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
@@ -391,6 +452,13 @@ function renderSettings() {
     <div class="settingrow"><button class="dangerbtn" id="resetChecks">${esc(tr('resetStatuses'))}</button></div>
     ${statusFeatureAvailable ? `<div class="settingrow"><button class="dangerbtn" id="resetAll">${esc(tr('resetAll'))}</button></div>` : ''}
   </div></div>`;
+  if (statusFeatureAvailable) $('#jobSetting').onchange = async e => {
+    const value = e.target.value.trim().slice(0, 12) || null;
+    const res = await sb.from('quest_user_settings').upsert({ user_id: session.user.id, job_name: value }).select().single();
+    if (res.error) { alert(res.error.message); return; }
+    userSettings = res.data;
+    renderProfile();
+  };
   $('#themeSetting').onchange = e => applyTheme(e.target.value);
   $('#langSetting').onchange = e => { applyLang(e.target.value); renderProfile(); renderSettings(); };
   $('#newsLangSetting').onchange = e => applyNewsLang(e.target.value);
@@ -431,6 +499,8 @@ async function resetAllData() {
     const { error } = await sb.from(table).delete().eq('user_id', uid);
     if (error) { alert(error.message); return; }
   }
+  // サムネが無いときのエラーは気にしない
+  await sb.storage.from(AVATAR_BUCKET).remove([avatarPath()]);
   mastery.clear();
   userSettings = null;
   userStatuses = [];
@@ -505,6 +575,12 @@ async function handleSession(nextSession) {
 }
 
 $('#rename').onclick = editName;
+$('#avatarBtn').onclick = () => $('#avatarFile').click();
+$('#avatarFile').onchange = e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (file) uploadAvatar(file);
+};
 document.querySelector('[data-tab="subjects"]').onclick = () => {
   setActiveTab('subjects');
   if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
