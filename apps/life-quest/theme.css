@@ -22,14 +22,19 @@ a{color:var(--acc)}
 .brand{font-family:"DotGothic16",monospace;font-size:12px;letter-spacing:.24em;color:var(--dim)}
 
 /* プレイヤー窓（学問一覧のみ） */
-.top{display:none;margin:14px 12px 12px;padding:16px 14px 12px;border:3px double var(--acc);border-radius:4px;background:var(--panel);flex-direction:column;align-items:center;gap:4px}
+.top{display:none;margin:14px 12px 12px;padding:12px 14px;border:3px double var(--acc);border-radius:4px;background:var(--panel);align-items:center;gap:14px}
 body[data-view="home"] .top{display:flex}
-.lv{display:flex;align-items:baseline;gap:8px;font-family:"DotGothic16",monospace;color:var(--gold)}
-.lv-label{font-size:22px}
-.lv-value{font-size:84px;line-height:.85}
-.profile{display:flex;align-items:center;padding-left:44px}
-.profile h1{margin:0;font-family:"DotGothic16",monospace;font-weight:400;font-size:24px;color:var(--text)}
-.rename{width:44px;height:44px;border:0;background:none;color:var(--dim);font-size:14px;cursor:pointer}
+.avatar{width:64px;height:64px;flex:none;padding:0;border:2px solid var(--line);border-radius:4px;background:var(--bg);overflow:hidden;cursor:pointer}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar img.default{image-rendering:pixelated}
+.pinfo{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.profile{display:flex;align-items:center;min-width:0}
+.profile h1{margin:0;min-width:0;font-family:"DotGothic16",monospace;font-weight:400;font-size:22px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rename{width:36px;height:36px;flex:none;border:0;background:none;color:var(--dim);font-size:14px;cursor:pointer}
+.lv{margin-left:auto;flex:none;display:flex;align-items:baseline;gap:4px;font-family:"DotGothic16",monospace;color:var(--gold)}
+.lv-label{font-size:14px}
+.lv-value{font-size:30px;line-height:1}
+.job{font-size:13px;color:var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .title{font-size:12px;color:var(--body2)}
 
 /* 下タブ */
@@ -57,8 +62,7 @@ body[data-view="home"] .top{display:flex}
 .stars{font-family:"DotGothic16",monospace;font-size:19px;color:var(--gold);white-space:nowrap}
 .stars.zero{color:var(--star0)}
 .meta{padding-left:28px;font-size:11px;color:var(--body2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.meta .next-label{color:var(--violet);font-weight:600;margin-right:.6em}
-.meta.complete{color:var(--green)}
+.statusrow{padding-left:12px}
 
 /* 学問画面 */
 .back{height:44px;padding:0 6px 0 0;border:0;background:none;color:var(--body2);font-size:13px;display:flex;align-items:center;gap:4px;cursor:pointer}
@@ -155,13 +159,6 @@ body[data-view="auth"] .app{padding-bottom:0}
 [data-theme="gameboya"] body,[data-theme="gameboya-pocket"] body,[data-theme="gameboya-light"] body,[data-theme="gameboya-color"] body,[data-theme="gameboya-advanz"] body,[data-theme="famicoso"] body,[data-theme="virtual-boya"] body,[data-theme="yusha"] body,[data-theme="neojiwo"] body,[data-theme="wonderswan"] body,[data-theme="tamagoppi"] body{font-family:"DotGothic16","M PLUS 1 Code",monospace}
 [data-theme="gameboya"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="gameboya-pocket"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="gameboya-light"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="gameboya-color"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="gameboya-advanz"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="famicoso"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="virtual-boya"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="yusha"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="neojiwo"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="wonderswan"] .app :not(.newspaper-paper,.newspaper-paper *),[data-theme="tamagoppi"] .app :not(.newspaper-paper,.newspaper-paper *){font-weight:400}
 [data-theme="gameboya"] :is(.top,.window,.list-window),[data-theme="gameboya-pocket"] :is(.top,.window,.list-window),[data-theme="gameboya-light"] :is(.top,.window,.list-window),[data-theme="gameboya-color"] :is(.top,.window,.list-window),[data-theme="famicoso"] :is(.top,.window,.list-window),[data-theme="super-famicoso"] :is(.top,.window,.list-window),[data-theme="virtual-boya"] :is(.top,.window,.list-window),[data-theme="mado95"] :is(.top,.window,.list-window),[data-theme="neojiwo"] :is(.top,.window,.list-window),[data-theme="wonderswan"] :is(.top,.window,.list-window),[data-theme="pc-enjin"] :is(.top,.window,.list-window),[data-theme="mega-driver"] :is(.top,.window,.list-window){border-radius:0}
-/* 液晶系: ドット絵アイコンを液晶の階調に変換（フィルタはindex.html） */
-[data-theme="gameboya"] .pixicon{filter:url(#lq-lcd-gameboya)}
-[data-theme="gameboya-pocket"] .pixicon{filter:url(#lq-lcd-gameboya-pocket)}
-[data-theme="gameboya-light"] .pixicon{filter:url(#lq-lcd-gameboya-light)}
-[data-theme="virtual-boya"] .pixicon{filter:url(#lq-lcd-virtual-boya)}
-[data-theme="wonderswan"] .pixicon{filter:url(#lq-lcd-wonderswan)}
-[data-theme="tamagoppi"] .pixicon{filter:url(#lq-lcd-tamagoppi)}
 /* テーマ固有の飾り */
 [data-theme="famicoso"] .topbar{background:#a8201c}[data-theme="famicoso"] .brand{color:#f3e2b8}
 [data-theme="famicoso"] .tabs{background:#2a1810;border-top-color:#2a1810}[data-theme="famicoso"] .tab{color:#cdb88e}

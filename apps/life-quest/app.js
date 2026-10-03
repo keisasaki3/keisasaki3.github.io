@@ -84,13 +84,17 @@ function setActiveTab(name) {
 }
 
 function totalMastery() { return mastery.size + userTopics.filter(t => t.mastered_at).length; }
+// 肩書（IDEAS §10、2026-10-03 Keita決定の12段階）。Lvがこの値以上で切り替わる
+const RANK_LEVELS = [4000, 2000, 1000, 700, 400, 200, 100, 50, 25, 10, 5, 0];
 function rank(lv) {
-  if (lv >= 200) return tr('rank.200');
-  if (lv >= 100) return tr('rank.100');
-  if (lv >= 50) return tr('rank.50');
-  if (lv >= 10) return tr('rank.10');
-  return tr('rank.0');
+  return tr(`rank.${RANK_LEVELS.find(n => lv >= n)}`);
 }
+
+const AVATAR_BUCKET = 'quest-avatars';
+const DEFAULT_AVATAR = './app-icons/icon-192.png';
+let avatarCache = { key: null, url: null };
+
+function avatarPath() { return `${session.user.id}/avatar.jpg`; }
 
 function renderProfile() {
   const lv = totalMastery();
@@ -98,6 +102,63 @@ function renderProfile() {
   $('#profileName').textContent = !profile?.display_name || profile.display_name === '名無し' ? tr('noname') : profile.display_name;
   $('#profileLv').textContent = String(lv);
   $('#rank').textContent = rank(lv);
+  const job = userSettings?.job_name || '';
+  $('#jobName').textContent = job;
+  $('#jobName').hidden = !job;
+  renderAvatar();
+}
+
+// サムネは非公開バケットなので、上げた日時ごとに署名付きURLを1回だけ取る。未設定・失敗時はスライム勇者
+async function renderAvatar() {
+  const img = $('#avatarImg');
+  const key = userSettings?.avatar_updated_at && session ? `${session.user.id}:${userSettings.avatar_updated_at}` : null;
+  if (!key) { avatarCache = { key: null, url: null }; img.src = DEFAULT_AVATAR; img.classList.add('default'); return; }
+  if (avatarCache.key !== key) {
+    avatarCache = { key, url: null };
+    const { data, error } = await sb.storage.from(AVATAR_BUCKET).createSignedUrl(avatarPath(), 60 * 60 * 24);
+    if (avatarCache.key !== key) return;
+    avatarCache.url = error ? null : data.signedUrl;
+  }
+  if (!avatarCache.url) { img.src = DEFAULT_AVATAR; img.classList.add('default'); return; }
+  img.onerror = () => { img.onerror = null; avatarCache.url = null; img.src = DEFAULT_AVATAR; img.classList.add('default'); };
+  img.src = avatarCache.url;
+  img.classList.remove('default');
+}
+
+// 端末で中央を正方形に切り抜いて128pxのJPEGにする
+function shrinkAvatar(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const im = new Image();
+    im.onload = () => {
+      const side = Math.min(im.naturalWidth, im.naturalHeight);
+      const c = document.createElement('canvas');
+      c.width = c.height = 128;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, 128, 128);
+      ctx.drawImage(im, (im.naturalWidth - side) / 2, (im.naturalHeight - side) / 2, side, side, 0, 0, 128, 128);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('image')), 'image/jpeg', 0.85);
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); reject(new Error('image')); };
+    im.src = url;
+  });
+}
+
+async function saveUserSettings(values) {
+  const res = await sb.from('quest_user_settings').upsert({ user_id: session.user.id, ...values }).select().single();
+  if (res.error) { alert(res.error.message); return false; }
+  userSettings = res.data;
+  return true;
+}
+
+async function uploadAvatar(file) {
+  let blob;
+  try { blob = await shrinkAvatar(file); } catch { alert(tr('loadFailed')); return; }
+  const { error } = await sb.storage.from(AVATAR_BUCKET).upload(avatarPath(), blob, { upsert: true, contentType: 'image/jpeg' });
+  if (error) { alert(error.message); return; }
+  if (await saveUserSettings({ avatar_updated_at: new Date().toISOString() })) renderProfile();
 }
 
 function showLoading() {
@@ -387,6 +448,7 @@ function renderSettings() {
     <div class="settingrow"><label class="settingtitle" for="newsLangSetting">${esc(tr('newsLang'))}</label><select id="newsLangSetting" class="select">${Object.entries(NEWS_LANGS).map(([v,l]) => `<option value="${v}" ${newsLang === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     <div class="settingrow"><label class="settingtitle" for="butlerTypeSetting"><img class="pixicon" id="butlerIcon" src="./icons/${butlerType}.svg" alt="" width="16" height="16"> ${esc(tr('butlerType'))}</label><select id="butlerTypeSetting" class="select"><option value="maid" ${butlerType === 'maid' ? 'selected' : ''}>${esc(tr('butlerMaid'))}</option><option value="butler" ${butlerType === 'butler' ? 'selected' : ''}>${esc(tr('butlerButler'))}</option></select></div>
     <div class="settingrow"><label class="settingtitle" for="butlerNameSetting">${esc(tr('butlerName'))}</label><input id="butlerNameSetting" class="select" maxlength="12" placeholder="${esc(tr('butlerNamePh'))}" value="${esc(butlerName)}"></div>
+    ${statusFeatureAvailable ? `<div class="settingrow"><label class="settingtitle" for="jobNameSetting">${esc(tr('jobName'))}</label><input id="jobNameSetting" class="select" maxlength="12" placeholder="${esc(tr('jobNamePh'))}" value="${esc(userSettings?.job_name || '')}"></div>` : ''}
     <div class="settingrow"><button class="plainbtn small" id="signout">${esc(tr('logout'))}</button></div>
     <div class="settingrow"><button class="dangerbtn" id="resetChecks">${esc(tr('resetStatuses'))}</button></div>
     ${statusFeatureAvailable ? `<div class="settingrow"><button class="dangerbtn" id="resetAll">${esc(tr('resetAll'))}</button></div>` : ''}
@@ -397,6 +459,10 @@ function renderSettings() {
   const saveButler = () => applyButler($('#butlerTypeSetting').value, $('#butlerNameSetting').value);
   $('#butlerTypeSetting').onchange = () => { saveButler(); $('#butlerIcon').src = `./icons/${currentButlerType()}.svg`; };
   $('#butlerNameSetting').onchange = saveButler;
+  if (statusFeatureAvailable) $('#jobNameSetting').onchange = async e => {
+    const v = e.target.value.trim().slice(0, 12);
+    if (await saveUserSettings({ job_name: v || null })) renderProfile();
+  };
   $('#signout').onclick = () => {
     try { localStorage.removeItem('lifeQuestCalendarToken'); } catch {}
     sb.auth.signOut();
@@ -431,6 +497,7 @@ async function resetAllData() {
     const { error } = await sb.from(table).delete().eq('user_id', uid);
     if (error) { alert(error.message); return; }
   }
+  if (userSettings?.avatar_updated_at) await sb.storage.from(AVATAR_BUCKET).remove([avatarPath()]);
   mastery.clear();
   userSettings = null;
   userStatuses = [];
@@ -505,6 +572,12 @@ async function handleSession(nextSession) {
 }
 
 $('#rename').onclick = editName;
+$('#avatarBtn').onclick = () => { if (session && statusFeatureAvailable) $('#avatarFile').click(); };
+$('#avatarFile').onchange = e => {
+  const file = e.target.files?.[0];
+  e.target.value = '';
+  if (file) uploadAvatar(file);
+};
 document.querySelector('[data-tab="subjects"]').onclick = () => {
   setActiveTab('subjects');
   if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
