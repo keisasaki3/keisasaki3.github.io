@@ -50,12 +50,15 @@
 .newspaper-market-group:first-of-type{margin-top:0}
 .newspaper-market-group h3{font-family:"JetBrains Mono",monospace;font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--label);margin:0 0 6px}
 .newspaper-market-list{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden}
-.newspaper-market-row{display:grid;grid-template-columns:minmax(0,1fr) auto 70px;gap:10px;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--rule2);font-family:"JetBrains Mono",monospace;font-size:17px}
+.newspaper-market-row{display:grid;grid-template-columns:minmax(0,1fr) auto 84px;gap:10px;align-items:baseline;padding:12px 14px;border-bottom:1px solid var(--rule2);font-family:"JetBrains Mono",monospace;font-size:17px}
 .newspaper-market-row:last-child{border-bottom:0}
 .newspaper-market-symbol{font-weight:700;min-width:0;overflow-wrap:anywhere}
 .newspaper-market-value{text-align:right}
 .newspaper-market-value span{font-size:13px;color:var(--ink3)}
-.newspaper-market-change{text-align:right;color:var(--ink2)}
+.newspaper-market-change{text-align:right;color:var(--ink2);white-space:nowrap}
+.newspaper-change-up{color:#1f7a3a;font-weight:700}
+.newspaper-change-down{color:#b3261e;font-weight:700}
+.newspaper-change-flat{color:var(--ink3)}
 .newspaper-market-moves{margin-top:18px}
 .newspaper-market-move{font-size:17px;line-height:1.8;padding:12px 14px;margin-top:8px;background:var(--paper);border:1px solid var(--rule);border-radius:8px}
 .newspaper-market-move strong{display:block;font-family:"JetBrains Mono",monospace;font-size:16px;margin-bottom:4px}
