@@ -1,0 +1,17 @@
+/* 学びたいタブ */
+.wcard{padding:12px 14px;border-bottom:1px solid var(--rowline);cursor:pointer;display:grid;gap:6px}
+.wcard:last-child{border-bottom:0}
+.wcard:active{background:var(--panel)}
+.wtop{display:flex;align-items:baseline;gap:10px}
+.wtitle{flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--text);overflow-wrap:anywhere}
+.wstars{flex:none;font-size:16px}
+.wres{font-size:13px;line-height:1.6;color:var(--body2);white-space:pre-wrap;overflow-wrap:anywhere}
+.wres a{color:var(--acc)}
+.wlearn{justify-self:end;min-height:36px}
+.wcard.learned .wtitle,.wcard.learned .wstars{color:var(--dim)}
+.wishdonehead{margin-top:18px}
+.wishdonehead h3{margin:0;font-size:15px;color:var(--dim)}
+.wishstarpicks{display:flex;gap:6px}
+.wishstarpick{width:44px;height:44px;border:1px solid var(--win2-border);border-radius:4px;background:var(--panel);color:var(--star0);font-size:24px;cursor:pointer}
+.wishstarpick.on{color:var(--gold)}
+.wishtextarea{width:100%;padding:8px 10px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);font-size:16px;line-height:1.5;resize:vertical;font-family:inherit}

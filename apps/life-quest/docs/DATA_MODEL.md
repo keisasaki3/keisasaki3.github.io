@@ -136,6 +136,11 @@ topic_id / user_topic_id はどちらか一方だけを持つ。表示は最新�
 
 達成数・連続日数・達成率はチェックから算出し、保存しない。
 
+### quest_wishes（学びたい、migration 009）
+
+- wish_id uuid PK, user_id, title（1〜100字）, motivation smallint（1〜3、既定2）, resources text（任意、2000字まで）, learned boolean（「学んだ」= true）, created_at, updated_at
+- 完了日は持たない。削除は行ごと消す。
+
 子テーブルの user_id は複合FKで親と一致させ、他人のステータスへ分野やトピックを付けられないようにしている。削除は親からカスケードする。
 
 ## 派生値
@@ -184,7 +189,7 @@ topic_id / user_topic_id はどちらか一方だけを持つ。表示は最新�
 
 - プリセット（学問 / 分野 / トピック / 前提）: クライアントはread-only
 - MASTER: 各ユーザーは自分の行だけSELECT / INSERT / DELETE
-- quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values / quest_routines / quest_routine_checks / quest_routine_settings: 各ユーザーは自分の行だけ読み書き
+- quest_user_settings / quest_user_statuses / quest_user_fields / quest_user_topics / quest_topic_values / quest_routines / quest_routine_checks / quest_routine_settings / quest_wishes: 各ユーザーは自分の行だけ読み書き
 - 他人のMASTER状況は初期仕様では非公開
 
 具体的RLSは `/shared-world-core/supabase/migrations/001_initial_schema.sql` を正本とする。
