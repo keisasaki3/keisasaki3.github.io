@@ -142,6 +142,10 @@ importance convention:
 
 人生クエストの日課・その日のチェック・記録先Googleカレンダー。すべて本人の行のみ読み書き可。`supabase/migrations/007_life_quest_routines.sql`。
 
+### quest_wishes
+
+人生クエストの「学びたい」リスト（名前・モチベ★1〜3・リソース・学んだ）。本人の行のみ読み書き可。`supabase/migrations/009_life_quest_wishes.sql`。
+
 ## 5. Derived data
 
 保存しない値:
