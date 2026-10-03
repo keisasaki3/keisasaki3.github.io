@@ -253,10 +253,9 @@ async function loadApp() {
 
   setShellVisible(true);
   renderProfile();
-  if (statusFeatureAvailable && !userSettings?.setup_completed_at) {
-    setActiveTab('subjects');
-    renderSetup();
-  } else renderRoutines();
+  setActiveTab('subjects');
+  if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
+  else renderHome();
 
   await maybeOfferLegacyMigration();
 }
