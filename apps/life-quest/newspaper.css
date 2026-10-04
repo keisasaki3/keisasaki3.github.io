@@ -35,7 +35,7 @@
 .newspaper-headline-block:not(.open) .newspaper-headline-sub{display:none}
 .newspaper-sentence:not(.open) .newspaper-sub{display:none}
 /* 訳ボタンは地味な▼だけ（開くと上向き）。タップ範囲だけ確保して枠も背景もなし */
-.newspaper-sentence-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;margin-left:2px;padding:0;border:0;background:none;color:var(--ink3);font-size:calc(12px * var(--ns,1));line-height:1;vertical-align:middle;cursor:pointer}
+.newspaper-sentence-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;margin-left:2px;padding:0;border:0;background:none;color:var(--ink3);font-size:calc(16px * var(--ns,1));line-height:1;vertical-align:middle;cursor:pointer}
 .newspaper-sentence-btn.open{transform:rotate(180deg)}
 .newspaper-news-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(0,1fr));gap:8px}
 .newspaper-toggle,.newspaper-answer-button{min-height:46px;border:1px solid var(--ink);border-radius:6px;background:none;color:var(--ink);font-size:calc(16px * var(--ns,1));font-weight:700;cursor:pointer}
