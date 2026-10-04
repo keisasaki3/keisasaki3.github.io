@@ -52,7 +52,7 @@ function renderNewsSection(news) {
       const subText = (sentence[sub] || '').trim();
       return mainText ? { text: mainText, sub: subText } : { text: subText, sub: '' };
     }).filter(sentence => sentence.text);
-    const transLabel = esc(tr(jaMain ? 'sentenceEn' : 'sentenceJa'));
+    const transLabel = '▼';
     const transAria = esc(tr(jaMain ? 'showEn' : 'showJa'));
     const transButton = `<button class="newspaper-sentence-btn" type="button" data-toggle-sentence aria-expanded="false" aria-label="${transAria}">${transLabel}</button>`;
     const allSources = article.sources || [];
