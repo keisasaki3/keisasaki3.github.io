@@ -27,10 +27,13 @@ const REGION_ICONS = {
   europe: '🇪🇺', eu: '🇪🇺', uk: '🇬🇧', 'united kingdom': '🇬🇧', russia: '🇷🇺', ukraine: '🇺🇦',
   'middle east': '🌍', africa: '🌍'
 };
+// 国旗絵文字はWindowsでは「JP」などの文字になるため、画像を用意した国・地域は画像で出す
+const REGION_FLAGS = { japan: 'jp', us: 'us', usa: 'us', 'united states': 'us', europe: 'eu', eu: 'eu' };
 
-/** @param {string} region */
 function regionIcon(region) {
-  return REGION_ICONS[region.trim().toLowerCase()] || '🌐';
+  const key = region.trim().toLowerCase();
+  if (REGION_FLAGS[key]) return `<img class="newspaper-flag" src="./icons/flags/${REGION_FLAGS[key]}.svg" alt="" width="21" height="14">`;
+  return REGION_ICONS[key] || '🌐';
 }
 
 /** @param {NewsArticle[]} news */
@@ -62,7 +65,7 @@ function renderNewsSection(news) {
       moreSources ? `<div class="newspaper-detail-label">SOURCES</div><div class="newspaper-sources">${moreSources}</div>` : ''
     ].join('');
     return `<article class="newspaper-news-item" id="newspaper-news-${index}">
-      <div class="newspaper-news-bar"><span>${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
+      <div class="newspaper-news-bar"><span class="newspaper-num">${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
         <div class="newspaper-headline-block">
           <h3 class="newspaper-headline${headlineIsJa ? ' newspaper-headline-jaonly' : ''}" lang="${headlineIsJa ? 'ja' : 'en'}">${esc(headlineMain)}</h3>
@@ -215,7 +218,7 @@ function renderQuizSection(quiz) {
 /** @param {NewspaperIssue} issue */
 function NewspaperScreen(issue) {
   return `<div class="newspaper-screen">
-    <div class="newspaper-paper">
+    <div class="newspaper-paper" data-size="${currentNewsSize()}">
     <div class="newspaper-header"><h2>NEWSPAPER</h2><div>${esc(issue.date)}</div></div>
     ${renderNewsSection(issue.news)}
     ${renderMarketsSection(issue.markets)}
