@@ -160,3 +160,10 @@
 - モック（変更前後）: `/mnt/project-files/life-quest/design/news-kicker-before-after.png`
 
 - [ ] 国旗画像は jp / us / eu のみ。china / korea / uk / taiwan / india / russia / ukraine は絵文字のまま（Windowsでは文字になる）。必要になったら `icons/flags/` に追加し `REGION_FLAGS`（newspaper-ui.js）へ登録
+
+## プレイヤー窓のサムネが読み込み時に一瞬スライムになる（2026-10-04 Keita依頼、未実装・「実装」待ち）
+
+原因: `index.html` の `#avatarImg` が最初からデフォルト画像（`app-icons/icon-192.png` のスライム）を `src` に持っている。自分のサムネは、ログイン後に設定（`avatar_updated_at`）を読み、Storage の署名付きURLを取りに行ってから `renderAvatar()`（app.js）で差し替わるため、その間スライムが見える。
+
+- [ ] 案（推奨）: 初期状態は画像を出さず（透明）、サムネの有無が分かってから表示する。サムネ無し（`avatar_updated_at` が空）と分かったときだけデフォルトのスライムを出す
+- [ ] 併せて、直近の署名付きURLと `avatar_updated_at` を localStorage に覚え、次回起動時は設定の読み込みを待たずにそのURLで先に表示する（署名の期限は24時間なので、期限が切れていたら取り直す）
