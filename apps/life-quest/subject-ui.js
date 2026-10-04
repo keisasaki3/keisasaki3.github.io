@@ -188,7 +188,7 @@ renderHome = function renderStatusHome() {
       enableStatusReorder(list);
       const hint = document.createElement('div');
       hint.className = 'reorderhint';
-      hint.textContent = tr('reorderHint');
+      hint.textContent = reorderHintText();
       m.appendChild(hint);
     }
   }
@@ -202,7 +202,12 @@ renderHome = function renderStatusHome() {
   }
 };
 
-// ---------- ステータスの並べ替え（長押しでドラッグ） ----------
+// ---------- ステータスの並べ替え（タッチは長押し、マウスはつかんで動かす） ----------
+
+// 案内文はPC（マウス）とタッチで変える
+function reorderHintText() {
+  return tr(window.matchMedia('(hover: hover) and (pointer: fine)').matches ? 'reorderHintPc' : 'reorderHint');
+}
 
 let reorderJustEnded = false;
 let reorderActive = false;
@@ -213,8 +218,10 @@ document.addEventListener('touchmove', e => { if (reorderActive) e.preventDefaul
 function enableStatusReorder(list, onOrder = saveStatusOrder) {
   const HOLD_MS = 450;
   const MOVE_TOLERANCE = 8;
+  const MOUSE_DRAG_PX = 5;
   let timer = null, row = null, pointerId = null, startX = 0, startY = 0, lastY = 0, grabOffset = 0, scrollRaf = 0;
 
+  list.classList.add('reorderable');
   list.addEventListener('contextmenu', e => { if (row) e.preventDefault(); });
 
   const cancelHold = () => { clearTimeout(timer); timer = null; };
@@ -242,12 +249,12 @@ function enableStatusReorder(list, onOrder = saveStatusOrder) {
     scrollRaf = requestAnimationFrame(autoScroll);
   };
 
-  const startDrag = () => {
+  const startDrag = (y = startY) => {
     timer = null;
     reorderActive = true;
     const rect = row.getBoundingClientRect();
     grabOffset = startY - rect.top;
-    lastY = startY;
+    lastY = y;
     row.classList.add('dragging');
     list.classList.add('reordering');
     if (navigator.vibrate) navigator.vibrate(15);
@@ -274,11 +281,15 @@ function enableStatusReorder(list, onOrder = saveStatusOrder) {
     const target = /** @type {HTMLElement} */ (e.target).closest('.subject');
     if (!target || target.parentElement !== list) return;
     row = target; pointerId = e.pointerId; startX = e.clientX; startY = e.clientY;
-    timer = setTimeout(startDrag, HOLD_MS);
+    // マウスは長押しせず、少し動かした時点でドラッグを始める（onMove）。タッチは長押し
+    if (e.pointerType !== 'mouse') timer = setTimeout(startDrag, HOLD_MS);
   });
   // 行を入れ替えるとポインタキャプチャが外れるので、移動・離す操作は window で拾う
   const onMove = e => {
     if (!row || e.pointerId !== pointerId) return;
+    if (e.pointerType === 'mouse' && !reorderActive && !timer) {
+      if (Math.abs(e.clientX - startX) > MOUSE_DRAG_PX || Math.abs(e.clientY - startY) > MOUSE_DRAG_PX) startDrag(e.clientY);
+    }
     if (timer && (Math.abs(e.clientX - startX) > MOVE_TOLERANCE || Math.abs(e.clientY - startY) > MOVE_TOLERANCE)) { cancelHold(); row = null; return; }
     if (reorderActive) { e.preventDefault(); lastY = e.clientY; place(); }
   };
