@@ -8,6 +8,8 @@ const NEWS_LANG_KEY = 'lifeQuestNewsLang';
 const BUTLER_TYPE_KEY = 'lifeQuestButlerType';
 const BUTLER_NAME_KEY = 'lifeQuestButlerName';
 const NEWS_LANGS = { en: 'English', ja: '日本語' };
+const NEWS_SIZE_KEY = 'lifeQuestNewsSize';
+const NEWS_SIZES = ['normal', 'large', 'xlarge'];
 
 const I18N = {
   ja: {
@@ -132,6 +134,10 @@ const I18N = {
     showEn: 'English',
     closeEn: 'Englishを閉じる',
     newsLang: 'NEWSPAPERの言語',
+    newsSize: 'NEWSPAPERの文字サイズ',
+    newsSizeNormal: 'ふつう',
+    newsSizeLarge: '大きめ',
+    newsSizeXlarge: 'もっと大きめ',
     butlerType: 'コンシェルジュ',
     butlerMaid: 'メイド',
     butlerButler: '執事',
@@ -310,6 +316,10 @@ const I18N = {
     showEn: 'English',
     closeEn: 'Close English',
     newsLang: 'NEWSPAPER language',
+    newsSize: 'NEWSPAPER text size',
+    newsSizeNormal: 'Normal',
+    newsSizeLarge: 'Large',
+    newsSizeXlarge: 'Extra large',
     butlerType: 'Concierge',
     butlerMaid: 'Maid',
     butlerButler: 'Butler',
@@ -384,6 +394,16 @@ function currentNewsLang() {
 
 function applyNewsLang(value) {
   try { localStorage.setItem(NEWS_LANG_KEY, NEWS_LANGS[value] ? value : 'en'); } catch {}
+}
+
+function currentNewsSize() {
+  let saved = null;
+  try { saved = localStorage.getItem(NEWS_SIZE_KEY); } catch {}
+  return NEWS_SIZES.includes(saved) ? saved : 'normal';
+}
+
+function applyNewsSize(value) {
+  try { localStorage.setItem(NEWS_SIZE_KEY, NEWS_SIZES.includes(value) ? value : 'normal'); } catch {}
 }
 
 function currentButlerType() {

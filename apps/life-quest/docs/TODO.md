@@ -140,21 +140,23 @@
 - [x] E. MARKET MOVES の見出しにも `move` を色と記号つきで出す
 - [x] F. 値幅 `change` を前日比%の下に出す（生成側 `fetch_markets.py` も対応。2026-10-03 Keita「全部やれ」）
 
-## NEWSPAPER の文字サイズ設定（2026-10-04 Keita依頼、未実装・「実装」待ち）
+## NEWSPAPER の文字サイズ設定（2026-10-04 Keita依頼、実装済み）
 
 現状: 文字サイズは `newspaper.css` に px で直書き（スマホ: 見出し24px・本文19px・日本語本文18px・訳16px・ボタン16px など）。幅600px以上は `@media` で見出し26px・本文20px に一段大きくしている。設定項目は無い。
 
-- [ ] 設定画面に「NEWSPAPERの文字サイズ」を追加（`ふつう` / `大きめ` / `もっと大きめ`、EN: Normal / Large / Extra large）。保存は localStorage `lifeQuestNewsSize`（`normal` / `large` / `xlarge`、既定 `normal`）。テーマ・NEWSPAPER言語と同じ端末ごとの設定
-- [ ] 作り方案: `.newspaper-paper` に `data-size` を付け、紙面内の `font-size` を `calc(19px * var(--news-scale))` の形に置き換える。`--news-scale` は ふつう 1 / 大きめ 1.15 / もっと大きめ 1.3。PC用 `@media` の値にも同じ倍率をかける。紙面の題字（NEWSPAPER と日付）だけは倍率をかけない
+- [x] 設定画面に「NEWSPAPERの文字サイズ」を追加（`ふつう` / `大きめ` / `もっと大きめ`、EN: Normal / Large / Extra large）。保存は localStorage `lifeQuestNewsSize`（`normal` / `large` / `xlarge`、既定 `normal`）。テーマ・NEWSPAPER言語と同じ端末ごとの設定
+- [x] 作り方案: `.newspaper-paper` に `data-size` を付け、紙面内の `font-size` を `calc(19px * var(--news-scale))` の形に置き換える。`--news-scale` は ふつう 1 / 大きめ 1.15 / もっと大きめ 1.3。PC用 `@media` の値にも同じ倍率をかける。紙面の題字（NEWSPAPER と日付）だけは倍率をかけない
 - 主な値（スマホ、px。ふつう→大きめ→もっと大きめ）: 見出し 24→28→31 / 本文(英) 19→22→25 / 本文(日) 18→21→23 / 訳(下に出る文) 16→18→21 / ボタン 16→18→21 / 出典リンク 14→16→18 / 地域見出し 13→15→17 / MARKETS行 17→20→22
 - モック: `/mnt/project-files/life-quest/design/news-fontsize-3levels.png`
 
-## NEWSPAPER の地域見出し（01 WORLD など）デザイン（2026-10-04 Keita依頼、未実装・「実装」待ち）
+## NEWSPAPER の地域見出し（01 WORLD など）デザイン（2026-10-04 Keita依頼、実装済み）
 
-- [ ] 地域見出し「01 🌍 WORLD」のうち、番号（01）は今のまま素の文字で置き、アイコン（国旗/地球）＋地域名だけを白地＋薄茶の縁＋角丸6px＋軽い影の「国のタグ」にして浮かせる（2026-10-04 Keita「02は浮かせず国旗とWORLDの部分だけ」）。色は今の茶系のまま。文字サイズ設定（上）はKeita OK
-- [ ] 地域名（WORLD / JAPAN）の字間を詰める（2026-10-04 Keita「W O R L Dに見える」）。現状は半角スペースではなく `.newspaper-region` の `letter-spacing:.16em`。タグ化と同時に `.06em` 前後へ（案。仕上がりを見て微調整）
-- [ ] 日本のアイコンが国旗でなく「JP」の文字になる件: 原因は国旗絵文字（🇯🇵）を表示できないフォントの環境（Windows の Segoe UI Emoji は国旗絵文字を持たず、2文字の「JP」になる）。🇺🇸 🇪🇺 なども同じく「US」「EU」になる。🌍 など地球の絵文字はWindowsでも出る
+- [x] 地域見出し「01 🌍 WORLD」のうち、番号（01）は今のまま素の文字で置き、アイコン（国旗/地球）＋地域名だけを白地＋薄茶の縁＋角丸6px＋軽い影の「国のタグ」にして浮かせる（2026-10-04 Keita「02は浮かせず国旗とWORLDの部分だけ」）。色は今の茶系のまま。文字サイズ設定（上）はKeita OK
+- [x] 地域名（WORLD / JAPAN）の字間を詰める（2026-10-04 Keita「W O R L Dに見える」）。現状は半角スペースではなく `.newspaper-region` の `letter-spacing:.16em`。タグ化と同時に `.06em` 前後へ（案。仕上がりを見て微調整）
+- [x] 日本のアイコンが国旗でなく「JP」の文字になる件: 原因は国旗絵文字（🇯🇵）を表示できないフォントの環境（Windows の Segoe UI Emoji は国旗絵文字を持たず、2文字の「JP」になる）。🇺🇸 🇪🇺 なども同じく「US」「EU」になる。🌍 など地球の絵文字はWindowsでも出る
   - 推奨: 国旗だけ自前のSVG画像にする（`icons/flags/jp.svg` などを作り、`REGION_ICONS` の国・地域を `<img>` に置き換え。地球系は絵文字のまま）。ライブラリ追加なし、どの端末でも同じ見た目
   - 不採用案: 国旗絵文字用Webフォント（Twemoji Country Flags 等）の読み込み。ライブラリ追加にあたるため
   - 最初に作る旗: 実際の生成号で使われている `japan` / `us` / `europe`。STYLE.md に載っている `china` / `korea` と、`REGION_ICONS` にある残り（uk・taiwan・india・russia・ukraine）は同時に作るか要相談
 - モック（変更前後）: `/mnt/project-files/life-quest/design/news-kicker-before-after.png`
+
+- [ ] 国旗画像は jp / us / eu のみ。china / korea / uk / taiwan / india / russia / ukraine は絵文字のまま（Windowsでは文字になる）。必要になったら `icons/flags/` に追加し `REGION_FLAGS`（newspaper-ui.js）へ登録
