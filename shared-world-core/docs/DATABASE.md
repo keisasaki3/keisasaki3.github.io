@@ -46,15 +46,17 @@ Supabase管理。アプリから独自にパスワード列を作らない。
 共通表示ステータス。
 
 - user_id uuid PK -> profiles.user_id
-- status text — `online / studying / reading / busy / afk`
+- status text — `online / studying / reading / working / busy / afk`
 - status_changed_at timestamptz
 - last_seen_at timestamptz
 - updated_at timestamptz
 
-status allowed:
+status allowed（migration 004・011）:
 
+- online
 - studying
 - reading
+- working（作業中。夏の果てβ0.60）
 - busy
 - afk
 

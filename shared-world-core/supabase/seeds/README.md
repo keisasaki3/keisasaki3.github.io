@@ -41,4 +41,11 @@ python shared-world-core/scripts/generate_math_seed.py
 
 注意: 本番の29学問（数学以外）のトピックは、このフォルダのseedではなく本番DBで直接整備されたもの（2026-09-27時点で約4,100件）。`003_other_subject_prototypes.sql` は古い仮トピックで、本番の中身とは一致しない。`007` は本番のトピックIDを前提にしている。
 
+### Gitに無い本番の変更
+
+- 2026-09-28: `player_presence.status` に `working`（作業中、夏の果てβ0.60）を追加。`../migrations/011_allow_working_presence_status.sql` に後から記録した。
+- 2026-10-02: 中身のはっきりしない分野・トピックの整理（Keita了承のうえ本番SQLで直接実行。seedファイルは無い）。分野2つを `active = false`（地球科学 `earth-science-field-01`「地球を調べる」、地理学 `geography-field-22`「地域研究」）、その配下のトピックを近い分野へ移動、「〜とは何か」系などのトピック17件を `active = false`。正確な状態は本番DBを見る。
+
+本番で直接SQLを実行したときは、同じ内容をこのフォルダかmigrationsに残す。
+
 前提関係とimportanceの精密化は後続migrationで追加する。現在の275トピックseedではimportanceを暫定値2としている。
