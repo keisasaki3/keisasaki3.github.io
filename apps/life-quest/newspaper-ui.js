@@ -72,7 +72,7 @@ function renderNewsSection(news) {
           ${headlineSub ? `<p class="newspaper-sub newspaper-headline-sub" lang="${sub}">${esc(headlineSub)}</p>` : ''}
         </div>
         <div class="newspaper-summaries">${sentences.map(sentence => `<p class="newspaper-sentence">
-          <span class="newspaper-sentence-main" lang="${main}">${esc(sentence.text)}</span>
+          <span class="newspaper-sentence-main" lang="${main}">${esc(sentence.text)}${sentence.sub ? ` <button class="newspaper-sentence-btn" type="button" data-toggle-sentence aria-expanded="false" aria-label="${esc(tr(jaMain ? 'showEn' : 'showJa'))}">${esc(tr(jaMain ? 'sentenceEn' : 'sentenceJa'))}</button>` : ''}</span>
           ${sentence.sub ? `<span class="newspaper-sub" lang="${sub}">${esc(sentence.sub)}</span>` : ''}
         </p>`).join('')}</div>
         ${mainSource ? `<div class="newspaper-source-main">${mainSource}</div>` : ''}
@@ -240,6 +240,17 @@ function bindNewspaperInteractions() {
       button.setAttribute('aria-expanded', String(open));
       button.classList.toggle('open', open);
       button.textContent = open ? (button.dataset.openLabel || closedLabel) : closedLabel;
+    };
+  });
+
+  document.querySelectorAll('[data-toggle-sentence]').forEach(element => {
+    const button = /** @type {HTMLButtonElement} */ (element);
+    button.onclick = () => {
+      const sentence = button.closest('.newspaper-sentence');
+      if (!sentence) return;
+      const open = sentence.classList.toggle('open');
+      button.setAttribute('aria-expanded', String(open));
+      button.classList.toggle('open', open);
     };
   });
 
