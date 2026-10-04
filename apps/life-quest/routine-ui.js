@@ -408,7 +408,7 @@ function showRoutineClear(isToday) {
 
 function drawRoutineEditor(body) {
   const list = activeRoutines();
-  body.innerHTML = `<div class="list-window" id="routineEditList"></div>${list.length > 1 ? `<div class="reorderhint">${esc(tr('reorderHint'))}</div>` : ''}<button type="button" class="plainbtn addstatus" id="addRoutine">${esc(tr('routine.add'))}</button>`;
+  body.innerHTML = `<div class="list-window" id="routineEditList"></div>${list.length > 1 ? `<div class="reorderhint">${esc(reorderHintText())}</div>` : ''}<button type="button" class="plainbtn addstatus" id="addRoutine">${esc(tr('routine.add'))}</button>`;
   const box = $('#routineEditList');
   list.forEach((r, i) => {
     const d = document.createElement('button');
