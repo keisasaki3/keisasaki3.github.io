@@ -40,7 +40,6 @@ function regionIcon(region) {
 function renderNewsSection(news) {
   const jaMain = currentNewsLang() === 'ja';
   const articles = news.map((article, index) => {
-    const detailId = `newspaper-news-detail-${index}`;
     const main = jaMain ? 'ja' : 'en';
     const sub = jaMain ? 'en' : 'ja';
     const headlineEn = (article.headline_en || '').trim();
@@ -53,7 +52,9 @@ function renderNewsSection(news) {
       const subText = (sentence[sub] || '').trim();
       return mainText ? { text: mainText, sub: subText } : { text: subText, sub: '' };
     }).filter(sentence => sentence.text);
-    const hasSub = Boolean(headlineSub) || sentences.some(sentence => sentence.sub);
+    const transLabel = esc(tr(jaMain ? 'sentenceEn' : 'sentenceJa'));
+    const transAria = esc(tr(jaMain ? 'showEn' : 'showJa'));
+    const transButton = `<button class="newspaper-sentence-btn" type="button" data-toggle-sentence aria-expanded="false" aria-label="${transAria}">${transLabel}</button>`;
     const allSources = article.sources || [];
     const mainSource = renderSourceLinks(allSources.slice(0, 1));
     const moreSources = renderSourceLinks(allSources.slice(1));
@@ -68,19 +69,15 @@ function renderNewsSection(news) {
       <div class="newspaper-news-bar"><span class="newspaper-num">${String(index + 1).padStart(2, '0')}</span><span class="newspaper-region"><span class="newspaper-region-icon" aria-hidden="true">${regionIcon(article.region || '')}</span>${esc((article.region || 'NEWS').toUpperCase())}</span></div>
       <div class="newspaper-news-body">
         <div class="newspaper-headline-block">
-          <h3 class="newspaper-headline${headlineIsJa ? ' newspaper-headline-jaonly' : ''}" lang="${headlineIsJa ? 'ja' : 'en'}">${esc(headlineMain)}</h3>
+          <h3 class="newspaper-headline${headlineIsJa ? ' newspaper-headline-jaonly' : ''}" lang="${headlineIsJa ? 'ja' : 'en'}">${esc(headlineMain)}${headlineSub ? ` ${transButton}` : ''}</h3>
           ${headlineSub ? `<p class="newspaper-sub newspaper-headline-sub" lang="${sub}">${esc(headlineSub)}</p>` : ''}
         </div>
         <div class="newspaper-summaries">${sentences.map(sentence => `<p class="newspaper-sentence">
-          <span class="newspaper-sentence-main" lang="${main}">${esc(sentence.text)}${sentence.sub ? ` <button class="newspaper-sentence-btn" type="button" data-toggle-sentence aria-expanded="false" aria-label="${esc(tr(jaMain ? 'showEn' : 'showJa'))}">${esc(tr(jaMain ? 'sentenceEn' : 'sentenceJa'))}</button>` : ''}</span>
+          <span class="newspaper-sentence-main" lang="${main}">${esc(sentence.text)}${sentence.sub ? ` ${transButton}` : ''}</span>
           ${sentence.sub ? `<span class="newspaper-sub" lang="${sub}">${esc(sentence.sub)}</span>` : ''}
         </p>`).join('')}</div>
         ${mainSource ? `<div class="newspaper-source-main">${mainSource}</div>` : ''}
-        ${detail ? `<div class="newspaper-news-detail" id="${detailId}" hidden>${detail}</div>` : ''}
-        <div class="newspaper-news-actions">
-          ${hasSub ? `<button class="newspaper-toggle" type="button" data-toggle-sub="newspaper-news-${index}" data-open-label="${esc(tr(jaMain ? 'closeEn' : 'closeJa'))}" aria-expanded="false">${esc(tr(jaMain ? 'showEn' : 'showJa'))}</button>` : ''}
-          ${detail ? `<button class="newspaper-toggle" type="button" data-toggle="${detailId}" data-open-label="${esc(tr('close'))}" aria-expanded="false">${esc(tr('details'))}</button>` : ''}
-        </div>
+        ${detail ? `<div class="newspaper-news-detail">${detail}</div>` : ''}
       </div>
     </article>`;
   }).join('');
@@ -246,24 +243,11 @@ function bindNewspaperInteractions() {
   document.querySelectorAll('[data-toggle-sentence]').forEach(element => {
     const button = /** @type {HTMLButtonElement} */ (element);
     button.onclick = () => {
-      const sentence = button.closest('.newspaper-sentence');
+      const sentence = button.closest('.newspaper-sentence, .newspaper-headline-block');
       if (!sentence) return;
       const open = sentence.classList.toggle('open');
       button.setAttribute('aria-expanded', String(open));
       button.classList.toggle('open', open);
-    };
-  });
-
-  document.querySelectorAll('[data-toggle-sub]').forEach(element => {
-    const button = /** @type {HTMLButtonElement} */ (element);
-    const closedLabel = button.textContent || '';
-    button.onclick = () => {
-      const article = document.getElementById(button.dataset.toggleSub || '');
-      if (!article) return;
-      const open = article.classList.toggle('sub-open');
-      button.setAttribute('aria-expanded', String(open));
-      button.classList.toggle('open', open);
-      button.textContent = open ? (button.dataset.openLabel || closedLabel) : closedLabel;
     };
   });
 
