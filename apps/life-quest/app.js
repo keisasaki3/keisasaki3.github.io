@@ -109,20 +109,51 @@ function renderProfile() {
 }
 
 // サムネは非公開バケットなので、上げた日時ごとに署名付きURLを1回だけ取る。未設定・失敗時はスライム勇者
+// 読み込み中はスライムを出さない（.pending）。前回のURLは localStorage に覚え、起動直後に先に表示する
+const AVATAR_LS_KEY = 'lifeQuestAvatar';
+const AVATAR_TTL_MS = 1000 * 60 * 60 * 23;
+
+function readAvatarLs() {
+  try {
+    const v = JSON.parse(localStorage.getItem(AVATAR_LS_KEY) || 'null');
+    return v && v.url && v.exp > Date.now() ? v : null;
+  } catch { return null; }
+}
+function writeAvatarLs(key, url) {
+  try {
+    if (key && url) localStorage.setItem(AVATAR_LS_KEY, JSON.stringify({ key, url, exp: Date.now() + AVATAR_TTL_MS }));
+    else localStorage.removeItem(AVATAR_LS_KEY);
+  } catch {}
+}
+function showAvatar(img, src, isDefault) {
+  img.src = src;
+  img.classList.toggle('default', isDefault);
+  img.classList.remove('pending');
+}
+
+(() => {
+  const cached = readAvatarLs();
+  if (cached) showAvatar(document.querySelector('#avatarImg'), cached.url, false);
+})();
+
 async function renderAvatar() {
   const img = $('#avatarImg');
   const key = userSettings?.avatar_updated_at && session ? `${session.user.id}:${userSettings.avatar_updated_at}` : null;
-  if (!key) { avatarCache = { key: null, url: null }; img.src = DEFAULT_AVATAR; img.classList.add('default'); return; }
+  if (!key) { avatarCache = { key: null, url: null }; writeAvatarLs(null); showAvatar(img, DEFAULT_AVATAR, true); return; }
   if (avatarCache.key !== key) {
     avatarCache = { key, url: null };
-    const { data, error } = await sb.storage.from(AVATAR_BUCKET).createSignedUrl(avatarPath(), 60 * 60 * 24);
-    if (avatarCache.key !== key) return;
-    avatarCache.url = error ? null : data.signedUrl;
+    const cached = readAvatarLs();
+    if (cached && cached.key === key) avatarCache.url = cached.url;
+    else {
+      const { data, error } = await sb.storage.from(AVATAR_BUCKET).createSignedUrl(avatarPath(), 60 * 60 * 24);
+      if (avatarCache.key !== key) return;
+      avatarCache.url = error ? null : data.signedUrl;
+      writeAvatarLs(key, avatarCache.url);
+    }
   }
-  if (!avatarCache.url) { img.src = DEFAULT_AVATAR; img.classList.add('default'); return; }
-  img.onerror = () => { img.onerror = null; avatarCache.url = null; img.src = DEFAULT_AVATAR; img.classList.add('default'); };
-  img.src = avatarCache.url;
-  img.classList.remove('default');
+  if (!avatarCache.url) { showAvatar(img, DEFAULT_AVATAR, true); return; }
+  img.onerror = () => { img.onerror = null; avatarCache.url = null; writeAvatarLs(null); showAvatar(img, DEFAULT_AVATAR, true); };
+  showAvatar(img, avatarCache.url, false);
 }
 
 // 端末で中央を正方形に切り抜いて128pxのJPEGにする
@@ -468,6 +499,7 @@ function renderSettings() {
   };
   $('#signout').onclick = () => {
     try { localStorage.removeItem('lifeQuestCalendarToken'); } catch {}
+    writeAvatarLs(null);
     sb.auth.signOut();
   };
   $('#resetChecks').onclick = async () => {
