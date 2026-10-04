@@ -166,7 +166,7 @@ NEXTの候補はチェック型トピックのみ。自分で追加したトピ�
 
 ステータス一覧のプレイヤー窓に サムネ、`{display_name}`、`Lv {master_count}`、ジョブ名、肩書を表示する（配置は §16、2026-10-03 Keita決定、`IDEAS.md` §10）。
 
-- サムネ: サムネをタップして画像を選ぶと、端末で中央を正方形に切り抜いて128pxのJPEGにし、Storage の非公開バケット `quest-avatars` の `<user_id>/avatar.jpg` に上書き保存する（上げた日時は `quest_user_settings.avatar_updated_at`）。表示は署名付きURL。未設定・読めないときはスライム勇者（`app-icons/icon-192.png`）。
+- サムネ: サムネをタップして画像を選ぶと、端末で中央を正方形に切り抜いて128pxのJPEGにし、Storage の非公開バケット `quest-avatars` の `<user_id>/avatar.jpg` に上書き保存する（上げた日時は `quest_user_settings.avatar_updated_at`）。表示は署名付きURL。読み込み中はスライムを出さず（前回のURLを localStorage `lifeQuestAvatar` に覚えて起動直後に先に表示、有効23時間）、サムネ未設定・読めないと分かったときだけスライム勇者（`app-icons/icon-192.png`）。
 - ジョブ名: 設定で自由入力（12文字まで、`quest_user_settings.job_name`）。空なら行ごと出さない。夏の果てには出さない。
 - 肩書: Lvがしきい値以上で切り替わる12段階（0 旅のはじまり / 5 村の物知り / 10 見習い学徒 / 25 駆け出しの冒険者 / 50 学びの冒険者 / 100 博識の旅人 / 200 知の探究者 / 400 塔の魔導士 / 700 賢者 / 1000 大賢者 / 2000 叡智の守り手 / 4000 全知に至る者。英語は `i18n.js`）。
 - 全データをリセットすると、ジョブ名とサムネも消える（表示名は残る）。
