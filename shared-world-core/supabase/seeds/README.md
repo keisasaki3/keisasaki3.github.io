@@ -39,6 +39,8 @@ python shared-world-core/scripts/generate_math_seed.py
 11. `../migrations/006_field_topic_name_en.sql` → `008_field_topic_name_en.sql` — 分野・トピックの英語名（本番の有効な分野499・トピック4677件、2026-09-27時点）
 12. `009_assets_preset.sql` — 資産の単独プリセット（総資産・万円の入力型、006 の後）
 
+本番の現状の一覧は `../../curriculum/prod_curriculum.csv`（`../../scripts/export_prod_curriculum.py` で作る）。
+
 注意: 本番の29学問（数学以外）のトピックは、このフォルダのseedではなく本番DBで直接整備されたもの（2026-09-27時点で約4,100件）。`003_other_subject_prototypes.sql` は古い仮トピックで、本番の中身とは一致しない。`007` は本番のトピックIDを前提にしている。
 
 ### Gitに無い本番の変更

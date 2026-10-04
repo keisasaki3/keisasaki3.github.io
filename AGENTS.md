@@ -44,7 +44,7 @@ Keitaの最新指示 ＞ `IDEAS.md` で採用が明示された内容 ＞ `SPEC.
 - スキーマ変更は `shared-world-core/supabase/migrations/NNN_name.sql`（連番）に書き、既存データの移行まで設計する。MASTER・プロフィール・表示名・種族・状態を壊さない。
 - 一度公開した `subject_id` / `field_id` / `topic_id` は変えない・再利用しない。不要になったプリセットの分野・トピックは削除せず `active = false` にする（MASTERを残すため）。
 - `quest_subjects.sort_order` は変えない（旧データ移行が学問の並び順に依存）。
-- 本番の29学問のカリキュラム（約4,600トピック）はGitのseedに全部は入っていない（`supabase/seeds/README.md`）。カリキュラムを触るときは本番DBを読んでから作業する。DBを読めない環境なら、作業前にKeitaにその旨を伝える。
+- 本番のカリキュラム（有効な学問・分野・トピック約4,660件、英語名つき）は `shared-world-core/curriculum/prod_curriculum.csv` に書き出してある（約1MB。全部読まず、`grep` / `pandas` で必要な学問だけ読む）。非表示（`active = false`）の行は公開読み取りの対象外なのでCSVに無い。本番のカリキュラムを変えた作業では、同じPRで `python3 shared-world-core/scripts/export_prod_curriculum.py` を実行してCSVを更新する（読むだけ・DBは変えない。本番の変更後に実行する）。古いseed（`supabase/seeds/`）は初期投入用で、今の本番とは一致しない。
 
 ## 6. 検証（PR前に1回）
 
