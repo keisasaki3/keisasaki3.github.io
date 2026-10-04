@@ -17,9 +17,9 @@
 
 `docs/IDEAS.md` は検討中の方向性であり、確定仕様ではない。`SPEC.md` と衝突する内容を実装へ反映する場合は、ユーザーと採用方針を確認したうえで関連ドキュメントも更新する。
 
-## Claude handoff
+## AI handoff（Claude / GPT）
 
-Claudeへ開発を引き継ぐ場合は、このREADMEを入口にして以下を確認する。
+作業ルール・検証手順・DBの注意はリポジトリ直下の `AGENTS.md` にまとめてある。最初にそれを読み、その後このREADMEを入口にして以下を確認する。
 
 1. `docs/SPEC.md`
 2. `docs/IDEAS.md`
