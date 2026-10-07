@@ -1,6 +1,7 @@
 // 環境音BGM（IDEAS §11）。audioはこのファイルで1つだけ持ち、タブを切り替えても鳴り続ける。設定は端末ごとにlocalStorage
 const BGM_TRACKS = [
-  { id: 'late-night-stacks', title: 'Late Night Stacks', artist: 'ornave', src: './bgm/late-night-stacks.mp3', img: './bgm/night-city.webp' }
+  { id: 'late-night-stacks', title: 'Late Night Stacks', artist: 'ornave', src: './bgm/late-night-stacks.mp3', img: './bgm/night-city.webp' },
+  { id: 'jazz-late-train', title: 'Jazz Late Train', artist: 'ornave', src: './bgm/jazz-late-train.mp3', img: './bgm/late-train.webp' }
 ];
 // 鳴っているかどうかは保存しない（アプリを閉じたら次は必ずオフ）。ループがこの回数を超えたら自動で止める
 const BGM_MAX_LOOPS = 100;
