@@ -3,7 +3,7 @@ const BGM_TRACKS = [
   { id: 'late-night-stacks', title: 'Late Night Stacks', artist: 'ornave', src: './bgm/late-night-stacks.mp3', img: './bgm/night-city.webp' }
 ];
 // 鳴っているかどうかは保存しない（アプリを閉じたら次は必ずオフ）。ループがこの回数を超えたら自動で止める
-const BGM_MAX_LOOPS = 30;
+const BGM_MAX_LOOPS = 100;
 const BGM_VOL_KEY = 'lifeQuestBgmVol';
 const BGM_TRACK_KEY = 'lifeQuestBgmTrack';
 const BGM_FADE_MS = 1000;
@@ -102,15 +102,16 @@ document.addEventListener('click', e => {
 function renderBgm() {
   setActiveTab('bgm');
   const track = bgmTrack();
-  main().innerHTML = `<div class="bgm"><div class="pagehead"><h2>${esc(tr('bgm'))}</h2></div><div class="list-window">
-    <div class="settingrow"><label class="settingtitle" for="bgmTrackSetting">${esc(tr('bgmTrack'))}</label><select id="bgmTrackSetting" class="select">${BGM_TRACKS.map(t => `<option value="${t.id}" ${t.id === track.id ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}</select></div>
-    <div class="settingrow"><span class="settingtitle">${esc(tr('bgmPower'))}</span><button class="plainbtn small bgm-toggle" type="button" data-bgm-toggle></button></div>
-    <div class="settingrow"><label class="settingtitle" for="bgmVolume">${esc(tr('bgmVolume'))}</label><input id="bgmVolume" class="bgm-volume" type="range" min="0" max="100" value="${Math.round(bgm.volume * 100)}"></div>
-  </div>
+  main().innerHTML = `<div class="bgm"><div class="pagehead"><h2>${esc(tr('bgm'))}</h2></div>
   <div class="bgm-scene" style="background-image:url('${track.img}')" role="img" aria-label="${esc(track.title)}">
     <div class="bgm-scene-title">♪ ${esc(track.title)}</div>
   </div>
-  <div class="bgm-credit">Music: ${esc(track.artist)} / Pixabay</div></div>`;
+  <div class="bgm-credit">Music: ${esc(track.artist)} / Pixabay</div>
+  <div class="list-window">
+    <div class="settingrow"><label class="settingtitle" for="bgmTrackSetting">${esc(tr('bgmTrack'))}</label><select id="bgmTrackSetting" class="select">${BGM_TRACKS.map(t => `<option value="${t.id}" ${t.id === track.id ? 'selected' : ''}>${esc(t.title)}</option>`).join('')}</select></div>
+    <div class="settingrow"><span class="settingtitle">${esc(tr('bgmPower'))}</span><button class="plainbtn small bgm-toggle" type="button" data-bgm-toggle></button></div>
+    <div class="settingrow"><label class="settingtitle" for="bgmVolume">${esc(tr('bgmVolume'))}</label><input id="bgmVolume" class="bgm-volume" type="range" min="0" max="100" value="${Math.round(bgm.volume * 100)}"></div>
+  </div></div>`;
   bgmNotify();
   $('#bgmTrackSetting').onchange = e => {
     bgm.trackId = e.target.value;
