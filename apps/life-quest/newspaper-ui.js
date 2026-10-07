@@ -216,7 +216,7 @@ function renderQuizSection(quiz) {
 function NewspaperScreen(issue) {
   return `<div class="newspaper-screen">
     <div class="newspaper-paper" data-size="${currentNewsSize()}">
-    <div class="newspaper-header"><h2>NEWSPAPER</h2><div>${esc(issue.date)}</div></div>
+    <div class="newspaper-header"><h2>NEWSPAPER</h2><div>${esc(issue.date)}<button class="plainbtn small bgm-toggle" type="button" data-bgm-toggle aria-label="BGM"></button></div></div>
     ${renderNewsSection(issue.news)}
     ${renderMarketsSection(issue.markets)}
     </div>
@@ -279,6 +279,7 @@ async function renderNewspaper() {
     if (requestId !== newspaperRequestId || !document.querySelector('[data-tab="newspaper"]')?.classList.contains('active')) return;
     main().innerHTML = NewspaperScreen(fillNarrator(issue));
     bindNewspaperInteractions();
+    bgmNotify();
   } catch (error) {
     if (requestId !== newspaperRequestId || !document.querySelector('[data-tab="newspaper"]')?.classList.contains('active')) return;
     renderNewspaperError(error);

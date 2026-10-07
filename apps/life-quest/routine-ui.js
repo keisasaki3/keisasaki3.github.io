@@ -20,6 +20,7 @@ const ROUTINE_ICONS = {
   sleep: { emoji: '😴', color: '#7b7fff' },
   water: { emoji: '💧', color: '#4fc3f7' },
   meal: { emoji: '🥗', color: '#66d17a' },
+  coffee: { emoji: '☕', color: '#c8956d' },
   tidy: { emoji: '🧹', color: '#a8a8b8' },
   money: { emoji: '💰', color: '#f1c40f' },
   hobby: { emoji: '🎸', color: '#ff7ab6' },
