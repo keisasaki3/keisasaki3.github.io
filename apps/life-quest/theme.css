@@ -39,7 +39,7 @@ body[data-view="home"] .top{display:flex}
 .title{font-size:12px;color:var(--body2)}
 
 /* 下タブ */
-.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(5,minmax(max-content,1fr));background:var(--bar);border-top:1px solid var(--line);padding-bottom:max(12px,env(safe-area-inset-bottom))}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:10;max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(6,minmax(max-content,1fr));background:var(--bar);border-top:1px solid var(--line);padding-bottom:max(12px,env(safe-area-inset-bottom))}
 .tab{height:56px;min-width:0;padding:0;border:0;border-top:2px solid transparent;background:none;color:var(--dim);font-size:12px;white-space:nowrap;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:3px}
 .tab.active{border-top-color:var(--acc);background:var(--panel);color:var(--text);font-weight:700}
 .tab.active::before{content:"▶";font-family:"DotGothic16",monospace;font-size:9px;font-weight:400;color:var(--acc)}

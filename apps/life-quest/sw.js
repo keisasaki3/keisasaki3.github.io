@@ -16,7 +16,7 @@ const NETWORK_WAIT_MS = 3000;
 
 self.addEventListener('fetch', (e) => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin || req.headers.has('range')) return;
   const network = fetch(req).then((res) => {
     if (res.ok) {
       const copy = res.clone();
