@@ -450,7 +450,10 @@ function editName() {
   input.focus(); input.select();
   const close = () => bg.remove();
   bg.querySelector('#cancel').onclick = close;
-  bg.onclick = e => { if (e.target === bg) close(); };
+  // 外側を押して離したときだけ閉じる。小窓の中で押したまま外へ出て離しても閉じない（2026-11-01 Keita依頼）
+  let downOnBg = false;
+  bg.onpointerdown = e => { downOnBg = e.target === bg; };
+  bg.onclick = e => { if (e.target === bg && downOnBg) close(); downOnBg = false; };
   const commit = async () => {
     const value = input.value.trim();
     if (!value) return;

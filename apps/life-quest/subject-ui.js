@@ -153,7 +153,10 @@ function openModal(inner) {
   bg.innerHTML = `<div class="modal">${inner}</div>`;
   document.body.appendChild(bg);
   const close = () => bg.remove();
-  bg.onclick = e => { if (e.target === bg) close(); };
+  // 外側を押して離したときだけ閉じる。小窓の中で押したまま外へ出て離しても閉じない（2026-11-01 Keita依頼）
+  let downOnBg = false;
+  bg.onpointerdown = e => { downOnBg = e.target === bg; };
+  bg.onclick = e => { if (e.target === bg && downOnBg) close(); downOnBg = false; };
   const cancel = bg.querySelector('[data-close]');
   if (cancel) cancel.onclick = close;
   return { bg, close };
