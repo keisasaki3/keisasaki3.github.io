@@ -308,8 +308,6 @@ async function fetchAllRows(queryFactory, pageSize = 1000) {
 async function loadApp() {
   showLoading();
   const user = session.user;
-  // 最初に出る日課の読み込みをカリキュラムの取得と並列に始めておく
-  prefetchRoutines().catch(() => {});
   const statusDataPromise = fetchUserStatusData(user);
 
   const [profileRow, subjectRes, fieldRows, topicRows, prereqRows, masteryRows, presenceRes] = await Promise.all([
@@ -620,7 +618,7 @@ document.querySelector('[data-tab="subjects"]').onclick = () => {
 };
 document.querySelector('[data-tab="settings"]').onclick = renderSettings;
 
-// 他のJS（routine-ui.js等）の読み込みが終わる前に起動処理が走らないよう、bootまではイベントを無視してbootに任せる
+// 他のJS（subject-ui.js等）の読み込みが終わる前に起動処理が走らないよう、bootまではイベントを無視してbootに任せる
 let booted = false;
 
 sb.auth.onAuthStateChange((event, nextSession) => {

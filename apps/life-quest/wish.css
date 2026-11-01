@@ -1,17 +1,31 @@
-/* 学びたいタブ */
+/* JUST DO ITタブ（旧 学びたい） */
 .wcard{padding:12px 14px;border-bottom:1px solid var(--rowline);cursor:pointer;display:grid;gap:6px}
 .wcard:last-child{border-bottom:0}
 .wcard:active{background:var(--panel)}
 .wtop{display:flex;align-items:baseline;gap:10px}
 .wtitle{flex:1;min-width:0;font-size:15px;font-weight:700;color:var(--text);overflow-wrap:anywhere}
-.wstars{flex:none;font-size:16px}
 .wres{font-size:13px;line-height:1.6;color:var(--body2);white-space:pre-wrap;overflow-wrap:anywhere}
 .wres a{color:var(--acc)}
 .wlearn{justify-self:end;min-height:36px}
-.wcard.learned .wtitle,.wcard.learned .wstars{color:var(--dim)}
+.wcard.learned .wtitle{color:var(--dim)}
+.wcard.learned .wprio{opacity:.55}
 .wishdonehead{margin-top:18px}
 .wishdonehead h3{margin:0;font-size:15px;color:var(--dim)}
-.wishstarpicks{display:flex;gap:6px}
-.wishstarpick{width:44px;height:44px;border:1px solid var(--win2-border);border-radius:4px;background:var(--panel);color:var(--star0);font-size:24px;cursor:pointer}
-.wishstarpick.on{color:var(--gold)}
+.jdihead{font-family:"DotGothic16",monospace;letter-spacing:.08em}
+.jdiquote{margin:0 4px 14px;padding:10px 12px;border-left:3px solid var(--acc);background:var(--win2-bg)}
+.jdiquote .quotetext{font-size:13px;line-height:1.7;color:var(--body)}
+.jdiquote .quoteby{margin-top:4px;text-align:right;font-size:11px;color:var(--dim)}
+.wgrouphead{display:flex;align-items:center;gap:8px;margin:14px 4px 6px}
+.wgrouphead:first-child{margin-top:0}
+.wcount{font-size:12px;color:var(--dim)}
+.wprio{flex:none;display:inline-block;padding:2px 8px;border:1px solid currentColor;border-radius:3px;font-family:"DotGothic16",monospace;font-size:12px;line-height:1.4;letter-spacing:.06em}
+.wprio.now{color:var(--gold);font-size:14px}
+.wprio.next{color:var(--acc)}
+.wprio.someday{color:var(--dim)}
+.wgroup.now{border-color:var(--gold)}
+.wishprios{display:flex;gap:6px}
+.wishprio{flex:1;height:44px;border:1px solid var(--win2-border);border-radius:4px;background:var(--panel);color:var(--dim);font-family:"DotGothic16",monospace;font-size:14px;letter-spacing:.06em;cursor:pointer}
+.wishprio.on.now{border-color:var(--gold);color:var(--gold);font-weight:700}
+.wishprio.on.next{border-color:var(--acc);color:var(--acc);font-weight:700}
+.wishprio.on.someday{border-color:var(--text);color:var(--text);font-weight:700}
 .wishtextarea{width:100%;padding:8px 10px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);font-size:16px;line-height:1.5;resize:vertical;font-family:inherit}
