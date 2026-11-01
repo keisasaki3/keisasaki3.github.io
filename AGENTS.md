@@ -29,7 +29,7 @@ Keitaの最新指示 ＞ `IDEAS.md` で採用が明示された内容 ＞ `SPEC.
 
 ## 4. 構成（人生クエスト）
 
-- ビルド無しの素のJS＋Supabase JS（CDN、`index.html` で版を固定）。読み込み順は `index.html` の `<script>` の順: `i18n.js` → `app.js` → `subject-ui.js` → `routine-ui.js` → `wish-ui.js` → `newspaper-service.js` → `newspaper-ui.js`。
+- ビルド無しの素のJS＋Supabase JS（CDN、`index.html` で版を固定）。読み込み順は `index.html` の `<script>` の順: `i18n.js` → `app.js` → `subject-ui.js` → `wish-ui.js` → `newspaper-service.js` → `bgm-ui.js` → `newspaper-ui.js`。
 - 起動時に `app.js` から後ろのファイルの関数を DOMContentLoaded より前に呼ばない（2026-10-02、Loading... で止まる不具合の原因だった）。
 - 画面の文言を足すときは `i18n.js` に日本語と英語の両方を足し、`tr()` で出す。プリセットの分野・トピックを足す・分ける・改名するときは英語名 `name_en` も入れる。
 - 端末ごとの設定は `localStorage`（キーは SPEC §10・§16・§17）。DBに保存しない。

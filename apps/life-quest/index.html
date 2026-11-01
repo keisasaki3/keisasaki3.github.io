@@ -17,7 +17,6 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <link rel="stylesheet" href="./theme.css">
 <link rel="stylesheet" href="./subject-ui.css">
 <link rel="stylesheet" href="./newspaper.css">
-<link rel="stylesheet" href="./routine.css">
 <link rel="stylesheet" href="./wish.css">
 <link rel="stylesheet" href="./bgm.css">
 </head>
@@ -37,10 +36,9 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 </header>
 <main class="main" id="main"></main>
 <nav class="tabs">
-  <button class="tab active" type="button" data-tab="subjects" data-i18n="tab.status">ステータス</button>
-  <button class="tab" type="button" data-tab="routines" data-i18n="tab.routines">デイリー</button>
-  <button class="tab" type="button" data-tab="wishes" data-i18n="tab.wishes">学びたい</button>
+  <button class="tab" type="button" data-tab="wishes" data-i18n="tab.wishes">JUST DO IT</button>
   <button class="tab" type="button" data-tab="newspaper" data-i18n="tab.newspaper">ニュース</button>
+  <button class="tab active" type="button" data-tab="subjects" data-i18n="tab.status">ステータス</button>
   <button class="tab" type="button" data-tab="bgm" data-i18n="tab.bgm">BGM</button>
   <button class="tab" type="button" data-tab="settings" data-i18n="tab.settings">設定</button>
 </nav>
@@ -49,7 +47,6 @@ try { var t = localStorage.getItem('lifeQuestTheme'); if (t) document.documentEl
 <script src="./i18n.js"></script>
 <script src="./app.js"></script>
 <script src="./subject-ui.js"></script>
-<script src="./routine-ui.js"></script>
 <script src="./wish-ui.js"></script>
 <script src="./newspaper-service.js"></script>
 <script src="./bgm-ui.js"></script>
