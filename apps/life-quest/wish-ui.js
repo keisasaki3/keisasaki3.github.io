@@ -1,4 +1,4 @@
-// JUST DO ITタブ（SPEC §18、旧「学びたい」）。やることのリスト。優先度 NOW!／NEXT／SOMEDAY ごとに分けて出す。「やった！」で完了済みへ。
+// JUST DO IT!タブ（SPEC §18、旧「学びたい」）。やることのリスト。優先度 NOW!／NEXT／SOMEDAY ごとに分けて出し、優先度の中はドラッグで並べ替え。「DONE」で完了済みへ。
 // 正本はSupabase（quest_wishes）。優先度は motivation 列（3=NOW!、2=NEXT、1=SOMEDAY）をそのまま使う。
 
 // 優先度。n は quest_wishes.motivation の値
@@ -50,10 +50,15 @@ const jdiDayFormat = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Tokyo', 
 let wishUserId = null;
 let wishAvailable = true;
 let wishes = [];
+// 並べ替え用の sort_order 列（migration 012）がDBにあるか。無ければ並べ替えを出さない
+let wishOrderAvailable = false;
 
 async function loadWishes() {
   const uid = session.user.id;
-  const res = await sb.from('quest_wishes').select('*').eq('user_id', uid);
+  const [res, orderRes] = await Promise.all([
+    sb.from('quest_wishes').select('*').eq('user_id', uid),
+    sb.from('quest_wishes').select('sort_order').limit(1)
+  ]);
   if (isMissingTableError(res.error)) {
     wishAvailable = false;
     wishUserId = uid;
@@ -61,15 +66,42 @@ async function loadWishes() {
   }
   if (res.error) throw res.error;
   wishAvailable = true;
+  wishOrderAvailable = !orderRes.error;
   wishes = res.data || [];
   wishUserId = uid;
 }
 
-// 優先度の高い順。同じ優先度は先に足したものが上
+// 優先度の高い順。同じ優先度の中は並べ替えた順（sort_order）、無ければ先に足したものが上
 function sortedWishes(learned) {
+  const ord = w => (w.sort_order ?? Infinity);
   return wishes
     .filter(w => w.learned === learned)
-    .sort((a, b) => b.motivation - a.motivation || String(a.created_at).localeCompare(String(b.created_at)) || a.wish_id.localeCompare(b.wish_id));
+    .sort((a, b) => b.motivation - a.motivation || ord(a) - ord(b) || String(a.created_at).localeCompare(String(b.created_at)) || a.wish_id.localeCompare(b.wish_id));
+}
+
+// その優先度の一番下に入れるときの sort_order
+function nextWishOrder(motivation, except) {
+  const orders = wishes.filter(w => !w.learned && w.motivation === motivation && w !== except && w.sort_order != null).map(w => w.sort_order);
+  return (orders.length ? Math.max(...orders) : 0) + 10;
+}
+
+function wishCountText(n) {
+  return n === 1 ? tr('wish.count1') : tr('wish.count', { n });
+}
+
+// 優先度の中で並べ替えた結果を10刻みで保存する（ステータスの並べ替えと同じ）
+async function saveWishOrder(ids) {
+  const changed = [];
+  ids.forEach((id, i) => {
+    const w = wishes.find(x => x.wish_id === id);
+    const order = (i + 1) * 10;
+    if (w && w.sort_order !== order) { w.sort_order = order; changed.push(w); }
+  });
+  drawWishes();
+  if (!changed.length) return;
+  const results = await Promise.all(changed.map(w => sb.from('quest_wishes').update({ sort_order: w.sort_order }).eq('wish_id', w.wish_id)));
+  const failed = results.find(r => r.error);
+  if (failed) alert(failed.error.message);
 }
 
 function priorityBadge(n) {
@@ -131,12 +163,19 @@ function drawWishes() {
     if (!list.length) return;
     const head = document.createElement('div');
     head.className = `wgrouphead ${p.cls}`;
-    head.innerHTML = `${priorityBadge(p.n)}<span class="wcount">${list.length}</span>`;
+    head.innerHTML = `${priorityBadge(p.n)}<span class="wcount">${esc(wishCountText(list.length))}</span>`;
     const box = document.createElement('div');
     box.className = `list-window wgroup ${p.cls}`;
     list.forEach(w => box.appendChild(wishCard(w)));
     groups.append(head, box);
+    if (wishOrderAvailable && list.length > 1) enableStatusReorder(box, saveWishOrder, { rowSelector: '.wcard', idKey: 'wishId', ignore: 'a, button' });
   });
+  if (wishOrderAvailable && open.some((w, i) => i && open[i - 1].motivation === w.motivation)) {
+    const hint = document.createElement('div');
+    hint.className = 'reorderhint';
+    hint.textContent = reorderHintText();
+    groups.appendChild(hint);
+  }
   const doneBox = $('#wishDoneList');
   if (doneBox) done.forEach(w => doneBox.appendChild(wishCard(w)));
   $('#addWish').onclick = () => openWishModal(null);
@@ -145,9 +184,10 @@ function drawWishes() {
 function wishCard(w) {
   const card = document.createElement('div');
   card.className = 'wcard' + (w.learned ? ' learned' : '');
+  card.dataset.wishId = w.wish_id;
   card.innerHTML = `<div class="wtop"><span class="wtitle">${esc(w.title)}</span>${w.learned ? priorityBadge(w.motivation) : ''}</div>${w.resources ? `<div class="wres">${linkifyResources(w.resources)}</div>` : ''}${w.learned ? '' : `<button type="button" class="plainbtn small wlearn">${esc(tr('wish.learned'))}</button>`}`;
   // リンクと「学んだ」以外を押すと編集
-  card.onclick = e => { if (!e.target.closest('a, button')) openWishModal(w); };
+  card.onclick = e => { if (!reorderJustEnded && !e.target.closest('a, button')) openWishModal(w); };
   const learnBtn = card.querySelector('.wlearn');
   if (learnBtn) learnBtn.onclick = () => withBusyButton(learnBtn, () => setWishLearned(w, true));
   return card;
@@ -183,10 +223,15 @@ function openWishModal(wish) {
     const resources = resInput.value.replace(/\s+$/, '').slice(0, 2000) || null;
     if (!title) return;
     if (wish) {
-      if (!(await runQuery(sb.from('quest_wishes').update({ title, motivation, resources }).eq('wish_id', wish.wish_id)))) return;
-      Object.assign(wish, { title, motivation, resources });
+      const patch = { title, motivation, resources };
+      // 優先度を変えたら、移った先の一番下へ
+      if (wishOrderAvailable && motivation !== wish.motivation) patch.sort_order = nextWishOrder(motivation, wish);
+      if (!(await runQuery(sb.from('quest_wishes').update(patch).eq('wish_id', wish.wish_id)))) return;
+      Object.assign(wish, patch);
     } else {
-      const row = await runQuery(sb.from('quest_wishes').insert({ user_id: session.user.id, title, motivation, resources }).select().single());
+      const insert = { user_id: session.user.id, title, motivation, resources };
+      if (wishOrderAvailable) insert.sort_order = nextWishOrder(motivation);
+      const row = await runQuery(sb.from('quest_wishes').insert(insert).select().single());
       if (!row) return;
       wishes.push(row);
     }
