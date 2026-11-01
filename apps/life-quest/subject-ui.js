@@ -214,8 +214,8 @@ let reorderActive = false;
 // ドラッグ中はスクロールさせない（passive: false でないと止められない）
 document.addEventListener('touchmove', e => { if (reorderActive) e.preventDefault(); }, { passive: false });
 
-// onOrder に並べ替え後のIDの配列を渡す
-function enableStatusReorder(list, onOrder = saveStatusOrder) {
+// onOrder に並べ替え後のIDの配列を渡す。JUST DO IT（wish-ui.js）も同じ動きを使う（行のセレクタ・IDのdata名・つかまない要素を opts で渡す）
+function enableStatusReorder(list, onOrder = saveStatusOrder, { rowSelector = '.subject', idKey = 'statusId', ignore = null } = {}) {
   const HOLD_MS = 450;
   const MOVE_TOLERANCE = 8;
   const MOUSE_DRAG_PX = 5;
@@ -272,13 +272,14 @@ function enableStatusReorder(list, onOrder = saveStatusOrder) {
     row = null;
     reorderJustEnded = true;
     setTimeout(() => { reorderJustEnded = false; }, 80);
-    const ids = [...list.children].map(el => el.dataset.statusId);
+    const ids = [...list.children].map(el => el.dataset[idKey]);
     await onOrder(ids);
   };
 
   list.addEventListener('pointerdown', e => {
     if (e.button !== 0 || reorderActive) return;
-    const target = /** @type {HTMLElement} */ (e.target).closest('.subject');
+    if (ignore && /** @type {HTMLElement} */ (e.target).closest(ignore)) return;
+    const target = /** @type {HTMLElement} */ (e.target).closest(rowSelector);
     if (!target || target.parentElement !== list) return;
     row = target; pointerId = e.pointerId; startX = e.clientX; startY = e.clientY;
     // マウスは長押しせず、少し動かした時点でドラッグを始める（onMove）。タッチは長押し

@@ -1,4 +1,6 @@
-/* JUST DO ITタブ（旧 学びたい） */
+/* JUST DO IT!タブ（旧 学びたい） */
+/* 優先度の色。派手すぎない落ち着いた色（2026-11-01 Keita依頼） */
+.wishes,.modal{--p-now:#d9a441;--p-next:#5aa0c8;--p-someday:#8f8fa3}
 .wcard{padding:12px 14px;border-bottom:1px solid var(--rowline);cursor:pointer;display:grid;gap:6px}
 .wcard:last-child{border-bottom:0}
 .wcard:active{background:var(--panel)}
@@ -19,13 +21,18 @@
 .wgrouphead:first-child{margin-top:0}
 .wcount{font-size:12px;color:var(--dim)}
 .wprio{flex:none;display:inline-block;padding:2px 8px;border:1px solid currentColor;border-radius:3px;font-family:"DotGothic16",monospace;font-size:12px;line-height:1.4;letter-spacing:.06em}
-.wprio.now{color:var(--gold);font-size:14px}
-.wprio.next{color:var(--acc)}
-.wprio.someday{color:var(--dim)}
-.wgroup.now{border-color:var(--gold)}
+.wprio.now{color:var(--p-now)}
+.wprio.next{color:var(--p-next)}
+.wprio.someday{color:var(--p-someday)}
+.wgroup{border-left:3px solid var(--pc)}
+.wgroup.now{--pc:var(--p-now)}.wgroup.next{--pc:var(--p-next)}.wgroup.someday{--pc:var(--p-someday)}
+.wgroup .wcard{background:color-mix(in srgb,var(--pc) 6%,transparent)}
+.list-window .wcard{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.list-window.reorderable .wcard{cursor:grab}.list-window.reordering .wcard{cursor:grabbing}
+.wcard.dragging{position:relative;z-index:5;background:var(--panel);box-shadow:0 6px 18px rgba(0,0,0,.45);outline:1px solid var(--pc,var(--acc))}
 .wishprios{display:flex;gap:6px}
 .wishprio{flex:1;height:44px;border:1px solid var(--win2-border);border-radius:4px;background:var(--panel);color:var(--dim);font-family:"DotGothic16",monospace;font-size:14px;letter-spacing:.06em;cursor:pointer}
-.wishprio.on.now{border-color:var(--gold);color:var(--gold);font-weight:700}
-.wishprio.on.next{border-color:var(--acc);color:var(--acc);font-weight:700}
-.wishprio.on.someday{border-color:var(--text);color:var(--text);font-weight:700}
+.wishprio.on.now{border-color:var(--p-now);color:var(--p-now);font-weight:700}
+.wishprio.on.next{border-color:var(--p-next);color:var(--p-next);font-weight:700}
+.wishprio.on.someday{border-color:var(--p-someday);color:var(--p-someday);font-weight:700}
 .wishtextarea{width:100%;padding:8px 10px;border:1px solid var(--win2-border);border-radius:4px;background:var(--bg);color:var(--text);font-size:16px;line-height:1.5;resize:vertical;font-family:inherit}
