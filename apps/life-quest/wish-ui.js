@@ -149,10 +149,9 @@ function drawWishes() {
   const done = sortedWishes(true);
   const quote = dailyQuote(jdiDayFormat.format(new Date()));
   m.innerHTML = `<div class="settings wishes">
-    <div class="pagehead"><h2 class="jdihead">${esc(tr('wish.heading'))}</h2></div>
+    <div class="pagehead jdibar"><h2 class="jdihead">${esc(tr('wish.heading'))}</h2><button type="button" class="plainbtn small jdiadd" id="addWish">${esc(tr('wish.add'))}</button></div>
     <div class="jdiquote"><div class="quotetext">${lang === 'en' ? `“${esc(quote.text)}”` : `「${esc(quote.text)}」`}</div><div class="quoteby">― ${esc(quote.by)}</div></div>
     <div id="wishGroups"></div>
-    <button type="button" class="plainbtn addstatus" id="addWish">${esc(tr('wish.add'))}</button>
     ${done.length ? `<div class="pagehead wishdonehead"><h3>${esc(tr('wish.doneHeading', { n: done.length }))}</h3></div><div class="list-window wishdone" id="wishDoneList"></div>` : ''}
   </div>`;
   const groups = $('#wishGroups');

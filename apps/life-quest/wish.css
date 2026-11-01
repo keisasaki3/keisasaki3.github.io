@@ -14,6 +14,9 @@
 .wishdonehead{margin-top:18px}
 .wishdonehead h3{margin:0;font-size:15px;color:var(--dim)}
 .jdihead{font-family:"DotGothic16",monospace;letter-spacing:.08em}
+/* 見出しの行（タイトルと「＋ やることを追加」）はスクロールしても上に残す（2026-11-01 Keita依頼） */
+.jdibar{position:sticky;top:0;z-index:6;align-items:center;background:var(--bg)}
+.jdiadd{flex:none;min-height:36px}
 .jdiquote{margin:0 4px 14px;padding:10px 12px;border-left:3px solid var(--acc);background:var(--win2-bg)}
 .jdiquote .quotetext{font-size:13px;line-height:1.7;color:var(--body)}
 .jdiquote .quoteby{margin-top:4px;text-align:right;font-size:11px;color:var(--dim)}
