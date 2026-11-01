@@ -343,9 +343,13 @@ async function loadApp() {
 
   setShellVisible(true);
   renderProfile();
-  setActiveTab('subjects');
-  if (statusFeatureAvailable && !userSettings?.setup_completed_at) renderSetup();
-  else renderHome();
+  // 起動時はJUST DO IT!を出す（2026-11-01 Keita依頼）。初回セットアップがまだならWORLD MAPのセットアップ
+  if (statusFeatureAvailable && !userSettings?.setup_completed_at) {
+    setActiveTab('subjects');
+    renderSetup();
+  } else {
+    renderWishes();
+  }
 
   await maybeOfferLegacyMigration();
 }
