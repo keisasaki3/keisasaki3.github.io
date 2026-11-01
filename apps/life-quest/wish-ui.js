@@ -85,6 +85,59 @@ function nextWishOrder(motivation, except) {
   return (orders.length ? Math.max(...orders) : 0) + 10;
 }
 
+// WORLD MAPとの連携（2026-11-01 Keita依頼）。リソース欄の「#mid:トピックID」で判別する。
+// その行があるJDIをDONEにすると、そのトピックをMASTERにする。行を消せば連携しない。
+const MID_RE = /#mid:([A-Za-z0-9_-]+)/;
+
+function wishTopicId(w) {
+  const m = (w.resources || '').match(MID_RE);
+  return m ? m[1] : null;
+}
+
+function jdiToast(text) {
+  document.querySelector('.jditoast')?.remove();
+  const el = document.createElement('div');
+  el.className = 'jditoast';
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2200);
+}
+
+// WORLD MAPの👉️JDIから呼ぶ。同じトピックが未完了で入っていれば足さない
+async function sendTopicToJdi(title, topicId) {
+  if (wishUserId !== session.user.id) {
+    try { await loadWishes(); } catch (e) { alert(e?.message || tr('loadFailed')); return; }
+  }
+  if (!wishAvailable) { alert(tr('wish.unavailable')); return; }
+  if (wishes.some(w => !w.learned && wishTopicId(w) === topicId)) { jdiToast(tr('wish.alreadySent')); return; }
+  const insert = { user_id: session.user.id, title: title.slice(0, 100), motivation: 2, resources: `#mid:${topicId}` };
+  if (wishOrderAvailable) insert.sort_order = nextWishOrder(2);
+  const row = await runQuery(sb.from('quest_wishes').insert(insert).select().single());
+  if (!row) return;
+  wishes.push(row);
+  jdiToast(tr('wish.sent'));
+}
+
+// DONEにしたJDIに #mid があれば、そのトピックをMASTERにする（もうMASTERなら何もしない）。DONEを戻してもMASTERは外さない
+async function masterLinkedTopic(w) {
+  const id = wishTopicId(w);
+  if (!id) return false;
+  if (topicById.has(id)) {
+    if (mastery.has(id)) return false;
+    mastery.add(id);
+    const { error } = await sb.from('quest_topic_mastery').insert({ user_id: session.user.id, topic_id: id });
+    if (error) { mastery.delete(id); alert(error.message); return false; }
+  } else {
+    const row = userTopics.find(t => t.topic_id === id);
+    if (!row || row.mastered_at) return false;
+    row.mastered_at = new Date().toISOString();
+    const { error } = await sb.from('quest_user_topics').update({ mastered_at: row.mastered_at }).eq('topic_id', id);
+    if (error) { row.mastered_at = null; alert(error.message); return false; }
+  }
+  renderProfile();
+  return true;
+}
+
 function wishCountText(n) {
   return n === 1 ? tr('wish.count1') : tr('wish.count', { n });
 }
@@ -119,7 +172,9 @@ function linkifyResources(text) {
     out += esc(text.slice(last, m.index)) + `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">${esc(url)}</a>`;
     last = m.index + url.length;
   }
-  return out + esc(text.slice(last));
+  out += esc(text.slice(last));
+  // #mid:トピックID は連携中だと分かるように🗺️付きで出す
+  return out.replace(/#mid:([A-Za-z0-9_-]+)/g, '<span class="midtag">🗺️ #mid:$1</span>');
 }
 
 async function renderWishes() {
@@ -196,6 +251,7 @@ async function setWishLearned(w, learned) {
   if (!(await runQuery(sb.from('quest_wishes').update({ learned }).eq('wish_id', w.wish_id)))) return false;
   w.learned = learned;
   drawWishes();
+  if (learned && await masterLinkedTopic(w)) jdiToast(tr('wish.mastered'));
   return true;
 }
 

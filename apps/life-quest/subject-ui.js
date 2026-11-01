@@ -534,7 +534,14 @@ drawSubject = function drawStatusTopics(statusId, query) {
       } else {
         const on = isMastered(t);
         d.className = 'topic' + (on ? ' on' : '');
-        d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody">${names}${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}`;
+        d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody">${names}${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}${editMode ? '' : `<button type="button" class="tojdi">${esc(tr('wish.toJdi'))}</button>`}`;
+        // 👉️JDI: このトピックをJUST DO IT!へ送る（#mid:トピックID 付き。2026-11-01 Keita依頼）
+        const send = d.querySelector('.tojdi');
+        if (send) send.onclick = e => {
+          e.stopPropagation();
+          const title = `${localName(statusView(status))} › ${fname.main} › ${tname.main}`;
+          withBusyButton(send, () => sendTopicToJdi(title, t.id));
+        };
         if (editMode && t.custom) d.onclick = () => openTopicModal(status, userFields.find(x => x.field_id === t.row.field_id), t.row);
         else if (t.custom) d.onclick = () => toggleUserTopic(t.row, statusId, query);
         else d.onclick = () => toggleTopic(t.id, on, statusId, query);
