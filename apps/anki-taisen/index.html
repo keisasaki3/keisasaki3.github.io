@@ -568,7 +568,7 @@ const LINKS = [
 ["J1560","J1573","台頭した信長が将軍を追う"],["J1573","J1582","天下統一まであと一歩"],["J1582","J1590","光秀を討った秀吉が後継者に"],["J1590","J1592","統一した秀吉が海外へ"],
 ["J1592","J1600","豊臣家の家臣団が割れる"],["J1600","J1603","勝った家康が幕府を開く"],["J1603","J1615","最後の脅威・豊臣家を滅ぼす"],["J1615","J1635","大名を統制する仕組みづくり"],
 ["J1549","J1637","キリシタンの増加と弾圧"],["J1637","J1639","キリスト教を警戒し鎖国へ"],["J1716","J1787","財政難と改革のくり返し"],["J1787","J1841","財政難と改革のくり返し"],
-["J1639","J1853","鎖国の日本に開国を迫る"],["W1840","J1858","清の敗北で幕府が焦る"],["J1853","J1854","翌年また来て開国させる"],["J1854","J1858","本格的な貿易へ"],
+["J1639","J1853","鎖国の日本に開国を迫る"],["W1840","J1858","清の敗北で幕府が焦る"],["J1853","J1854","ふたたび来航して開国させる"],["J1854","J1858","本格的な貿易へ"],
 ["J1858","J1860","条約と弾圧への反発"],["J1860","J1867","幕府の権威が崩れる"],["J1867","J1868","新政府と旧幕府の戦い"],["J1868","J1871","中央集権の国へ"],
 ["J1871","J1873","富国強兵の土台づくり"],["J1873","J1877","特権を失った士族が反乱"],["J1877","J1889","反政府運動が言論へ移り、憲法を求める"],["W1871","J1889","ドイツを手本に憲法をつくる"],
 ["J1894","J1902","三国干渉でロシアを警戒"],["J1902","J1904","後ろ盾を得てロシアと戦う"],["J1904","J1910","韓国を保護国にし、併合へ"],["W1914","J1914","日英同盟を理由に参戦"],
@@ -704,8 +704,9 @@ function docFor(c){
   f.append(im, el("figcaption",null,c.doc[4])); return f;
 }
 function nodeFor(k,me){
-  const c=BYKEY[k]; const n=el("div","node"+(me?" me":"")); n.append(el("b",null,yearText(c.y)), document.createTextNode(c.name));
-  if(!me){ const i=S.deck.indexOf(c); if(i>S.qi) n.append(el("span","soon","この先に出ます")); }
+  const c=BYKEY[k], later=!me && S.deck.indexOf(c)>S.qi; const n=el("div","node"+(me?" me":""));
+  n.append(el("b",null,later?"？？？？":yearText(c.y)), document.createTextNode(c.name));
+  if(later) n.append(el("span","soon","この先に出ます"));
   return n;
 }
 function linksFor(c){
@@ -816,7 +817,7 @@ function renderPickers(){
   seg("levels", lvs.map(l=>({key:l.lv,name:l.name})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(S.genre==="B"?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="V"?"。写真の問題と鳴き声（約10秒）の問題がまざって出ます":"。写真の問題だけ。音を出せない場所向け"); return; }
   const d=deckFor(S.mode,S.lv);
-  $("rangeNote").textContent=`${yearText(d[0].y)}年「${d[0].name}」から ${yearText(d[d.length-1].y)}年「${d[d.length-1].name}」まで`;
+  $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
 }
 function chip(name, opts={}){
   const c=document.createElement("span"); c.className="chip"+(opts.me?" me":"");
