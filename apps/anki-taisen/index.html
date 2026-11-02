@@ -658,7 +658,7 @@ function choicesFor(deck,qi,gid){
   return shuffle([c].concat(picks),r).map(x=>x.name);
 }
 const MODES=[{id:"J",name:"日本史"},{id:"W",name:"世界史"},{id:"M",name:"ミックス"}];
-const BMODES=[{id:"V",name:"写真＋鳴き声"},{id:"P",name:"写真のみ"}];
+const BMODES=[{id:"V",name:"写真＋鳴き声"}];
 const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"むずかしい"},{lv:4,name:"今月の鳥"}];
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
 function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P"})); }
@@ -751,7 +751,7 @@ function playVoice(c,manual){
 }
 function preloadNext(){
   const n=S.deck[S.qi+1]; if(!n||n.kind!=="choice") return;
-  if(n.q==="V"&&n.m.snd) loadVoice(n.m.snd[0]);
+  if(n.m.snd) loadVoice(n.m.snd[0]);
   if(n.m.img){ const im=new Image(); im.src=n.m.img[0]; }
 }
 function creditFor(c){
@@ -760,7 +760,7 @@ function creditFor(c){
     p.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／");
     const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="写真"?"Wikimedia Commons":"xeno-canto"; p.append(a); };
   if(c.m.img) add("写真",c.m.img[1],c.m.img[2],c.m.img[3]);
-  if(c.q==="V"&&c.m.snd) add("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4]);
+  if(c.m.snd) add("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4]);
   return p;
 }
 
@@ -778,7 +778,7 @@ const S={
 };
 if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
 if(!GENRES.some(g=>g.id===S.genre)) S.genre="H";
-if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="P";
+S.bmode="V";
 let room=null;
 
 function myPresence(){
@@ -811,13 +811,14 @@ function renderPickers(){
   const isB=S.genre==="B";
   $("modesLabel").textContent=isB?"出題のしかた":"出題範囲";
   $("modes").style.gridTemplateColumns=`repeat(${isB?2:3},1fr)`;
+  $("modesBox").style.display=isB?"none":"flex";
   if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bmode",k); renderPickers(); push();});
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
   const lvs=S.genre==="B"?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:l.name})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(S.genre==="B"?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
-  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="V"?"。写真の問題と鳴き声（約10秒）の問題がまざって出ます":"。写真の問題だけ。音を出せない場所向け"); return; }
+  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
   const d=deckFor(S.mode,S.lv);
   $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
 }
@@ -830,7 +831,7 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){return g==="B"?(bm==="V"?"関東の鳥・写真＋鳴き声":"関東の鳥・写真のみ"):"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){return g==="B"?"関東の鳥":"歴史・"+modeName(mode);}
 function lvName(lv){return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -938,6 +939,10 @@ function reveal(){
   const card=$("card");
   if(c.kind==="choice"){
     if(c.q==="V" && c.m.img){ const im=document.createElement("img"); im.className="photo reveal-x"; im.src=c.m.img[0]; im.alt=c.name; card.insertBefore(im,$("cEv")); }
+    if(c.m.snd){ stopVoice(); card.querySelectorAll("#voiceBox").forEach(n=>n.remove());
+      const v=el("div","voice reveal-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
+      const b=el("button","playbtn","もう一度聞く"); b.type="button"; b.onclick=()=>playVoice(c,true); v.append(w,b);
+      card.insertBefore(v,$("cEv")); const qi=S.qi; setTimeout(()=>{ if(S.qi===qi&&S.phase==="reveal") playVoice(c,false); },700); }
     const nm=el("div","bname reveal-x",c.name); card.insertBefore(nm,$("cEv"));
     card.insertBefore(el("p","bsub reveal-x",`${c.en}　${c.sci}`),$("cEv"));
     card.querySelectorAll(".qtext").forEach(n=>n.remove());
@@ -1081,7 +1086,7 @@ $("startBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
-  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"P";
+  const bm="V";
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
   startGame(g.gid,genre,mode,lv,qi,bm,cu); };
 $("nextBtn").onclick=next;
