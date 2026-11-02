@@ -207,6 +207,12 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .rules{margin:0;padding-left:1.2em;color:var(--muted);line-height:1.8}
 .habnote{font-size:13.5px;line-height:1.6}
 .hard{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+
+/* ポップ書体は見出し・ボタン・札など短い文字に。長い解説は丸ゴシックのまま */
+.btn,.lv b,.choice,.key.fn,.chip,.bar .prog,#eraRange,.mute,.playbtn,.stopbtn,.vtabs button,.invite,.invite button,.card .era,.card .ev,.bname,.qtext,.rank .nm,.arow .nm,.arow .v.vs,.mark,.bigtag,.links .lh,.fk,label,.stamps button,.rules,.waiting,.vnote,.node b,.slot,.bsub,.panel > .small{font-family:var(--pop);font-weight:400!important;letter-spacing:.02em}
+.vbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.stopbtn{background:transparent;border:2px solid var(--head);color:var(--head);border-radius:999px;padding:7px 16px;font-size:15px}
+:root[data-tone="chestnut"] .stopbtn{color:var(--card-ink);border-color:var(--card-ink)}
 [hidden]{display:none!important}
 </style>
 
@@ -1154,6 +1160,10 @@ function loadVoice(url){
     .then(ab=>{ const a=ac(); if(!a) throw new Error("noaudio"); return new Promise((ok,ng)=>a.decodeAudioData(ab,ok,ng)); });
   p.catch(()=>VOICE_BUF.delete(url)); VOICE_BUF.set(url,p); return p;
 }
+function vbtns(c){ const r=el("div","vbtns");
+  const a=el("button","playbtn","もう一度聞く"); a.type="button"; a.onclick=()=>playVoice(c,true);
+  const z=el("button","stopbtn","■ とめる"); z.type="button"; z.onclick=()=>stopVoice();
+  r.append(a,z); return r; }
 function setPlaying(on){ const v=document.getElementById("voiceBox"); if(v) v.classList.toggle("playing",on); }
 function stopVoice(){ try{ if(voiceSrc) voiceSrc.stop(); }catch(e){} voiceSrc=null; if(voiceEl){ voiceEl.pause(); voiceEl=null; } setPlaying(false); }
 function playVoice(c,manual){
@@ -1294,7 +1304,7 @@ function beginAsk(){
     $("cEv").textContent=""; $("cEn").textContent="";
     if(c.q==="V"){
       const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
-      const b=el("button","playbtn","もう一度聞く"); b.type="button"; b.onclick=()=>playVoice(c,true);
+      const b=vbtns(c);
       v.append(w,b,el("p","vnote","この声はどの鳥？")); card.insertBefore(v,$("cEv"));
       playVoice(c,false);
     } else {
@@ -1366,7 +1376,7 @@ function reveal(){
     if(c.q==="V" && c.m.img){ const im=document.createElement("img"); im.className="photo reveal-x"; im.src=imgOf(c)[0]; im.alt=c.name; card.insertBefore(im,$("cEv")); }
     if(c.m.snd){ stopVoice(); card.querySelectorAll("#voiceBox").forEach(n=>n.remove());
       const v=el("div","voice reveal-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
-      const b=el("button","playbtn","もう一度聞く"); b.type="button"; b.onclick=()=>playVoice(c,true); v.append(w,b);
+      const b=vbtns(c); v.append(w,b);
       card.insertBefore(v,$("cEv")); const qi=S.qi; setTimeout(()=>{ if(S.qi===qi&&S.phase==="reveal") playVoice(c,false); },700); }
     const nm=el("div","bname reveal-x",c.name); card.insertBefore(nm,$("cEv"));
     card.insertBefore(el("p","bsub reveal-x",`${c.en}　${c.sci}`),$("cEv"));
