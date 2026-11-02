@@ -60,6 +60,8 @@ input,select{font:inherit;font-size:16px;background:var(--table);color:var(--ink
 /* game */
 .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
 .bar .prog{font-family:var(--digits);color:var(--ink);font-size:15px}
+.bar .prog,.bar .mute{white-space:nowrap;flex:none}
+#eraRange{flex:1;min-width:0;font-size:12px;line-height:1.3}
 .timer{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
 .timer i{display:block;height:100%;background:var(--kin);width:100%;transform-origin:left}
 .card{background:var(--card);color:var(--card-ink);border-radius:14px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 30px #0006;position:relative;overflow:hidden}
@@ -202,7 +204,7 @@ input,select{font:inherit;font-size:16px;background:var(--table);color:var(--ink
 
     <div class="panel">
       <label for="nick">あなたの名前
-        <input id="nick" maxlength="12" placeholder="例：けいた" autocomplete="off">
+        <input id="nick" maxlength="12" placeholder="例：本能寺の火元" autocomplete="off">
       </label>
       <div style="display:flex;flex-direction:column;gap:6px">
         <span class="small muted">ジャンル</span>
@@ -229,7 +231,7 @@ input,select{font:inherit;font-size:16px;background:var(--table);color:var(--ink
 
   <!-- 出題 -->
   <section id="game" hidden style="display:flex;flex-direction:column;gap:12px">
-    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute" id="muteBtn" type="button" aria-pressed="true">音：オン</button></div>
+    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute" id="muteBtn" type="button" aria-pressed="true">音：オン</button><button class="mute" id="quitBtn" type="button">やめる</button></div>
     <div class="players" id="gamePlayers"></div>
     <div class="timer"><i id="timerBar"></i></div>
     <div class="card" id="card">
@@ -568,7 +570,7 @@ const LINKS = [
 ["J1560","J1573","台頭した信長が将軍を追う"],["J1573","J1582","天下統一まであと一歩"],["J1582","J1590","光秀を討った秀吉が後継者に"],["J1590","J1592","統一した秀吉が海外へ"],
 ["J1592","J1600","豊臣家の家臣団が割れる"],["J1600","J1603","勝った家康が幕府を開く"],["J1603","J1615","最後の脅威・豊臣家を滅ぼす"],["J1615","J1635","大名を統制する仕組みづくり"],
 ["J1549","J1637","キリシタンの増加と弾圧"],["J1637","J1639","キリスト教を警戒し鎖国へ"],["J1716","J1787","財政難と改革のくり返し"],["J1787","J1841","財政難と改革のくり返し"],
-["J1639","J1853","鎖国の日本に開国を迫る"],["W1840","J1858","清の敗北で幕府が焦る"],["J1853","J1854","翌年また来て開国させる"],["J1854","J1858","本格的な貿易へ"],
+["J1639","J1853","鎖国の日本に開国を迫る"],["W1840","J1858","清の敗北で幕府が焦る"],["J1853","J1854","ふたたび来航して開国させる"],["J1854","J1858","本格的な貿易へ"],
 ["J1858","J1860","条約と弾圧への反発"],["J1860","J1867","幕府の権威が崩れる"],["J1867","J1868","新政府と旧幕府の戦い"],["J1868","J1871","中央集権の国へ"],
 ["J1871","J1873","富国強兵の土台づくり"],["J1873","J1877","特権を失った士族が反乱"],["J1877","J1889","反政府運動が言論へ移り、憲法を求める"],["W1871","J1889","ドイツを手本に憲法をつくる"],
 ["J1894","J1902","三国干渉でロシアを警戒"],["J1902","J1904","後ろ盾を得てロシアと戦う"],["J1904","J1910","韓国を保護国にし、併合へ"],["W1914","J1914","日英同盟を理由に参戦"],
@@ -656,12 +658,13 @@ function choicesFor(deck,qi,gid){
   return shuffle([c].concat(picks),r).map(x=>x.name);
 }
 const MODES=[{id:"J",name:"日本史"},{id:"W",name:"世界史"},{id:"M",name:"ミックス"}];
-const BMODES=[{id:"P",name:"写真であてる"},{id:"V",name:"鳴き声であてる"}];
+const BMODES=[{id:"V",name:"写真＋鳴き声"},{id:"P",name:"写真のみ"}];
 const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"むずかしい"},{lv:4,name:"今月の鳥"}];
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
+function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P"})); }
 function deckFor(mode,lv,genre,gid,bmode,custom){
-  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return genre==="B"? (gid?shuffle(d,rng(gid)):d) : sortYears(d); }
-  if(genre==="B"){ const m=new Date().getMonth()+1; const d=ALL.B.filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && (bmode==="V"?c.m.snd:c.m.img)); return gid? shuffle(d,rng(gid)) : d; }
+  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return genre==="B"? birdDeck(d,gid,bmode) : sortYears(d); }
+  if(genre==="B"){ const m=new Date().getMonth()+1; return birdDeck(ALL.B.filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,bmode); }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
 }
@@ -703,8 +706,9 @@ function docFor(c){
   f.append(im, el("figcaption",null,c.doc[4])); return f;
 }
 function nodeFor(k,me){
-  const c=BYKEY[k]; const n=el("div","node"+(me?" me":"")); n.append(el("b",null,yearText(c.y)), document.createTextNode(c.name));
-  if(!me){ const i=S.deck.indexOf(c); if(i>S.qi) n.append(el("span","soon","この先に出ます")); }
+  const c=BYKEY[k], later=!me && S.deck.indexOf(c)>S.qi; const n=el("div","node"+(me?" me":""));
+  n.append(el("b",null,later?"？？？？":yearText(c.y)), document.createTextNode(c.name));
+  if(later) n.append(el("span","soon","この先に出ます"));
   return n;
 }
 function linksFor(c){
@@ -747,7 +751,7 @@ function playVoice(c,manual){
 }
 function preloadNext(){
   const n=S.deck[S.qi+1]; if(!n||n.kind!=="choice") return;
-  if(S.bmode==="V"&&n.m.snd) loadVoice(n.m.snd[0]);
+  if(n.q==="V"&&n.m.snd) loadVoice(n.m.snd[0]);
   if(n.m.img){ const im=new Image(); im.src=n.m.img[0]; }
 }
 function creditFor(c){
@@ -756,7 +760,7 @@ function creditFor(c){
     p.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／");
     const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="写真"?"Wikimedia Commons":"xeno-canto"; p.append(a); };
   if(c.m.img) add("写真",c.m.img[1],c.m.img[2],c.m.img[3]);
-  if(S.bmode==="V"&&c.m.snd) add("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4]);
+  if(c.q==="V"&&c.m.snd) add("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4]);
   return p;
 }
 
@@ -813,9 +817,9 @@ function renderPickers(){
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:l.name})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(S.genre==="B"?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
-  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="V"?"。鳴き声は約10秒。答え合わせで写真も出ます":"。答え合わせで特徴と豆知識が出ます"); return; }
+  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="V"?"。写真の問題と鳴き声（約10秒）の問題がまざって出ます":"。写真の問題だけ。音を出せない場所向け"); return; }
   const d=deckFor(S.mode,S.lv);
-  $("rangeNote").textContent=`${yearText(d[0].y)}年「${d[0].name}」から ${yearText(d[d.length-1].y)}年「${d[d.length-1].name}」まで`;
+  $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
 }
 function chip(name, opts={}){
   const c=document.createElement("span"); c.className="chip"+(opts.me?" me":"");
@@ -826,7 +830,7 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){return g==="B"?(bm==="V"?"関東の鳥・鳴き声":"関東の鳥・写真"):"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){return g==="B"?(bm==="V"?"関東の鳥・写真＋鳴き声":"関東の鳥・写真のみ"):"歴史・"+modeName(mode);}
 function lvName(lv){return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -862,7 +866,7 @@ function beginAsk(){
   if(c.kind==="choice"){
     $("cEra").textContent="関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
     $("cEv").textContent=""; $("cEn").textContent="";
-    if(S.bmode==="V"){
+    if(c.q==="V"){
       const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
       const b=el("button","playbtn","もう一度聞く"); b.type="button"; b.onclick=()=>playVoice(c,true);
       v.append(w,b,el("p","vnote","この声はどの鳥？")); card.insertBefore(v,$("cEv"));
@@ -933,7 +937,7 @@ function reveal(){
   const c=S.deck[S.qi], prev=S.qi>0?S.deck[S.qi-1]:null;
   const card=$("card");
   if(c.kind==="choice"){
-    if(S.bmode==="V" && c.m.img){ const im=document.createElement("img"); im.className="photo reveal-x"; im.src=c.m.img[0]; im.alt=c.name; card.insertBefore(im,$("cEv")); }
+    if(c.q==="V" && c.m.img){ const im=document.createElement("img"); im.className="photo reveal-x"; im.src=c.m.img[0]; im.alt=c.name; card.insertBefore(im,$("cEv")); }
     const nm=el("div","bname reveal-x",c.name); card.insertBefore(nm,$("cEv"));
     card.insertBefore(el("p","bsub reveal-x",`${c.en}　${c.sci}`),$("cEv"));
     card.querySelectorAll(".qtext").forEach(n=>n.remove());
@@ -1072,6 +1076,7 @@ $("nick").addEventListener("input",e=>{S.name=e.target.value.trim().slice(0,12);
 document.addEventListener("pointerdown",()=>{ if(!muted) ac(); },{once:true});
 $("muteBtn").onclick=()=>{ muted=!muted; try{localStorage.setItem("nb-mute",muted?"1":"0")}catch(e){} renderMute(); if(!muted){ac(); se("ok");} };
 renderMute();
+{ const NICKS=["本能寺の火元","関ヶ原の寝返り役","鳴かぬなら様子見","いい国つくろう係","黒船の見張り番","年号の亡者","ハシブトの親分","カワセミ界のエース","ヒヨドリ通訳","モズの早にえ係"]; $("nick").placeholder="例："+NICKS[Math.floor(Math.random()*NICKS.length)]; }
 $("startBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1;
@@ -1082,7 +1087,9 @@ $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
 $("nextBtn").onclick=next;
 $("againBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
-$("lobbyBtn").onclick=()=>{ stopVoice(); S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); };
+function toLobby(){ stopVoice(); S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
+$("lobbyBtn").onclick=toLobby;
+{ let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="やめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="やめる";},3000); }; }
 
 // 公開版: Supabase Realtime の presence で同じ部屋の人をつなぐ（DBの表は使わない）
 function sbRoom(cfg){
@@ -1116,6 +1123,3 @@ setInterval(check,150);
 </script>
 
 
-
-</body>
-</html>
