@@ -892,17 +892,144 @@ const TMEDIA = {"Prunus × yedoensis":{"img":["t/prunus-x-yedoensis.jpg","掬茶
 "Acer buergerianum":{"img":["t/acer-buergerianum.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AAcer_buergerianum1.jpg"]},
 "Diospyros kaki":{"img":["t/diospyros-kaki.jpg","Boris Oblak","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AKaki_011_small.jpg"]},
 "Machilus thunbergii":{"img":["t/machilus-thunbergii.jpg","Gondahara","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AM_thunbergii.JPG"]}};
+// 北海道の鳥 [和名, 難易度, 英名, 学名, グループ, 季節, 特徴, 見分けどころ, 豆知識, 見られる月[開始,終了]]
+const HBIRDS = [
+["スズメ",1,"Eurasian Tree Sparrow","Passer montanus","小鳥","一年中","茶色の頭に白いほお。人家の近くで群れる","ほおの黒い点が目印","雪の日はふくらんで丸くなる「ふくら雀」になる",[1,12]],
+["ハシブトガラス",1,"Large-billed Crow","Corvus macrorhynchos","森と野の鳥","一年中","全身真っ黒の大きな鳥","くちばしが太く、額が出っ張る。「カァカァ」と澄んだ声","札幌の街なかにも多い。春は子育て中のカラスが人を威嚇することがある",[1,12]],
+["ハシボソガラス",1,"Carrion Crow","Corvus corone","森と野の鳥","一年中","全身真っ黒。畑や牧草地に多い","くちばしが細く額がなだらか。「ガァガァ」と濁った声","畑の多い道央・道東の農村でよく見る",[1,12]],
+["ハクセキレイ",1,"White Wagtail","Motacilla alba","小鳥","夏","白と黒の体。駐車場や川原をちょこちょこ走る","長い尾を上下に振る。目を通る黒い線","もともと北海道で子育てする鳥。冬は多くが本州へ移る",[3,11]],
+["ヒヨドリ",1,"Brown-eared Bulbul","Hypsipetes amaurotis","小鳥","一年中","灰色で尾が長め。頭の羽がボサボサ","ほおに茶色の斑。「ヒーヨ」とやかましい","昔は夏だけの鳥だったが、いまは札幌などで冬も見る",[1,12]],
+["シジュウカラ",1,"Japanese Tit","Parus minor","小鳥","一年中","黒い頭に白いほお","胸に黒いネクタイ模様","冬はハシブトガラやゴジュウカラと混群をつくって森を回る",[1,12]],
+["ハシブトガラ",1,"Marsh Tit","Poecile palustris","小鳥","一年中","黒い帽子をかぶった灰色の小鳥","ほおが白く、胸のネクタイがない。喉に小さな黒い斑","本州ではほぼ見られず、北海道を代表するカラの仲間。木のすき間に種をたくわえる",[1,12]],
+["シマエナガ",1,"Long-tailed Tit (japonicus)","Aegithalos caudatus japonicus","小鳥","一年中","真っ白な顔の、まん丸で尾の長い小鳥","顔に黒い線がなく、頭まで真っ白。本州のエナガには眉に黒い線がある","「雪の妖精」と呼ばれる人気者。エナガの北海道の亜種",[1,12]],
+["ゴジュウカラ",1,"Eurasian Nuthatch","Sitta europaea","小鳥","一年中","背中が青灰色、お腹が白い小鳥","目を通る黒い線。木の幹を頭を下にして降りられる","逆さまに幹を歩けるのは、日本の鳥ではほぼゴジュウカラだけ",[1,12]],
+["アカゲラ",1,"Great Spotted Woodpecker","Dendrocopos major","森と野の鳥","一年中","白黒のまだら模様のキツツキ","お尻（下尾筒）が赤い。オスは後頭部も赤い","札幌の公園や大学構内でも、木をたたく音が聞こえる",[1,12]],
+["タンチョウ",1,"Red-crowned Crane","Grus japonensis","大きな鳥・猛禽","一年中","白い体に黒い首、頭のてっぺんが赤い大きなツル","立つと尾が黒く見えるが、黒いのは翼の羽。頭の赤は羽のない皮膚","一時は絶滅したと思われたが、冬の給餌などで1,000羽以上に回復した。釧路湿原が有名",[1,12]],
+["オオハクチョウ",1,"Whooper Swan","Cygnus cygnus","大きな鳥・猛禽","冬","真っ白で首の長い大型の水鳥","くちばしの黄色い部分が大きく、先までとがって伸びる","シベリアから渡ってくる。屈斜路湖の砂湯や、ウトナイ湖が有名",[10,4]],
+["オジロワシ",1,"White-tailed Eagle","Haliaeetus albicilla","大きな鳥・猛禽","一年中","茶色の大きなワシ","大人は尾が白い。くちばしは黄色","北海道では一年中子育てする。冬はロシアからの渡りも加わる",[1,12]],
+["オオワシ",1,"Steller's Sea Eagle","Haliaeetus pelagicus","大きな鳥・猛禽","冬","黒い体に白い肩、巨大なオレンジ色のくちばし","肩と尾と足の羽が白い。くちばしがとても大きい","翼を広げると2m以上。冬に流氷の知床・羅臼に集まる",[11,3]],
+["オオセグロカモメ",1,"Slaty-backed Gull","Larus schistisagus","水辺・海の鳥","一年中","背中が濃い灰色の大きなカモメ","背中の灰色がほかのカモメより黒っぽい。足はピンク","北海道の漁港で一年中見られ、港町の屋上で子育てもする",[1,12]],
+["ウミネコ",1,"Black-tailed Gull","Larus crassirostris","水辺・海の鳥","夏","白い体に灰色の背中のカモメ","尾に黒い帯。くちばしの先が赤と黒","「ミャーオ」と猫のように鳴く。天売島などに大きな繁殖地がある",[3,11]],
+["マガモ",1,"Mallard","Anas platyrhynchos","水辺・海の鳥","一年中","オスは緑に光る頭のカモ","オスは緑の頭と白い首輪、黄色いくちばし","アヒルの祖先。北海道では夏も残って子育てするものがいる",[1,12]],
+["アオサギ",1,"Grey Heron","Ardea cinerea","水辺・海の鳥","夏","灰色の大きなサギ","首の白さと、頭から後ろへ伸びる黒い飾り羽","川や池でじっと魚を待つ。冬はほとんどが本州へ移る",[3,11]],
+["トビ",1,"Black Kite","Milvus migrans","大きな鳥・猛禽","一年中","茶色の大きな鳥。空をゆっくり輪を描いて飛ぶ","尾の先が三味線のばちのような台形","「ピーヒョロロ」と鳴く。漁港や海岸に多い",[1,12]],
+["ツバメ",1,"Barn Swallow","Hirundo rustica","小鳥","夏","春に南から来て軒下に巣をつくる","二つに割れた長い尾と赤い喉","北海道に着くのは5月ごろで、本州より1か月ほど遅い",[5,9]],
+["ムクドリ",2,"White-cheeked Starling","Spodiopsar cineraceus","小鳥","夏","茶色っぽい体に黄色いくちばしと足","顔が白っぽい。地面をよちよち歩く","北海道では夏の鳥。冬は本州へ移る",[3,11]],
+["ヒバリ",2,"Eurasian Skylark","Alauda arvensis","小鳥","夏","茶色のしま模様の地味な小鳥","頭に短い冠羽。空高く上がってさえずり続ける","畑や牧草地の上で、ホバリングしながら長くさえずる",[3,10]],
+["ノビタキ",2,"Amur Stonechat","Saxicola stejnegeri","小鳥","夏","オスは黒い頭にオレンジの胸","草の先や杭の上にとまって目立つ","原生花園の夏の主役。サロベツや小清水でよく見る",[5,9]],
+["ノゴマ",2,"Siberian Rubythroat","Calliope calliope","小鳥","夏","茶色の小鳥で、オスの喉が真っ赤","赤い喉と、白い眉と白いひげの線","日本では主に北海道の草原で子育てし、冬は東南アジアへ渡る",[5,9]],
+["オオジシギ",2,"Latham's Snipe","Gallinago hardwickii","森と野の鳥","夏","くちばしがとても長い、茶色のまだらの鳥","体に比べてくちばしが長い。草原の杭の上によくとまる","オーストラリアから渡ってくる。急降下するとき尾羽で雷のような音を出すので、別名カミナリシギ",[4,8]],
+["シマフクロウ",2,"Blakiston's Fish Owl","Ketupa blakistoni","大きな鳥・猛禽","一年中","耳のような羽がある、とても大きなフクロウ","茶色のしま模様。川で魚をとる","世界最大級のフクロウ。アイヌの人々の「コタンコロカムイ（村の守り神）」。道東などにわずか200羽ほど",[1,12]],
+["エゾフクロウ",2,"Ural Owl","Strix uralensis","大きな鳥・猛禽","一年中","白っぽい丸顔のフクロウ","耳のような羽がなく、顔が平らで白い","木のうろから顔を出す姿が人気。フクロウの北海道の亜種",[1,12]],
+["クマゲラ",2,"Black Woodpecker","Dryocopus martius","森と野の鳥","一年中","全身真っ黒の大きなキツツキ","頭のてっぺんが赤い（オスは額まで赤い）","日本最大のキツツキ。大木に縦長の大きな穴をあける。天然記念物",[1,12]],
+["ヤマゲラ",2,"Grey-headed Woodpecker","Picus canus","森と野の鳥","一年中","緑色の背中に灰色の頭のキツツキ","オスは額だけが赤い。口元に黒いひげ線","日本では北海道だけにいる。地面のアリもよく食べる",[1,12]],
+["エゾライチョウ",2,"Hazel Grouse","Tetrastes bonasia","森と野の鳥","一年中","灰色と茶色のまだら模様のずんぐりした鳥","頭に短い冠羽。オスは喉が黒い","日本では北海道だけにいる。森の地面を歩き、冬は雪にもぐって眠る",[1,12]],
+["ミヤマカケス",2,"Eurasian Jay (brandtii)","Garrulus glandarius","森と野の鳥","一年中","ぶどう色の体に、翼に青い模様","頭が赤茶色。本州のカケスは頭が白と黒のまだら","ドングリを地面に埋めてたくわえる。カケスの北海道の亜種",[1,12]],
+["ウソ",2,"Eurasian Bullfinch","Pyrrhula pyrrhula","小鳥","一年中","黒い帽子と、ずんぐりした灰色の体","オスは頬から喉が赤い","「フィー、フィー」と口笛のように鳴く。名前は古語の「うそ（口笛）」から",[1,12]],
+["ベニマシコ",2,"Siberian Long-tailed Rosefinch","Carpodacus sibiricus","小鳥","夏","オスは全身がピンクがかった赤の小鳥","尾が長く、翼に白い帯が2本","北海道の草原や湿原で子育てし、冬は本州へ移る",[5,9]],
+["キレンジャク",2,"Bohemian Waxwing","Bombycilla garrulus","小鳥","冬","ピンクがかった茶色の体に冠羽","尾の先が黄色。翼に赤いろう状の飾り","ナナカマドの実を群れで食べつくす。年によって数が大きく変わる",[11,4]],
+["ツグミ",2,"Dusky Thrush","Turdus eunomus","小鳥","冬","茶色の背中に白い眉、胸にうろこ模様","地面を数歩走っては胸を張って止まる","秋と春に大群で通過する。北海道に残って冬を越すものもいる",[10,4]],
+["カワアイサ",2,"Common Merganser","Mergus merganser","水辺・海の鳥","一年中","オスは白い体に黒緑の頭のカモ","くちばしが細長く赤い。先がかぎ状","潜って魚をとるカモ。日本では主に北海道の川で子育てする",[1,12]],
+["エトピリカ",2,"Tufted Puffin","Fratercula cirrhata","水辺・海の鳥","夏","黒い体に白い顔、大きなオレンジ色のくちばし","夏は目の後ろに黄色い飾り羽がたれる","アイヌ語で「くちばしが美しい」。日本では根室半島の周辺にわずかしかいない",[5,8]],
+["ウトウ",2,"Rhinoceros Auklet","Cerorhinca monocerata","水辺・海の鳥","夏","灰黒色の海鳥","夏はくちばしの付け根に白い角のような突起","天売島に世界最大の繁殖地がある。夕方、魚をくわえて巣穴に戻る",[4,9]],
+["カッコウ",2,"Common Cuckoo","Cuculus canorus","森と野の鳥","夏","灰色の背中に、お腹に細いしま模様","「カッコー」の声ですぐ分かる","ノビタキやモズの巣に卵を産み、育ててもらう（托卵）",[5,8]],
+["オオルリ",2,"Blue-and-white Flycatcher","Cyanoptila cyanomelana","小鳥","夏","オスは背中が瑠璃色、お腹が白い","喉から胸が黒く、お腹の白とはっきり分かれる","渓流沿いの森で高い枝にとまって美しい声でさえずる",[5,9]],
+["キビタキ",2,"Narcissus Flycatcher","Ficedula narcissina","小鳥","夏","オスは黒い背中に鮮やかな黄色","喉がオレンジ色、眉が黄色、翼に白い斑","明るい森で「ピッコロロ」と複雑にさえずる",[5,9]],
+["コマドリ",2,"Japanese Robin","Larvivora akahige","小鳥","夏","顔から胸がオレンジ色の小鳥","尾を立てる。「ヒンカラララ」と響く声","鳴き声が馬のいななきに似ることから「駒」鳥。日本三鳴鳥のひとつ",[5,8]],
+["アオジ",2,"Black-faced Bunting","Emberiza spodocephala","小鳥","夏","オスは灰緑色の頭に黄色いお腹","目のまわりが黒っぽい。尾を開くと白が見える","北海道では夏に林のふちで子育てし、冬は本州へ移る",[4,10]],
+["ミソサザイ",2,"Eurasian Wren","Troglodytes troglodytes","小鳥","一年中","こげ茶色の、とても小さな鳥","短い尾をぴんと立てる。体に似合わぬ大声","日本で最も小さい鳥のひとつ。沢沿いで、体の何倍も響く声でさえずる",[1,12]],
+["マガン",2,"Greater White-fronted Goose","Anser albifrons","大きな鳥・猛禽","春・秋の渡り","灰褐色の大きなガン","くちばしの付け根が白く、お腹に黒い横じま","春に美唄の宮島沼へ数万羽が集まり、夕方いっせいに沼へ戻る",[4,5]],
+];
+const HHAB = {
+"Passer montanus":["UA","道内全域の人家のまわり"],
+"Corvus macrorhynchos":["UFM","札幌の街なかから山の森まで"],
+"Corvus corone":["AR","畑や牧草地の広がる農村"],
+"Motacilla alba":["URS","川原・海岸・駐車場など開けた場所"],
+"Hypsipetes amaurotis":["UF","街の公園や林。冬は札幌などの市街地に多い"],
+"Parus minor":["UF","道内全域の林や公園"],
+"Poecile palustris":["FU","平地から山の林、札幌の公園にも"],
+"Aegithalos caudatus japonicus":["FU","道内の林。冬は群れで公園にも来る"],
+"Sitta europaea":["FMU","大きな木の多い林や公園"],
+"Dendrocopos major":["FU","道内の林。札幌の公園や大学構内にも"],
+"Grus japonensis":["RA","釧路湿原と道東の湿原・畑。冬は鶴居村や阿寒の給餌場"],
+"Cygnus cygnus":["RS","道東の湖（屈斜路湖・風蓮湖）や、ウトナイ湖"],
+"Haliaeetus albicilla":["RS","道東・道北の海岸、湖、大きな川"],
+"Haliaeetus pelagicus":["SR","冬の知床・羅臼の流氷、道東の海岸"],
+"Larus schistisagus":["SU","道内全域の漁港と海岸"],
+"Larus crassirostris":["S","海岸と漁港。天売島などに繁殖地"],
+"Anas platyrhynchos":["R","川・池・湖。札幌の公園の池にも"],
+"Ardea cinerea":["R","川・湖・湿原"],
+"Milvus migrans":["SRU","漁港・海岸・川沿い"],
+"Hirundo rustica":["UA","道内の町や農村の建物"],
+"Spodiopsar cineraceus":["UA","町や農村"],
+"Alauda arvensis":["A","畑・牧草地・原野"],
+"Saxicola stejnegeri":["A","原生花園や牧草地。サロベツ・小清水など"],
+"Calliope calliope":["A","海岸の草原や原生花園"],
+"Gallinago hardwickii":["A","牧草地や草原"],
+"Ketupa blakistoni":["FR","道東・知床の、大きな木のある川沿いの森"],
+"Strix uralensis":["FU","道内の大きな木のある林。札幌の公園にも"],
+"Dryocopus martius":["FM","大木のある深い森。大雪山や知床など"],
+"Picus canus":["FU","道内の林や公園"],
+"Tetrastes bonasia":["FM","道内の森の地面"],
+"Garrulus glandarius":["FM","道内の林。ドングリのなる森"],
+"Pyrrhula pyrrhula":["FM","山の森。冬は平地の公園にも"],
+"Carpodacus sibiricus":["AR","草原・湿原・林のふち"],
+"Bombycilla garrulus":["UF","冬の街路樹のナナカマドなど、実のなる木"],
+"Turdus eunomus":["AU","畑・芝生・公園"],
+"Mergus merganser":["R","川や湖"],
+"Fratercula cirrhata":["S","根室半島（ユルリ島・モユルリ島）の周辺の海"],
+"Cerorhinca monocerata":["S","天売島など離島の周辺の海"],
+"Cuculus canorus":["AF","草原や林のふち"],
+"Cyanoptila cyanomelana":["FM","渓流沿いの森"],
+"Ficedula narcissina":["F","明るい林や公園"],
+"Larvivora akahige":["FM","山の笹の多い森"],
+"Emberiza spodocephala":["FA","林のふちや草原"],
+"Troglodytes troglodytes":["FMR","沢や渓流沿いの森"],
+"Anser albifrons":["RA","美唄の宮島沼など。周りの田畑で落ち穂を食べる"],
+};
+const DMEDIA = {"Aegithalos caudatus japonicus":{"img":["b/aegithalos-caudatus-japonicus.jpg","Craft GIN","CC0","https://commons.wikimedia.org/wiki/File%3A%E3%82%B7%E3%83%9E%E3%82%A8%E3%83%8A%E3%82%AC.jpg"],"snd":["b/aegithalos-caudatus-japonicus.mp3","Joshua Chong","CC BY-NC-SA 4.0","858017","日本"]},
+"Poecile palustris":{"img":["b/poecile-palustris.jpg","Tokumi","Copyrighted free use","https://commons.wikimedia.org/wiki/File%3AWiki-hasibutogara1.jpg"],"snd":["b/poecile-palustris.mp3","GABRIEL LEITE","CC BY-NC-SA 4.0","841050","日本"]},
+"Sitta europaea":{"img":["b/sitta-europaea.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ASitta_europaea_hondoensis%2C_Yamagata_4.jpg"],"snd":["b/sitta-europaea.mp3","Joshua Chong","CC BY-NC-SA 4.0","858005","日本"]},
+"Dendrocopos major":{"img":["b/dendrocopos-major.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ADendrocopos_major_hondoensis_%28female%29.jpg"],"snd":["b/dendrocopos-major.mp3","Uku Paal","CC BY-NC-SA 4.0","1016640","日本"]},
+"Grus japonensis":{"img":["b/grus-japonensis.jpg","Spaceaero2","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AGrus_japonensis_in_flight_at_Akan_International_Crane_Center.jpg"],"snd":["b/grus-japonensis.mp3","Andrew Spencer","CC BY-NC-SA 3.0","160949","日本"]},
+"Cygnus cygnus":{"img":["b/cygnus-cygnus.jpg","Andreas Trepte","CC BY-SA 2.5","https://commons.wikimedia.org/wiki/File%3ASingschwan.jpg"],"snd":["b/cygnus-cygnus.mp3","Andrew Spencer","CC BY-NC-SA 3.0","168789","日本"]},
+"Haliaeetus albicilla":{"img":["b/haliaeetus-albicilla.jpg","Craft GIN","Public domain","https://commons.wikimedia.org/wiki/File%3AWiki-c-ojirowashi.jpg"],"snd":["b/haliaeetus-albicilla.mp3","Stein Ø. Nilsen","CC BY-NC-SA 4.0","784475","Norway"]},
+"Haliaeetus pelagicus":{"img":["b/haliaeetus-pelagicus.jpg","Sammy Sam","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AHaliaeetus_pelagicus_Hokkaido.jpg"],"snd":["b/haliaeetus-pelagicus.mp3","Andrew Spencer","CC BY-NC-SA 3.0","160957","日本"]},
+"Larus schistisagus":{"img":["b/larus-schistisagus.jpg","E-190","GFDL","https://commons.wikimedia.org/wiki/File%3AOoseguro-kamome.jpg"],"snd":["b/larus-schistisagus.mp3","Uku Paal","CC BY-NC-SA 4.0","1016573","日本"]},
+"Larus crassirostris":{"img":["b/larus-crassirostris.jpg","Angie (Sawara, Chiba)","CC BY 2.0","https://commons.wikimedia.org/wiki/File%3AGull_in_water3.jpg"],"snd":["b/larus-crassirostris.mp3","Uku Paal","CC BY-NC-SA 4.0","1016634","日本"]},
+"Saxicola stejnegeri":{"img":["b/saxicola-stejnegeri.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ASaxicola_stejnegeri%2C_male%2C_Nagahama%2C_Shiga_Prefecture%2C_Japan.jpg"],"snd":["b/saxicola-stejnegeri.mp3","Uku Paal","CC BY-NC-SA 4.0","1016827","日本"]},
+"Calliope calliope":{"img":["b/calliope-calliope.jpg","JJ Harrison","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ALuscinia_calliope_-_Pak_Chong_3.jpg"],"snd":["b/calliope-calliope.mp3","Uku Paal","CC BY-NC-SA 4.0","1016636","日本"]},
+"Gallinago hardwickii":{"img":["b/gallinago-hardwickii.jpg","Jason Girvan","GFDL","https://commons.wikimedia.org/wiki/File%3ALatham%27s_snipe.jpg"],"snd":["b/gallinago-hardwickii.mp3","Amar-Singh HSS","CC BY-NC-SA 4.0","488222","日本"]},
+"Ketupa blakistoni":{"img":["b/ketupa-blakistoni.jpg","Tokumi","Public domain","https://commons.wikimedia.org/wiki/File%3ABubo_blakistoni.jpg"]},
+"Strix uralensis":{"img":["b/strix-uralensis.jpg","Jyrki Salmi","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3AStrix_uralensis%2C_Kotka%2C_Finland_1.jpg"],"snd":["b/strix-uralensis.mp3","Okamoto Keita Sin","CC BY-NC-SA 4.0","578814","日本"]},
+"Dryocopus martius":{"img":["b/dryocopus-martius.jpg","Alastair Rae","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3ABlackWoods.jpg"],"snd":["b/dryocopus-martius.mp3","Benjamin Drillat","CC BY-NC-SA 4.0","1179606","France"]},
+"Picus canus":{"img":["b/picus-canus.jpg","Frank Vassen","CC BY 2.0","https://commons.wikimedia.org/wiki/File%3APicus_canus%2C_Bia%C5%82owie%C5%BCa_1.jpg"],"snd":["b/picus-canus.mp3","Hannu Varkki","CC BY-NC-SA 4.0","1087555","Finland"]},
+"Tetrastes bonasia":{"img":["b/tetrastes-bonasia.jpg","Tokumi","Public domain","https://commons.wikimedia.org/wiki/File%3AWiki-ezoraicho.jpg"],"snd":["b/tetrastes-bonasia.mp3","Lars Edenius","CC BY-NC-SA 4.0","779196","Sweden"]},
+"Garrulus glandarius":{"img":["b/garrulus-glandarius.jpg","Charles Lam","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3AGarrulus_glandarius_brandtii%2C_Seoul%2C_South_Korea_1.jpg"],"snd":["b/garrulus-glandarius.mp3","Uku Paal","CC BY-NC-SA 4.0","1016824","日本"]},
+"Pyrrhula pyrrhula":{"img":["b/pyrrhula-pyrrhula.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3APyrrhula_pyrrhula_griseiventris_%28male%29.JPG"],"snd":["b/pyrrhula-pyrrhula.mp3","Stanislas Wroza","CC BY-NC-SA 4.0","1168308","Finland"]},
+"Carpodacus sibiricus":{"img":["b/carpodacus-sibiricus.jpg","Vlasov Egor","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3ACarpodacus_sibiricus_from_iNaturalist_photo_445767885.jpg"],"snd":["b/carpodacus-sibiricus.mp3","Uku Paal","CC BY-NC-SA 4.0","1016467","日本"]},
+"Bombycilla garrulus":{"img":["b/bombycilla-garrulus.jpg","Tatiana Bulyonkova","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3ABombycilla_garrulus%2C_Novosibirsk_1.jpg"],"snd":["b/bombycilla-garrulus.mp3","Joe Klaiber","CC BY-NC-SA 4.0","197640","Germany"]},
+"Mergus merganser":{"img":["b/mergus-merganser.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AMergus_merganser_merganser_%28male%29.jpg"],"snd":["b/mergus-merganser.mp3","Stanislas Wroza","CC BY-NC-SA 4.0","1168283","Finland"]},
+"Fratercula cirrhata":{"img":["b/fratercula-cirrhata.jpg","Alan D. Wilson","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ATufted_Puffin_Alaska_%28cropped%29.jpg"]},
+"Cerorhinca monocerata":{"img":["b/cerorhinca-monocerata.jpg","Dick Daniels","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ARhinoceros_Auklet_RWD1.jpg"],"snd":["b/cerorhinca-monocerata.mp3","KEISUKE KAGOSHIMA","CC BY 4.0","915711","日本"]},
+"Cuculus canorus":{"img":["b/cuculus-canorus.jpg","Tim Peukert","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AKuckuck_%28Cuculus_canorus%29_by_Tim_Peukert.jpg"],"snd":["b/cuculus-canorus.mp3","Rojin Maharjan","CC BY-NC-SA 4.0","1189219","Nepal"]},
+"Cyanoptila cyanomelana":{"img":["b/cyanoptila-cyanomelana.jpg","Tokumi Ohsaka","Public domain","https://commons.wikimedia.org/wiki/File%3AWiki-c-ooruri.jpg"],"snd":["b/cyanoptila-cyanomelana.mp3","Masato Nagai (Japan)","CC BY-NC-SA 4.0","324626","日本"]},
+"Ficedula narcissina":{"img":["b/ficedula-narcissina.jpg","muangpaisuetrong","CC0","https://commons.wikimedia.org/wiki/File%3AFicedula_narcissina_362189160_%28cropped%29.jpg"],"snd":["b/ficedula-narcissina.mp3","Jerome Chie-Jen Ko","CC BY-NC-SA 4.0","1148099","日本"]},
+"Larvivora akahige":{"img":["b/larvivora-akahige.jpg","Tokumi Ohsaka","CC0","https://commons.wikimedia.org/wiki/File%3AWiki-komadori.jpg"],"snd":["b/larvivora-akahige.mp3","Markus Jacobs","CC BY-NC-SA 4.0","506989","日本"]},
+"Troglodytes troglodytes":{"img":["b/troglodytes-troglodytes.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ATroglodytes_troglodytes_fumigatus.JPG"],"snd":["b/troglodytes-troglodytes.mp3","Phil Gregory","CC BY-NC-SA 4.0","1176857","日本"]},
+"Anser albifrons":{"img":["b/anser-albifrons.jpg","Walter Siegmund","GFDL","https://commons.wikimedia.org/wiki/File%3AAnser_albifrons_30050.JPG"],"snd":["b/anser-albifrons.mp3","Astrid Cervantes","CC BY-NC-SA 4.0","1190459","Belgium"]}};
 
 const toCard=src=>c=>({kind:"year",key:src+c[0],y:c[0],lv:c[1],name:c[2],en:c[3],era:c[4],why:c[5],what:c[6],then:c[7],goro:c[8]||"",src,place:PLACE[src+c[0]],doc:HMEDIA[src+c[0]]});
 const ALL={J:JP.map(toCard("J")), W:WD.map(toCard("W")),
   B:BIRDS.map(b=>({kind:"choice",name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],m:MEDIA[b[3]]||{},hab:HAB[b[3]]||["",""],key:"B"+b[3]})),
-  T:TREES.map(b=>({kind:"choice",tree:true,name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],mon:b[9],m:TMEDIA[b[3]]||{},hab:TREE_HAB[b[3]]||["",""],key:"T"+b[3]}))};
-const BYKEY={}; ["J","W","B","T"].forEach(k=>ALL[k].forEach(c=>BYKEY[c.key]=c));
+  T:TREES.map(b=>({kind:"choice",tree:true,name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],mon:b[9],m:TMEDIA[b[3]]||{},hab:TREE_HAB[b[3]]||["",""],key:"T"+b[3]})),
+  D:HBIRDS.map(b=>({kind:"choice",hk:true,name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],mon:b[9],m:DMEDIA[b[3]]||MEDIA[b[3]]||{},hab:HHAB[b[3]]||["",""],key:"D"+b[3]}))};
+const BYKEY={}; ["J","W","B","T","D"].forEach(k=>ALL[k].forEach(c=>BYKEY[c.key]=c));
 const CAUSES={}, EFFECTS={}; LINKS.forEach(([a,b,t])=>{ if(!BYKEY[a]||!BYKEY[b]) return; (CAUSES[b]=CAUSES[b]||[]).push([a,t]); (EFFECTS[a]=EFFECTS[a]||[]).push([b,t]); });
 // 季節: 冬鳥は10〜4月、夏鳥は4〜9月
 function inSeason(c,m){ if(c.mon){ const [a,b]=c.mon; return a<=b? (m>=a&&m<=b) : (m>=a||m<=b); } return c.season==="冬"? (m>=10||m<=4) : c.season==="夏"? (m>=4&&m<=9) : true; }
-const GENRES=[{id:"H",name:"歴史"},{id:"B",name:"関東の鳥"},{id:"T",name:"関東の木"}];
-const isPick=g=>g==="B"||g==="T";
+const GENRES=[{id:"H",name:"歴史"},{id:"B",name:"関東の鳥"},{id:"D",name:"北海道の鳥"},{id:"T",name:"関東の木"}];
+const isPick=g=>g==="B"||g==="T"||g==="D"; const hasVoice=g=>g==="B"||g==="D";
 function rng(seedStr){let h=1779033703^seedStr.length;for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
 function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -918,8 +1045,8 @@ const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"む
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
 function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P"})); }
 function deckFor(mode,lv,genre,gid,bmode,custom){
-  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,genre==="B"?bmode:"P") : sortYears(d); }
-  if(isPick(genre)){ const m=new Date().getMonth()+1; return birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,genre==="B"?bmode:"P"); }
+  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
+  if(isPick(genre)){ const m=new Date().getMonth()+1; return birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,hasVoice(genre)?bmode:"P"); }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
 }
@@ -980,7 +1107,7 @@ const TERR=[["M","山地",'<path d="M2 18 L10 5 L15 12 L18 8 L24 18 Z"/>'],["F",
   ["A","畑・草地",'<path d="M2 17h22M4 13h18M6 9.5h14"/><path d="M13 9.5V5M11 6.5l2-1.5 2 1.5"/>'],["U","街・公園",'<path d="M3 18V9h6v9M9 18V5h7v13M16 18v-7h6v7M2 18h22"/>'],
   ["R","川・池",'<path d="M2 8c3-2 5 2 8 0s5 2 8 0 4 1 6 0M2 14c3-2 5 2 8 0s5 2 8 0 4 1 6 0"/>'],["S","海・干潟",'<path d="M2 11c2-3 4-3 6 0s4 3 6 0 4-3 6 0 3 2 4 1M2 17h22"/>']];
 function habitatFor(c){
-  const box=el("div","links reveal-x"); box.append(el("span","lh",c.tree?"関東のどこで見る？":"関東のどこにいる？"));
+  const box=el("div","links reveal-x"); box.append(el("span","lh",c.tree?"関東のどこで見る？":c.hk?"北海道のどこにいる？":"関東のどこにいる？"));
   const g=el("div","terrain"); TERR.forEach(([k,n,icon])=>{ const d=el("div",c.hab[0].includes(k)?"on":""); d.innerHTML=`<svg viewBox="0 0 26 20" aria-hidden="true">${icon}</svg>`; d.append(n); g.append(d); });
   box.append(g, el("p","habnote",c.hab[1]+"。")); return box;
 }
@@ -1074,6 +1201,7 @@ function renderPickers(){
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
+  if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
   const d=deckFor(S.mode,S.lv);
   $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
@@ -1087,7 +1215,7 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){return g==="B"?"関東の鳥":g==="T"?"関東の木":"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){return g==="B"?"関東の鳥":g==="D"?"北海道の鳥":g==="T"?"関東の木":"歴史・"+modeName(mode);}
 function lvName(lv,g){ if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -1121,7 +1249,7 @@ function beginAsk(){
   const c=S.deck[S.qi];
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.kind==="choice"){
-    $("cEra").textContent=c.tree? "関東の木・"+(c.season==="一年中"?"一年中みどり":"見ごろは"+c.season) : "関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
+    $("cEra").textContent=c.hk? "北海道の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる") : c.tree? "関東の木・"+(c.season==="一年中"?"一年中みどり":"見ごろは"+c.season) : "関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
     $("cEv").textContent=""; $("cEn").textContent="";
     if(c.q==="V"){
       const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
