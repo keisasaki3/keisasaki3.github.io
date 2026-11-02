@@ -215,7 +215,8 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .fr:not(.arrow){font-weight:800}
 #game{flex:1}
 #askArea{flex:1}
-#keypad,#choices{margin-top:auto}
+#passBtn{margin-top:auto;width:100%}
+#keypad .key.zero{grid-column:span 2}
 [hidden]{display:none!important}
 </style>
 
@@ -282,6 +283,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
       <button class="btn ghost" id="skipBtn" type="button" hidden>待たずに答え合わせ</button>
       <div class="keypad" id="keypad"></div>
       <div class="choices" id="choices" hidden></div>
+      <button class="btn ghost" id="passBtn" type="button">パス</button>
     </div>
 
     <div id="revealArea" hidden style="display:flex;flex-direction:column;gap:12px">
@@ -1340,7 +1342,6 @@ function renderChoices(){
     if(S.ans){ b.disabled=true; if(S.ans.v===n) b.classList.add("picked"); }
     if(S.loading) b.disabled=true;
     b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(n); renderChoices(); } }; box.append(b);});
-  const p=el("button","choice pass","パス"); p.type="button"; p.disabled=!!S.ans||!!S.loading; p.onclick=()=>{ if(!S.ans&&!S.loading){answer(null); renderChoices();} }; box.append(p);
 }
 function renderSlots(){
   const c=S.deck[S.qi]; if(c.kind!=="year") return; const len=String(Math.abs(c.y)).length; const box=$("slots"); box.textContent="";
@@ -1494,6 +1495,7 @@ function check(){
   if(S.view==="result"){ renderResult(); return; }
   const now=Date.now();
   if(S.phase==="ask"){
+    $("passBtn").disabled=!!S.ans||!!S.loading;
     const skipped=S.skip===S.qi||gamePeers().some(pr=>pr.skip===S.qi);
     $("skipBtn").hidden=!(S.ans && !skipped && gamePeers().length && !allAnswered());
     if(skipped || (S.ans && allAnswered())) reveal();
@@ -1504,14 +1506,15 @@ function check(){
   }
   renderGamePlayers();
 }
+$("passBtn").onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(null); if(S.deck[S.qi].kind==="choice") renderChoices(); } };
 $("skipBtn").onclick=()=>{ S.skip=S.qi; push(); check(); };
 function show(v){ ["lobby","game","result"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
 
 function buildKeypad(){
   const box=$("keypad");
-  ["1","2","3","4","5","6","7","8","9","pass","0","del"].forEach(k=>{
-    const b=document.createElement("button"); b.type="button"; b.className="key"+(k.length>1?" fn":"")+(k==="pass"?" pass":"");
-    b.textContent=k==="pass"?"パス":k==="del"?"消す":k; b.onclick=()=>press(k); box.append(b);
+  ["1","2","3","4","5","6","7","8","9","0","del"].forEach(k=>{
+    const b=document.createElement("button"); b.type="button"; b.className="key"+(k.length>1?" fn":"")+(k==="0"?" zero":"");
+    b.textContent=k==="del"?"消す":k; b.onclick=()=>press(k); box.append(b);
   });
 }
 const newGid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
