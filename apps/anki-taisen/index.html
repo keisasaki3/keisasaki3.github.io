@@ -706,9 +706,9 @@ function docFor(c){
   f.append(im, el("figcaption",null,c.doc[4])); return f;
 }
 function nodeFor(k,me){
-  const c=BYKEY[k], later=!me && S.deck.indexOf(c)>S.qi; const n=el("div","node"+(me?" me":""));
-  n.append(el("b",null,later?"？？？？":yearText(c.y)), document.createTextNode(c.name));
-  if(later) n.append(el("span","soon","この先に出ます"));
+  const c=BYKEY[k], cur=S.deck[S.qi], hide=!me && cur && c.y>cur.y, soon=!me && S.deck.indexOf(c)>S.qi; const n=el("div","node"+(me?" me":""));
+  n.append(el("b",null,hide?"？？？？":yearText(c.y)), document.createTextNode(c.name));
+  if(soon) n.append(el("span","soon","この先に出ます"));
   return n;
 }
 function linksFor(c){
