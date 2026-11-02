@@ -1528,7 +1528,7 @@ function renderAnswers(){
   if(flipQ!==S.qi){ flipQ=S.qi; setTimeout(()=>box.classList.remove("flipin"),1600); }
   rows.forEach((r,i)=>{
     const d=el("div","arow"); d.style.gridTemplateColumns="1fr auto auto auto";
-    const [t,cl]=r.wait?["時間切れ","ng"]:markFor(r.ans,y);
+    const [t,cl]=r.wait?["回答中…","near"]:markFor(r.ans,y);
     const pt=r.ans&&typeof r.ans.pt==="number"&&r.ans.pt>0?` +${fmt(r.ans.pt)}点`:"";
     const sp=el("span","stp",r.st?r.st.e:"");
     const id=r.name+":"+S.qi; if(r.st && seenStamp[id]!==r.st.n){ seenStamp[id]=r.st.n; sp.classList.add("pop"); }
@@ -1589,8 +1589,8 @@ function check(){
   if(S.phase==="ask"){
     $("passBtn").disabled=!!S.ans||!!S.loading;
     const skipped=S.skip===S.qi||gamePeers().some(pr=>pr.skip===S.qi);
-    $("skipBtn").hidden=!(S.ans && !skipped && gamePeers().length && !allAnswered());
-    if(skipped || (S.ans && allAnswered())) reveal();
+    $("skipBtn").hidden=true;
+    if(skipped || S.ans) reveal();
   } else if(S.phase==="reveal"){
     $("skipBtn").hidden=true;
     renderAnswers();
