@@ -1084,9 +1084,15 @@ function tone(freq,start,dur,vol,type){ const a=ac(); if(!a) return; const t=a.c
   const o=a.createOscillator(), g=a.createGain(); o.type=type||"sine"; o.frequency.value=freq;
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
   o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+0.05); }
+function bell(freq,start,dur,vol){ tone(freq,start,dur,vol); tone(freq*2,start,dur*0.6,vol*0.35); tone(freq*3,start,dur*0.3,vol*0.12); }
+function buzz(freq,start,dur,vol){ const a=ac(); if(!a) return; const t=a.currentTime+start;
+  const o=a.createOscillator(), o2=a.createOscillator(), f=a.createBiquadFilter(), g=a.createGain();
+  o.type="sawtooth"; o2.type="square"; o.frequency.value=freq; o2.frequency.value=freq*1.01; f.type="lowpass"; f.frequency.value=900;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.01); g.gain.setValueAtTime(vol,t+dur-0.03); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(f); o2.connect(f); f.connect(g).connect(a.destination); o.start(t); o2.start(t); o.stop(t+dur+0.05); o2.stop(t+dur+0.05); }
 function se(kind){ if(muted) return;
-  if(kind==="ok"){ tone(784,0,0.35,0.12); tone(1175,0.09,0.5,0.10); }        // ソ→レ、軽い鈴のような2音
-  else if(kind==="ng"){ tone(311,0,0.32,0.09,"triangle"); tone(233,0.12,0.4,0.08,"triangle"); } // 低めに下がる2音
+  if(kind==="ok"){ bell(1319,0,0.5,0.16); bell(1047,0.2,0.9,0.16); }              // ピンポーン（高→低のチャイム）
+  else if(kind==="ng"){ buzz(130,0,0.17,0.07); buzz(130,0.24,0.5,0.07); }         // ブッ、ブー
   else if(kind==="flip"){ tone(1568,0,0.06,0.03); }
 }
 function renderMute(){ const b=$("muteBtn"); if(b){ b.textContent=muted?"音：オフ":"音：オン"; b.setAttribute("aria-pressed",String(!muted)); } }
