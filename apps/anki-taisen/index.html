@@ -17,7 +17,7 @@ window.ANKI_SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishab
 <title>激突！暗記大戦</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap">
 <style>
 /* Layout: 窓辺の明るい部屋（ミント）と栗色の壁（夜）の2トーン。上は胡桃色の見出し帯、中央に白い札、下に手元の操作。片手で遊べる縦一列。トーンは data-tone で切り替え。 */
 :root{
@@ -31,8 +31,8 @@ window.ANKI_SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishab
   --capbg:#4b392ee6; --capink:#f6efe6;
   --sea:#d3e6e3; --land:#f3efe2; --landline:#a9b8a8; --pin:#b9585a;
   --sys:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
-  --pop:"Mochiy Pop One","Zen Maru Gothic","Hiragino Maru Gothic ProN",var(--sys);
-  --body:"Zen Maru Gothic","Hiragino Maru Gothic ProN",var(--sys); --digits:var(--pop); --mincho:var(--pop);
+  --pop:"Mochiy Pop One","Hiragino Maru Gothic ProN",var(--sys);
+  --body:var(--sys); --digits:var(--sys); --mincho:var(--sys);
 }
 :root[data-tone="chestnut"]{
   color-scheme:dark;
@@ -51,7 +51,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 h1{font-family:var(--pop);font-weight:400;font-size:clamp(28px,8.6vw,46px);margin:0;letter-spacing:0;white-space:nowrap;line-height:1.15;background:var(--head);color:var(--onhead);border-radius:26px;padding:22px 14px 20px;text-align:center;text-shadow:0 4px 0 #0003;box-shadow:0 6px 0 #0002}
 h1 span{color:var(--acc)}
 h1 .tilt{display:inline-block;font-size:1.55em;line-height:.8;color:var(--acc);transform:rotate(-16deg) translateY(-.02em);margin:0 .08em;text-shadow:0 5px 0 #0003}
-h1 small{display:block;font-size:.3em;font-weight:700;letter-spacing:.3em;color:var(--onhead);opacity:.75;text-shadow:none;margin-top:6px}
+h1 small{font-family:var(--pop);display:block;font-size:.3em;font-weight:700;letter-spacing:.3em;color:var(--onhead);opacity:.75;text-shadow:none;margin-top:6px}
 p{margin:0}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
@@ -208,8 +208,6 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .habnote{font-size:13.5px;line-height:1.6}
 .hard{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
 
-/* ポップ書体は見出し・ボタン・札など短い文字に。長い解説は丸ゴシックのまま */
-.btn,.lv b,.choice,.key.fn,.chip,.bar .prog,#eraRange,.mute,.playbtn,.stopbtn,.vtabs button,.invite,.invite button,.card .era,.card .ev,.bname,.qtext,.rank .nm,.arow .nm,.arow .v.vs,.mark,.bigtag,.links .lh,.fk,label,.stamps button,.rules,.waiting,.vnote,.node b,.slot,.bsub,.panel > .small{font-family:var(--pop);font-weight:400!important;letter-spacing:.02em}
 .vbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .stopbtn{background:transparent;border:2px solid var(--head);color:var(--head);border-radius:999px;padding:7px 16px;font-size:15px}
 :root[data-tone="chestnut"] .stopbtn{color:var(--card-ink);border-color:var(--card-ink)}
