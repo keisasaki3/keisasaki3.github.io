@@ -1294,7 +1294,7 @@ function startGame(gid, genre, mode, lv, qi, bmode, custom){
   S.view="game"; show("game"); beginAsk();
 }
 function beginAsk(){
-  S.phase="ask"; S.input=""; S.ans=null; S.askStart=Date.now(); S.stamp=null; stopVoice(); se("flip");
+  S.phase="ask"; S.input=""; S.ans=null; S.askStart=Date.now(); S.loading=false; S.stamp=null; stopVoice(); se("flip");
   const c=S.deck[S.qi];
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.kind==="choice"){
@@ -1304,12 +1304,17 @@ function beginAsk(){
       const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
       const b=vbtns(c);
       v.append(w,b,el("p","vnote","この声はどの鳥？")); card.insertBefore(v,$("cEv"));
-      playVoice(c,false);
     } else {
       const im=document.createElement("img"); im.className="photo q-x"; im.src=imgOf(c)[0]; im.alt=c.tree?"この木はどれ？":"この鳥はどれ？"; card.insertBefore(im,$("cEv"));
     }
     preloadNext();
     S.choices=choicesFor(S.deck,S.qi,S.gid);
+    // 音声・写真が読み込めるまで制限時間を進めない（回線が悪いとき用。20秒待っても来なければ始める）
+    const qi0=S.qi, need = c.q==="V" ? loadVoice(c.m.snd[0]) : new Promise(ok=>{ const im=new Image(); im.onload=im.onerror=ok; im.src=imgOf(c)[0]; });
+    S.loading=true;
+    const go=()=>{ if(S.qi!==qi0||S.phase!=="ask"||!S.loading) return; S.loading=false; S.askStart=Date.now(); $("waitAsk").textContent=""; renderChoices(); if(c.q==="V") playVoice(c,false); };
+    Promise.race([need.catch(()=>{}), new Promise(ok=>setTimeout(ok,20000))]).then(go);
+    setTimeout(()=>{ if(S.qi===qi0&&S.loading&&S.phase==="ask") $("waitAsk").textContent=(c.q==="V"?"音声":"写真")+"を読み込み中…（読めたら始まります）"; },600);
   } else {
     $("cEra").textContent=tagOf(c);
     $("cEv").textContent=c.name; $("cEn").textContent=c.en;
@@ -1328,8 +1333,9 @@ function renderChoices(){
   const box=$("choices"); box.textContent="";
   S.choices.forEach(n=>{const b=el("button","choice",n); b.type="button";
     if(S.ans){ b.disabled=true; if(S.ans.v===n) b.classList.add("picked"); }
-    b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans){ answer(n); renderChoices(); } }; box.append(b);});
-  const p=el("button","choice pass","パス"); p.type="button"; p.disabled=!!S.ans; p.onclick=()=>{ if(!S.ans){answer(null); renderChoices();} }; box.append(p);
+    if(S.loading) b.disabled=true;
+    b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(n); renderChoices(); } }; box.append(b);});
+  const p=el("button","choice pass","パス"); p.type="button"; p.disabled=!!S.ans||!!S.loading; p.onclick=()=>{ if(!S.ans&&!S.loading){answer(null); renderChoices();} }; box.append(p);
 }
 function renderSlots(){
   const c=S.deck[S.qi]; if(c.kind!=="year") return; const len=String(Math.abs(c.y)).length; const box=$("slots"); box.textContent="";
@@ -1487,6 +1493,7 @@ function check(){
   if(S.view==="result"){ renderResult(); return; }
   const now=Date.now();
   if(S.phase==="ask"){
+    if(S.loading) S.askStart=now;
     const left=Math.max(0,ASK_MS-(now-S.askStart));
     $("timerBar").style.transform=`scaleX(${left/ASK_MS})`;
     if(left<=0 || (S.ans && allAnswered())) reveal();
