@@ -101,8 +101,8 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .key.pass{color:var(--muted)}
 .waiting{text-align:center;color:var(--muted);font-size:14px;min-height:1.7em}
 /* reveal */
-.year{font-family:var(--digits);font-weight:800;font-variant-numeric:tabular-nums;font-size:56px;line-height:1;color:var(--brand);letter-spacing:.02em}
-.year small{font-size:16px;margin-left:4px;color:var(--card-muted);font-family:var(--body)}
+.year{font-family:var(--digits);font-weight:800;font-variant-numeric:tabular-nums;font-size:34px;line-height:1;color:var(--brand);letter-spacing:.02em}
+.year small{font-size:14px;margin-left:4px;color:var(--card-muted);font-family:var(--body)}
 .expl{font-size:14.5px;line-height:1.85;color:var(--card-ink)}
 .goro{background:var(--card-soft);border:1px dashed var(--card-line2);border-radius:10px;padding:6px 10px;font-size:14px}
 .goro b{color:var(--brand)}
@@ -116,7 +116,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .banzuke{display:flex;flex-direction:column;gap:8px}
 .rank{display:grid;grid-template-columns:3.2em 1fr auto;gap:10px;align-items:center;background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
 .rank .r{font-family:var(--mincho);font-weight:800;color:var(--acc-ink)}
-.rank .sc{font-family:var(--digits);font-size:22px;font-weight:700}
+.rank .sc{font-family:var(--digits);font-size:16px;font-weight:700}
 .rank .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .miss{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
 .miss div{display:grid;grid-template-columns:3.4em 1fr;gap:8px}
@@ -211,6 +211,11 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .vbtns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .stopbtn{background:transparent;border:2px solid var(--head);color:var(--head);border-radius:999px;padding:7px 16px;font-size:15px}
 :root[data-tone="chestnut"] .stopbtn{color:var(--card-ink);border-color:var(--card-ink)}
+.card.rv .ev{font-size:clamp(17px,4.6vw,20px);line-height:1.4}
+.fr:not(.arrow){font-weight:800}
+#game{flex:1}
+#askArea{flex:1}
+#keypad,#choices{margin-top:auto}
 [hidden]{display:none!important}
 </style>
 
@@ -1294,7 +1299,7 @@ function startGame(gid, genre, mode, lv, qi, bmode, custom){
   S.view="game"; show("game"); beginAsk();
 }
 function beginAsk(){
-  S.phase="ask"; S.input=""; S.ans=null; S.askStart=Date.now(); S.loading=false; S.stamp=null; stopVoice(); se("flip");
+  $("card").classList.remove("rv"); S.phase="ask"; S.input=""; S.ans=null; S.askStart=Date.now(); S.loading=false; S.stamp=null; stopVoice(); se("flip");
   const c=S.deck[S.qi];
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.kind==="choice"){
@@ -1395,12 +1400,8 @@ function reveal(){
     $("askArea").hidden=true; $("revealArea").hidden=false; $("waitAsk").textContent="";
     renderAnswers(); push(); return;
   }
-  const yr=el("div","year reveal-x", yearText(c.y)); yr.append(el("small",null,"年"));
+  card.classList.add("rv"); const yr=el("div","year reveal-x", yearText(c.y)); yr.append(el("small",null,"年"));
   card.insertBefore(yr, $("cEv"));
-  if(prev){
-    const gap=c.y-prev.y;
-    card.insertBefore(el("p","gap reveal-x", gap===0?`前の札「${prev.name}」と同じ年`:`前の札「${prev.name}」から ${gap}年後`), $("cEv"));
-  }
   const flow=el("div","flow reveal-x");
   [c.why,c.what,c.then].filter(Boolean).forEach((v,i)=>{ const r=el("div","fr"+(i?" arrow cz":"")); r.textContent=v+"。"; flow.append(r); });
   card.append(flow);
@@ -1435,7 +1436,7 @@ function renderAnswers(){
   rows.forEach((r,i)=>{
     const d=el("div","arow"); d.style.gridTemplateColumns="1fr auto auto auto";
     const [t,cl]=r.wait?["時間切れ","ng"]:markFor(r.ans,y);
-    const pt=r.ans&&typeof r.ans.pt==="number"&&r.ans.pt>0?` +${fmt(r.ans.pt)}`:"";
+    const pt=r.ans&&typeof r.ans.pt==="number"&&r.ans.pt>0?` +${fmt(r.ans.pt)}点`:"";
     const sp=el("span","stp",r.st?r.st.e:"");
     const id=r.name+":"+S.qi; if(r.st && seenStamp[id]!==r.st.n){ seenStamp[id]=r.st.n; sp.classList.add("pop"); }
     d.append(el("span","nm",r.name), sp, el("span","v"+(y==null?" vs":""),r.ans&&r.ans.v?r.ans.v:"—"), el("span","mark "+cl,t+pt));
@@ -1466,7 +1467,7 @@ function renderResult(){
   const box=$("banzuke"); box.textContent="";
   rows.forEach((r,i)=>{
     const d=el("div","rank");
-    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"/"+(S.deck.length+Math.min(3,S.deck.length>=6?3:0))));
+    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"点 / "+(S.deck.length+Math.min(3,S.deck.length>=6?3:0))+"点満点"));
     box.append(d);
   });
   const ml=$("missList"); ml.textContent="";
@@ -1481,11 +1482,11 @@ function renderResult(){
 }
 function renderGamePlayers(){
   const box=$("gamePlayers"); box.textContent="";
-  box.append(chip(S.name||"名無し",{me:true,score:fmt(S.score),st:S.phase==="ask"?(S.ans?"回答済":"考え中"):"",stOk:!!S.ans}));
+  box.append(chip(S.name||"名無し",{me:true,score:fmt(S.score)+"点",st:S.phase==="ask"?(S.ans?"回答済":"考え中"):"",stOk:!!S.ans}));
   gamePeers().forEach(pr=>{
     const answered=pr.ans&&pr.ans.q===S.qi;
     const st=S.phase==="ask"?(answered||pr.qi>S.qi?"回答済":"考え中"):((pr.ready>=S.qi||pr.qi>S.qi)?"次へOK":"読んでいる");
-    box.append(chip(safeName(pr),{score:fmt(Number(pr.score)||0),st,stOk:st==="回答済"||st==="次へOK"}));
+    box.append(chip(safeName(pr),{score:fmt(Number(pr.score)||0)+"点",st,stOk:st==="回答済"||st==="次へOK"}));
   });
 }
 function check(){
