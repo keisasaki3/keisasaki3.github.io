@@ -20,6 +20,10 @@
 - repository slug / ルートフォルダ / 技術上の識別名: `natsume-portal`
 - 今後このプロジェクトで新しく付けるフォルダ名・repository名・技術識別名は、特段の理由がない限り `natsume-portal` を基準名として採用する。
 
+### 激突！暗記大戦（2026-11-02 Keita決定）
+
+友人・家族と遊ぶ暗記対戦ゲーム。なつめポータルに統合していく前提で、当面はこのリポジトリの `apps/anki-taisen/` に置き、GitHub Pagesで公開する。対戦の同期は `shared-world-core` の Realtime presence を使い、DBの表は使わない。
+
 ### 人生クエスト / 午後三時、夏の果て のrepo統合
 
 将来的に「人生クエスト」と「午後三時、夏の果て」のGitHub repositoryを `natsume-portal` に統合する。
@@ -38,7 +42,8 @@
 natsume-portal/
 ├─ apps/
 │  ├─ life-quest/
-│  └─ summer-end/
+│  ├─ summer-end/
+│  └─ anki-taisen/   # 激突！暗記大戦（2026-11-02 追加）
 ├─ packages/
 │  └─ shared/
 ├─ supabase/
