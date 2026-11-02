@@ -192,7 +192,7 @@ input,select{font:inherit;font-size:16px;background:var(--table);color:var(--ink
   <section id="lobby" style="display:flex;flex-direction:column;gap:14px">
     <h1>激突！<span>暗記</span>大戦</h1>
     <ul class="rules">
-      <li>歴史は年号、鳥は名前を当てる</li>
+      <li>歴史は年号、鳥と木は名前を当てる</li>
       <li>1問10秒。全員答えたら答え合わせ</li>
       <li>正解で1点。早押しの差はなし</li>
     </ul>
@@ -734,15 +734,175 @@ const BIRDS = [
 ["チョウゲンボウ",2,"Common Kestrel","Falco tinnunculus","猛禽","一年中","赤茶色の小さなハヤブサの仲間","空中で羽ばたきながら一点に止まる「ホバリング」","崖の代わりに橋や建物で子育てすることもある"],
 ["オオタカ",2,"Northern Goshawk","Accipiter gentilis","猛禽","一年中","ハトくらいの鳥を狩るタカ","目の上の白い眉と、胸の細かい横じま","一時は絶滅が心配されたが、今は都市の公園で子育てする例もある"],
 ];
+// 関東の木  [和名, 難易度, 英名, 学名, グループ, 見頃, 特徴, 見分けどころ, 豆知識, 見頃の月]
+// 見頃の月は「今月の木」用。[開始月, 終了月]（年をまたぐ場合は開始>終了）。一年中は [1,12]
+const TREES = [
+["ソメイヨシノ",1,"Yoshino Cherry","Prunus × yedoensis","サクラ・花木","春","3月末〜4月に、葉より先に白っぽいピンクの花で木全体が埋まる","花の時期に葉がまだ出ていない。幹は横じまの入った灰色の樹皮","江戸末期に染井村（いまの豊島区駒込）の植木屋から広まった。全国の木がほぼ同じ遺伝子をもつクローン",[3,4]],
+["ウメ",1,"Japanese Apricot","Prunus mume","サクラ・花木","冬〜春","2月ごろ、まだ寒いうちに白や紅の香りのよい花が咲く","花びらの先が丸い。花は枝にじかにつき、柄がほとんどない","奈良時代に中国から。「花見」といえば当時はサクラよりウメだった",[1,3]],
+["イチョウ",1,"Ginkgo","Ginkgo biloba","街路樹・公園の木","秋","秋に真っ黄色になる、扇形の葉の大木","葉が扇形で、まん中に切れこみが入ることが多い","恐竜の時代から姿がほとんど変わらない「生きた化石」。東京都のシンボルマークにもなっている",[10,12]],
+["イロハモミジ",1,"Japanese Maple","Acer palmatum","街路樹・公園の木","秋","秋に真っ赤に紅葉する、手のひら形の葉の木","葉が5〜7つに深く裂け、ふちがギザギザ","名前は裂けた葉先を「いろはにほへと」と数えたことから",[11,12]],
+["クロマツ",1,"Japanese Black Pine","Pinus thunbergii","針葉樹","一年中","海岸や庭園で見る、黒っぽい樹皮のマツ","2本1組の硬い針の葉。冬芽が白い","潮風に強く、海岸の防風林として植えられてきた。皇居外苑の松もこれ",[1,12]],
+["スギ",1,"Japanese Cedar","Cryptomeria japonica","針葉樹","一年中","まっすぐ天に伸びる、円すい形の背の高い木","短い針のような葉が枝にらせん状につく","日本固有種。戦後に大量に植林され、春の花粉症の大きな原因になった",[1,12]],
+["ヒノキ",1,"Hinoki Cypress","Chamaecyparis obtusa","針葉樹","一年中","うろこのような葉が平たく広がる針葉樹","葉の裏に白い「Y字」の模様","最高級の建材。法隆寺など古い木造建築に使われ、千年以上もつ",[1,12]],
+["ケヤキ",1,"Japanese Zelkova","Zelkova serrata","街路樹・公園の木","一年中","ほうきを逆さにしたような樹形の大木","葉のふちのギザギザが弓なりにそろう。樹皮がうろこ状にはがれる","表参道や府中のけやき並木が有名。埼玉県の木",[1,12]],
+["クスノキ",1,"Camphor Tree","Cinnamomum camphora","街路樹・公園の木","一年中","神社に多い、こんもり茂る常緑の大木","葉をちぎるとスーッとした樟脳（しょうのう）の香り。葉脈が根元で3本に分かれる","日本一の巨木もクスノキ。防虫剤の樟脳はこの木から作られた",[1,12]],
+["ヤブツバキ",1,"Camellia","Camellia japonica","サクラ・花木","冬〜春","つやのある濃い緑の葉に、赤い花","花は筒形に半開きで、散るときは花ごとポトリと落ちる","花の蜜はメジロやヒヨドリのごちそう。種から椿油がとれる",[1,4]],
+["サザンカ",1,"Sasanqua Camellia","Camellia sasanqua","サクラ・花木","秋〜冬","晩秋から冬に、ピンクや白の花が咲く生け垣の木","花びらが1枚ずつばらばらに散る（ツバキは花ごと落ちる）","童謡「たきび」の「さざんか さざんか 咲いた道」の花",[10,12]],
+["アジサイ",1,"Hydrangea","Hydrangea macrophylla","サクラ・花木","夏","梅雨どきに青や紫の手まりのような花が咲く低木","大きなギザギザの葉。花に見えるのは「装飾花」というがく","土が酸性だと青、アルカリ性だと赤っぽくなる。原種のガクアジサイは房総・三浦・伊豆に自生",[6,7]],
+["オオムラサキツツジ",1,"Oomurasaki Azalea","Rhododendron × pulchrum","サクラ・花木","春","道路の植え込みで5月に赤紫の大きな花を咲かせる低木","上の花びらに濃い斑点。葉は毛が多くざらつく","排気ガスに強く、高速道路や街の植え込みの定番",[4,5]],
+["キンモクセイ",1,"Fragrant Olive","Osmanthus fragrans var. aurantiacus","サクラ・花木","秋","10月に甘い香りを放つ、オレンジ色の小さな花の木","葉のふちに細かいギザギザがあるかないか程度。香りでまず気づく","日本にあるのはほぼオスの木で、実がならない。挿し木で増やされてきた",[9,10]],
+["ハナミズキ",1,"Flowering Dogwood","Cornus florida","サクラ・花木","春","4〜5月に白やピンクの花が咲く街路樹","花びらに見える4枚（苞）の先がへこむ。秋は赤い実と紅葉","1912年に東京市がアメリカへ桜を贈り、そのお返しとして日本に来た",[4,5]],
+["カキノキ",1,"Japanese Persimmon","Diospyros kaki","庭木・実もの","秋","秋にオレンジの実がなる庭や畑の木","葉が大きく、表につやがある。葉が落ちたあとも実が残る","「KAKI」は英語やフランス語でもそのまま通じる",[10,11]],
+["クリ",1,"Japanese Chestnut","Castanea crenata","どんぐりの木","秋","トゲのいがに包まれた実がなる木","細長い葉のふちに、針のようなギザギザが並ぶ","6月に咲く花は独特の強いにおいで、雑木林で遠くからでも分かる",[9,10]],
+["コナラ",1,"Konara Oak","Quercus serrata","どんぐりの木","秋","武蔵野の雑木林の主役。細長いどんぐりがなる","葉の根元が細く、ふちが大きくギザギザ","かつては薪や炭にするため十数年ごとに切られ、切り株から再生していた",[10,11]],
+["ナンテン",1,"Heavenly Bamboo","Nandina domestica","庭木・実もの","冬","冬に赤い実の房をつける庭木","細かい葉が何枚も組み合わさった、竹のような茎","「難を転ずる」にかけて縁起木として玄関や鬼門に植えられる",[11,2]],
+["ヤツデ",1,"Japanese Aralia","Fatsia japonica","庭木・実もの","冬","大きなてのひら形の葉をもつ、日陰の庭の低木","葉が7〜9つに深く裂ける（名前は八つ手だが八つとは限らない）","花の少ない11〜12月に白い花を咲かせ、ハエやアブを集める",[11,12]],
+["シダレヤナギ",2,"Weeping Willow","Salix babylonica","街路樹・公園の木","春","枝がカーテンのように垂れ下がる水辺の木","細長い葉。枝先が地面近くまで垂れる","銀座の柳並木で有名。「銀座の柳」は歌にもなった",[3,5]],
+["サルスベリ",2,"Crape Myrtle","Lagerstroemia indica","サクラ・花木","夏","夏から秋まで長くピンクや白の花が咲く木","樹皮がはがれてつるつる。まだら模様の幹","漢字は「百日紅」。花期が長いことから",[7,9]],
+["ハクモクレン",2,"Yulan Magnolia","Magnolia denudata","サクラ・花木","春","3月に、大きな白い花が上向きに咲く木","花びらが厚く、半開きのまま空を向く","花のつぼみは北を向きやすい（日の当たる南側がよく伸びるため）。「コンパスフラワー」とも",[3,4]],
+["コブシ",2,"Kobushi Magnolia","Magnolia kobus","サクラ・花木","春","3月に白い花が咲く、モクレンの仲間の木","ハクモクレンより花が小さく、ひらひら全開。花の下に小さな葉が1枚","デコボコの実がにぎりこぶしに似ているのが名前の由来",[3,4]],
+["ジンチョウゲ",2,"Winter Daphne","Daphne odora","サクラ・花木","春","3月ごろ、強い香りの小さな花が手まり状に咲く低木","外側が赤紫、内側が白い花。つやのある細長い葉","秋のキンモクセイ、夏のクチナシとあわせて「三大芳香木」",[2,3]],
+["クヌギ",2,"Sawtooth Oak","Quercus acutissima","どんぐりの木","秋","まん丸の大きなどんぐりがなる、雑木林の木","クリに似た細長い葉だが、ギザギザの針に緑色がない","樹液にカブトムシやクワガタが集まる。炭の材料としても最上級",[10,11]],
+["ヤマザクラ",2,"Japanese Mountain Cherry","Prunus jamasakura","サクラ・花木","春","赤茶色の若葉と白い花が同時に開くサクラ","花と葉が一緒に出る（ソメイヨシノは花が先）","吉野山の桜はこれ。和歌に詠まれた昔の桜もほぼヤマザクラ",[3,4]],
+["カツラ",2,"Katsura Tree","Cercidiphyllum japonicum","街路樹・公園の木","秋","ハート形の丸い葉が並ぶ木","葉がハート形。秋の黄葉した落ち葉はキャラメルのような甘い香り","香りの正体はマルトールという成分。綿菓子のにおいとも言われる",[10,11]],
+["モミジバスズカケノキ",2,"London Plane","Platanus × hispanica","街路樹・公園の木","一年中","迷彩柄の幹をもつ、大きな葉の街路樹（プラタナス）","樹皮がはがれて緑・白・茶のまだら。秋に鈴のような丸い実がぶら下がる","明治時代に新宿御苑に植えられたのが始まり。「スズカケ」は実を山伏の鈴懸に見立てた名",[1,12]],
+["ユリノキ",2,"Tulip Tree","Liriodendron tulipifera","街路樹・公園の木","初夏","Tシャツのような形の葉をもつ大木","葉の先がまっすぐ切れたような形。5月にチューリップのような花","北アメリカ原産。東京国立博物館前の大木は日本最初期の一本とされる",[5,11]],
+["トチノキ",2,"Japanese Horse Chestnut","Aesculus turbinata","街路樹・公園の木","初夏","大きな葉が手のひらのように5〜7枚集まる木","1枚の葉が巨大な小葉の集まり。5月に円すい形の白い花の房","実は「とち餅」になるが、アク抜きに何日もかかる。栃木県の木",[5,6]],
+["エノキ",2,"Chinese Hackberry","Celtis sinensis","街路樹・公園の木","一年中","大きく枝を広げる、里や神社の木","葉の上半分にだけギザギザ。葉脈が根元から3本に分かれる","国蝶オオムラサキの幼虫が食べる木。江戸時代は一里塚の目印に植えられた",[1,12]],
+["シラカシ",2,"Bamboo-leaf Oak","Quercus myrsinifolia","どんぐりの木","一年中","武蔵野の農家の生け垣や屋敷林に多い常緑の木","細長い葉の上半分に浅いギザギザ。どんぐりの帽子にしま模様","冬の北風を防ぐ「カシぐね」として関東の農家で植えられた",[1,12]],
+["スダジイ",2,"Itajii Chinkapin","Castanopsis sieboldii","どんぐりの木","一年中","神社の森をつくる、こんもりした常緑の大木","葉の裏が金色っぽく光る。どんぐりが細長く小さい","どんぐりは渋みが少なく、炒ると食べられる",[1,12]],
+["マテバシイ",2,"Japanese Stone Oak","Lithocarpus edulis","どんぐりの木","一年中","公園や道路の植え込みに多い常緑樹","厚くて大きな葉。細長く大きなどんぐり","房総半島では薪にするため大量に植えられた。どんぐりは生でも食べられるほど渋が少ない",[1,12]],
+["タブノキ",2,"Machilus","Machilus thunbergii","街路樹・公園の木","一年中","海に近い神社の森に多い、つやのある葉の大木","葉が枝先に集まってつく。若葉や芽が赤みを帯びる","葉の粉は線香をまとめる「つなぎ」に使われた",[1,12]],
+["ヤマボウシ",2,"Kousa Dogwood","Cornus kousa","サクラ・花木","初夏","6月に白い花（苞）が上向きに咲く木","花びらに見える4枚の先がとがる（ハナミズキはへこむ）","秋の赤い実は甘くて食べられる",[5,6]],
+["ドウダンツツジ",2,"White Enkianthus","Enkianthus perulatus","サクラ・花木","秋","生け垣に多く、秋に真っ赤に紅葉する低木","春は白いつぼ形の小さな花が下向きに並ぶ","名前は枝分かれが灯台（とうだい）の脚に似ることから",[11,12]],
+["クチナシ",2,"Gardenia","Gardenia jasminoides","サクラ・花木","夏","梅雨どきに白い花が甘く香る低木","つやのある葉。花は咲き進むと黄色っぽくなる","オレンジの実は、きんとんやたくあんを黄色く染める天然色素",[6,7]],
+["ヒイラギ",2,"Holly Olive","Osmanthus heterophyllus","庭木・実もの","冬","葉のふちにとがったトゲがある常緑の木","トゲは若い木に多く、老木になると丸い葉になる","節分にイワシの頭と一緒に飾る魔よけ。11月に白い花が香る",[11,2]],
+["クロガネモチ",2,"Kurogane Holly","Ilex rotunda","庭木・実もの","冬","冬に赤い実をびっしりつける常緑樹","葉にトゲがなく、軸が紫がかる","「苦労がなくお金持ち」にかけた縁起木として庭に植えられる",[11,2]],
+["アオキ",2,"Spotted Laurel","Aucuba japonica","庭木・実もの","冬","日陰に強く、冬に赤い実をつける低木","枝まで緑色。葉は大きく、つやがある","幕末にヨーロッパへ渡り、日陰の庭木として大人気になった",[12,3]],
+["ユキヤナギ",2,"Thunberg's Meadowsweet","Spiraea thunbergii","サクラ・花木","春","3〜4月、細い枝が真っ白な小花で埋まる低木","枝が弓なりに垂れ、細長い小さな葉","名前は雪のような花と、柳のような枝から",[3,4]],
+["ムラサキシキブ",2,"Japanese Beautyberry","Callicarpa japonica","庭木・実もの","秋","秋に紫色の小さな実をつける低木","実が枝にそって段々につく","名前は紫式部から。庭でよく見るのは実の多い近縁種コムラサキのことも多い",[9,11]],
+["メタセコイア",2,"Dawn Redwood","Metasequoia glyptostroboides","針葉樹","秋","円すい形の大木で、秋に赤茶色に紅葉する針葉樹","柔らかい平たい葉が羽のように対になってつく。冬は落葉する","化石で先に見つかり「絶滅した」とされたが、1940年代に中国で生きた木が発見された",[11,12]],
+["アカマツ",2,"Japanese Red Pine","Pinus densiflora","針葉樹","一年中","幹の上部が赤茶色の、内陸の山のマツ","2本1組の柔らかい針の葉。クロマツより葉が細い","根元にマツタケが生える。枯れ松が増える松枯れ病が問題に",[1,12]],
+["ブナ",2,"Japanese Beech","Fagus crenata","どんぐりの木","秋","丹沢や奥多摩の高い山に生える、白っぽい幹の大木","灰白色のなめらかな幹に地衣類のまだら。葉のふちが波打つ","保水力の高い森をつくり「緑のダム」と呼ばれる。白神山地のブナ林は世界遺産",[10,11]],
+["ミズキ",2,"Giant Dogwood","Cornus controversa","サクラ・花木","初夏","枝が段々に水平に広がる木","5月に白い小花が平らな傘状に集まる。枝を切ると水がしたたる","名前は春先に枝を折ると水が出るほど樹液が多いことから",[5,6]],
+["エゴノキ",2,"Japanese Snowbell","Styrax japonicus","サクラ・花木","初夏","5月に白い小花が鈴なりにぶら下がる雑木林の木","花が下向きにたくさんぶら下がる","実の皮をかむとえぐい（えごい）のが名前の由来。昔は実をすりつぶして魚とりに使った",[5,6]],
+["トウカエデ",2,"Trident Maple","Acer buergerianum","街路樹・公園の木","秋","街路樹に多い、秋に黄色や赤に染まるカエデ","葉が3つに浅く裂ける（カエルの足のような形）","江戸時代に中国から渡来。徳川吉宗のころ浜離宮に植えられたと伝わる",[11,12]],
+];
+
+// 関東での分布 [地形(山M 林F 農地A 街U 川R 海S), ひとこと]（鳥の HAB と同じ記号）
+const TREE_HAB = {
+"Prunus × yedoensis":["UR","公園・川沿い・学校。ほぼすべて人が植えたもの"],
+"Prunus mume":["UA","梅林・庭・農家。越生梅林や偕楽園（水戸）が名所"],
+"Ginkgo biloba":["U","街路樹・神社・学校。神宮外苑のいちょう並木が有名"],
+"Acer palmatum":["UFM","庭や公園から、山の谷沿いまで"],
+"Pinus thunbergii":["SU","海岸の防風林と、庭園・皇居外苑"],
+"Cryptomeria japonica":["MF","山の植林地。日光杉並木や神社の参道"],
+"Chamaecyparis obtusa":["MF","山の植林地。丹沢や奥多摩の斜面"],
+"Zelkova serrata":["UAF","並木・屋敷林・神社。平野部に多い"],
+"Cinnamomum camphora":["U","神社・公園・街路樹。南関東の平地に多い"],
+"Camellia japonica":["FUS","海に近い林、神社、庭。伊豆大島は椿の島"],
+"Camellia sasanqua":["U","住宅地の生け垣や公園"],
+"Hydrangea macrophylla":["UFS","庭や寺。鎌倉の明月院は「あじさい寺」"],
+"Rhododendron × pulchrum":["U","道路の植え込み、公園"],
+"Osmanthus fragrans var. aurantiacus":["U","庭・公園・学校"],
+"Cornus florida":["U","街路樹や庭"],
+"Diospyros kaki":["AU","農家の庭や畑のへり"],
+"Castanea crenata":["FAM","雑木林や栗畑。茨城県は栗の生産日本一"],
+"Quercus serrata":["FM","武蔵野・多摩丘陵の雑木林から山地まで"],
+"Nandina domestica":["UF","庭や玄関先。林の中にも野生化"],
+"Fatsia japonica":["UFS","日陰の庭や、海に近い林の下"],
+"Salix babylonica":["RU","池や川のほとり、街路樹"],
+"Lagerstroemia indica":["U","庭・公園・寺・街路樹"],
+"Magnolia denudata":["U","庭・公園・学校"],
+"Magnolia kobus":["UFM","公園や街路樹。山地にも自生"],
+"Daphne odora":["U","庭や玄関先"],
+"Quercus acutissima":["FA","平地の雑木林。農村の林に多い"],
+"Prunus jamasakura":["FM","丘陵や山の林。高尾山などで見られる"],
+"Cercidiphyllum japonicum":["MRU","山の沢沿いに自生。公園や街路樹にも"],
+"Platanus × hispanica":["U","街路樹・公園。新宿御苑の並木"],
+"Liriodendron tulipifera":["U","公園や街路樹、大学のキャンパス"],
+"Aesculus turbinata":["MRU","山の谷沿いに自生。街路樹にも"],
+"Celtis sinensis":["UFR","神社・河川敷・里の林"],
+"Quercus myrsinifolia":["UAF","農家の屋敷林、生け垣、公園"],
+"Castanopsis sieboldii":["FUS","神社の森や海に近い林"],
+"Lithocarpus edulis":["UF","公園・道路の植え込み。房総の山に多い"],
+"Machilus thunbergii":["SFU","海に近い林や神社の森"],
+"Cornus kousa":["UFM","庭・街路樹。山地にも自生"],
+"Enkianthus perulatus":["U","生け垣や公園の植え込み"],
+"Gardenia jasminoides":["U","庭や公園の植え込み"],
+"Osmanthus heterophyllus":["UF","庭・生け垣・神社"],
+"Ilex rotunda":["UF","庭・公園・街路樹"],
+"Aucuba japonica":["FU","林の下や日陰の庭"],
+"Spiraea thunbergii":["UR","庭・公園・川岸"],
+"Callicarpa japonica":["FU","雑木林の縁。庭にも"],
+"Metasequoia glyptostroboides":["U","公園や学校。水辺の公園に並木"],
+"Pinus densiflora":["MF","内陸の山や丘陵の尾根"],
+"Fagus crenata":["M","丹沢・奥多摩・奥日光など標高の高い山"],
+"Cornus controversa":["FM","雑木林や山の林"],
+"Styrax japonicus":["FU","雑木林。公園にも"],
+"Acer buergerianum":["U","街路樹や公園"],
+};
+const TMEDIA = {"Prunus × yedoensis":{"img":["t/prunus-x-yedoensis.jpg","掬茶","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ABlossom_of_Cerasus_%C3%97_yedoensis_%E2%80%98Somei-yoshino%E2%80%99%2C_photographed_at_Tsuruoka_Park_20240413.jpg"]},
+"Prunus mume":{"img":["t/prunus-mume.jpg","Kakidai","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3APrunus_mume.JPG"]},
+"Ginkgo biloba":{"img":["t/ginkgo-biloba.jpg","Rarisan","CC0","https://commons.wikimedia.org/wiki/File%3AYokote_City_Kurokawa_Ginkgo_Tree_Line_2024-B.jpg"]},
+"Acer palmatum":{"img":["t/acer-palmatum.jpg","ISAKA Yoji (cory)","CC BY 2.1 jp","https://commons.wikimedia.org/wiki/File%3AKaede_07d4617c.jpg"]},
+"Pinus thunbergii":{"img":["t/pinus-thunbergii.jpg","Nikita from Russian Federation","CC BY 2.0","https://commons.wikimedia.org/wiki/File%3APinus_thunbergii_Izu_Oshima.jpg"]},
+"Cryptomeria japonica":{"img":["t/cryptomeria-japonica.jpg","BehBeh","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3A20081004%E5%AF%BA%E5%B1%B1%E8%A6%B3%E9%9F%B3%E5%AF%BA%E6%9D%89%E7%BE%8E%E6%9E%97.jpg"]},
+"Chamaecyparis obtusa":{"img":["t/chamaecyparis-obtusa.jpg","Crusier","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AChamaecyparis_Cz%C4%99stochowa_6.JPG"]},
+"Zelkova serrata":{"img":["t/zelkova-serrata.jpg","Takunawan","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AZelkova_serrata_in_Oasa_HigashimachiPark_Ebetsu%2C_Hokkaido_1.jpg"]},
+"Cinnamomum camphora":{"img":["t/cinnamomum-camphora.jpg","Forest & Kim Starr","CC BY 3.0","https://commons.wikimedia.org/wiki/File%3AStarr_001228-0130_Cinnamomum_camphora.jpg"]},
+"Camellia japonica":{"img":["t/camellia-japonica.jpg","BotBln","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ACamellia_japonica_BotGardBln271207C.jpg"]},
+"Camellia sasanqua":{"img":["t/camellia-sasanqua.jpg","kimubert","CC BY 2.0","https://commons.wikimedia.org/wiki/File%3ACamellia_sasanqua_001.jpg"]},
+"Hydrangea macrophylla":{"img":["t/hydrangea-macrophylla.jpg","Marc Ryckaert (MJJR)","CC BY 2.5","https://commons.wikimedia.org/wiki/File%3AHydrangea_macrophylla_02.jpg"]},
+"Rhododendron × pulchrum":{"img":["t/rhododendron-x-pulchrum.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ARhododendron_x_pulchrum1.jpg"]},
+"Osmanthus fragrans var. aurantiacus":{"img":["t/osmanthus-fragrans-var-aurantiacus.jpg","Laitr Keiows","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AOsmanthus_fragrans_%28orange_flowers%29.jpg"]},
+"Cornus florida":{"img":["t/cornus-florida.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ABenthamidia_florida7.jpg"]},
+"Castanea crenata":{"img":["t/castanea-crenata.jpg","Apple2000","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AJapanese_Chestnut04.jpg"]},
+"Quercus serrata":{"img":["t/quercus-serrata.jpg","harum.koh from Kobe city, Japan","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3AQuercus_serrata_%2822086354379%29.jpg"]},
+"Nandina domestica":{"img":["t/nandina-domestica.jpg","A. Barra","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ANandina_domestica_RJB.jpg"]},
+"Fatsia japonica":{"img":["t/fatsia-japonica.jpg","Fernando Losada Rodríguez","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AFatsia_japonica.003_-_Zapateira.jpg"]},
+"Salix babylonica":{"img":["t/salix-babylonica.jpg","Moja","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AYanagi.jpg"]},
+"Lagerstroemia indica":{"img":["t/lagerstroemia-indica.jpg","Juan Carlos Fonseca Mata","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ALagerstroemia_indica_4.jpg"]},
+"Magnolia denudata":{"img":["t/magnolia-denudata.jpg","Peka","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AMagnolia_denudata_in_Higashiyoka_2019_02.jpg"]},
+"Magnolia kobus":{"img":["t/magnolia-kobus.jpg","くろふね","CC BY 3.0","https://commons.wikimedia.org/wiki/File%3A%E5%9B%9B%E5%8D%81%E4%B9%9D%E9%99%A2%E3%81%AE%E3%81%93%E3%81%B6%E3%81%97_-_panoramio_%281%29.jpg"]},
+"Daphne odora":{"img":["t/daphne-odora.jpg","Miya","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ADaphne_odora-ja01.jpg"]},
+"Quercus acutissima":{"img":["t/quercus-acutissima.jpg","Chuck Bargeron, University of Georgia, Bugwood.org","CC BY 3.0 us","https://commons.wikimedia.org/wiki/File%3AQuercus_acutissima_BW-1237024.jpg"]},
+"Prunus jamasakura":{"img":["t/prunus-jamasakura.jpg","Taisyo","CC BY 3.0","https://commons.wikimedia.org/wiki/File%3A%E3%83%92%E3%83%AD%E3%82%B7%E3%83%9E%E3%82%A8%E3%83%90%E3%83%A4%E3%83%9E%E3%82%B6%E3%82%AF%E3%83%A902.JPG"]},
+"Cercidiphyllum japonicum":{"img":["t/cercidiphyllum-japonicum.jpg","Chhe","Public domain","https://commons.wikimedia.org/wiki/File%3ACercidiphyllumJaponicumLeaves.jpg"]},
+"Platanus × hispanica":{"img":["t/platanus-x-hispanica.jpg","小石川人晃","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ABark_of_London_Plane%2C_Ibaraki%2C_Japan_02.jpg"]},
+"Liriodendron tulipifera":{"img":["t/liriodendron-tulipifera.jpg","Plant Image Library from Boston, USA","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3ALiriodendron_tulipifera_%28Tulip_Tree%29_14992%2AA_%2837501584912%29.jpg"]},
+"Aesculus turbinata":{"img":["t/aesculus-turbinata.jpg","Jonathan Cardy","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AAesculus_turbinata%2C_Barge_walk.jpg"]},
+"Celtis sinensis":{"img":["t/celtis-sinensis.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ACeltis_sinensis3.jpg"]},
+"Quercus myrsinifolia":{"img":["t/quercus-myrsinifolia.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ACyclobalanopsis_myrsinifolia4.jpg"]},
+"Castanopsis sieboldii":{"img":["t/castanopsis-sieboldii.jpg","Anonymous Powered","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ACastanopsis_sieboldii6.jpg"]},
+"Lithocarpus edulis":{"img":["t/lithocarpus-edulis.jpg","harum.koh from Kobe city, Japan","CC BY-SA 2.0","https://commons.wikimedia.org/wiki/File%3ALithocarpus_edulis_%2822449386240%29.jpg"]},
+"Cornus kousa":{"img":["t/cornus-kousa.jpg","Ｋｓ","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AYamabousi_tubomieda.jpg"]},
+"Enkianthus perulatus":{"img":["t/enkianthus-perulatus.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AEnkianthus_perulatus3.jpg"]},
+"Gardenia jasminoides":{"img":["t/gardenia-jasminoides.jpg","Bernard Loison","CC BY-SA 2.5","https://commons.wikimedia.org/wiki/File%3AGardenia_jasminoides1MTFL.jpg"]},
+"Osmanthus heterophyllus":{"img":["t/osmanthus-heterophyllus.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AOsmanthus_heterophyllus_%28leaf_s3%29.jpg"]},
+"Ilex rotunda":{"img":["t/ilex-rotunda.jpg","Ｋｓ","CC BY 3.0","https://commons.wikimedia.org/wiki/File%3AIlex_rotunda_KRGNMT01.jpg"]},
+"Aucuba japonica":{"img":["t/aucuba-japonica.jpg","Magnus Manske","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AP1000351_Aucuba_japonica_%28Salicifolia%29_%28Aucubaceae%29_Leaf.JPG"]},
+"Spiraea thunbergii":{"img":["t/spiraea-thunbergii.jpg","Moja","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ASpiraea_thunbergii1.jpg"]},
+"Callicarpa japonica":{"img":["t/callicarpa-japonica.jpg","小石川人晃","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AFruits_of_Japanese_beautyberry.jpg"]},
+"Metasequoia glyptostroboides":{"img":["t/metasequoia-glyptostroboides.jpg","Kritzolina","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ADawn_redwood_inside_Bachkovo_Monastery_01.jpg"]},
+"Pinus densiflora":{"img":["t/pinus-densiflora.jpg","Qurren","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AChuji_Tomadoinomatsu.jpg"]},
+"Fagus crenata":{"img":["t/fagus-crenata.jpg","Σ64","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ADoudair-buna-10.28.JPG"]},
+"Cornus controversa":{"img":["t/cornus-controversa.jpg","ISAKA Yoji (cory)","CC BY-SA 2.1 jp","https://commons.wikimedia.org/wiki/File%3AMizuki_07b3427.jpg"]},
+"Styrax japonicus":{"img":["t/styrax-japonicus.jpg","Gondahara","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AStyrax_japonica2.JPG"]},
+"Acer buergerianum":{"img":["t/acer-buergerianum.jpg","KENPEI","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AAcer_buergerianum1.jpg"]},
+"Diospyros kaki":{"img":["t/diospyros-kaki.jpg","Boris Oblak","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AKaki_011_small.jpg"]},
+"Machilus thunbergii":{"img":["t/machilus-thunbergii.jpg","Gondahara","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AM_thunbergii.JPG"]}};
 
 const toCard=src=>c=>({kind:"year",key:src+c[0],y:c[0],lv:c[1],name:c[2],en:c[3],era:c[4],why:c[5],what:c[6],then:c[7],goro:c[8]||"",src,place:PLACE[src+c[0]],doc:HMEDIA[src+c[0]]});
 const ALL={J:JP.map(toCard("J")), W:WD.map(toCard("W")),
-  B:BIRDS.map(b=>({kind:"choice",name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],m:MEDIA[b[3]]||{},hab:HAB[b[3]]||["",""],key:"B"+b[3]}))};
-const BYKEY={}; ["J","W","B"].forEach(k=>ALL[k].forEach(c=>BYKEY[c.key]=c));
+  B:BIRDS.map(b=>({kind:"choice",name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],m:MEDIA[b[3]]||{},hab:HAB[b[3]]||["",""],key:"B"+b[3]})),
+  T:TREES.map(b=>({kind:"choice",tree:true,name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],mon:b[9],m:TMEDIA[b[3]]||{},hab:TREE_HAB[b[3]]||["",""],key:"T"+b[3]}))};
+const BYKEY={}; ["J","W","B","T"].forEach(k=>ALL[k].forEach(c=>BYKEY[c.key]=c));
 const CAUSES={}, EFFECTS={}; LINKS.forEach(([a,b,t])=>{ if(!BYKEY[a]||!BYKEY[b]) return; (CAUSES[b]=CAUSES[b]||[]).push([a,t]); (EFFECTS[a]=EFFECTS[a]||[]).push([b,t]); });
 // 季節: 冬鳥は10〜4月、夏鳥は4〜9月
-function inSeason(c,m){ return c.season==="冬"? (m>=10||m<=4) : c.season==="夏"? (m>=4&&m<=9) : true; }
-const GENRES=[{id:"H",name:"歴史"},{id:"B",name:"関東の鳥"}];
+function inSeason(c,m){ if(c.mon){ const [a,b]=c.mon; return a<=b? (m>=a&&m<=b) : (m>=a||m<=b); } return c.season==="冬"? (m>=10||m<=4) : c.season==="夏"? (m>=4&&m<=9) : true; }
+const GENRES=[{id:"H",name:"歴史"},{id:"B",name:"関東の鳥"},{id:"T",name:"関東の木"}];
+const isPick=g=>g==="B"||g==="T";
 function rng(seedStr){let h=1779033703^seedStr.length;for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
 function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -758,8 +918,8 @@ const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"む
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
 function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P"})); }
 function deckFor(mode,lv,genre,gid,bmode,custom){
-  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return genre==="B"? birdDeck(d,gid,bmode) : sortYears(d); }
-  if(genre==="B"){ const m=new Date().getMonth()+1; return birdDeck(ALL.B.filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,bmode); }
+  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,genre==="B"?bmode:"P") : sortYears(d); }
+  if(isPick(genre)){ const m=new Date().getMonth()+1; return birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,genre==="B"?bmode:"P"); }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
 }
@@ -820,7 +980,7 @@ const TERR=[["M","山地",'<path d="M2 18 L10 5 L15 12 L18 8 L24 18 Z"/>'],["F",
   ["A","畑・草地",'<path d="M2 17h22M4 13h18M6 9.5h14"/><path d="M13 9.5V5M11 6.5l2-1.5 2 1.5"/>'],["U","街・公園",'<path d="M3 18V9h6v9M9 18V5h7v13M16 18v-7h6v7M2 18h22"/>'],
   ["R","川・池",'<path d="M2 8c3-2 5 2 8 0s5 2 8 0 4 1 6 0M2 14c3-2 5 2 8 0s5 2 8 0 4 1 6 0"/>'],["S","海・干潟",'<path d="M2 11c2-3 4-3 6 0s4 3 6 0 4-3 6 0 3 2 4 1M2 17h22"/>']];
 function habitatFor(c){
-  const box=el("div","links reveal-x"); box.append(el("span","lh","関東のどこにいる？"));
+  const box=el("div","links reveal-x"); box.append(el("span","lh",c.tree?"関東のどこで見る？":"関東のどこにいる？"));
   const g=el("div","terrain"); TERR.forEach(([k,n,icon])=>{ const d=el("div",c.hab[0].includes(k)?"on":""); d.innerHTML=`<svg viewBox="0 0 26 20" aria-hidden="true">${icon}</svg>`; d.append(n); g.append(d); });
   box.append(g, el("p","habnote",c.hab[1]+"。")); return box;
 }
@@ -903,16 +1063,17 @@ function seg(boxId, items, cur, label, onPick){
 }
 function renderPickers(){
   seg("genres", GENRES.map(g=>({key:g.id,name:g.name})), S.genre, null, k=>{S.genre=k; store.set("nb-genre",k); renderPickers(); push();});
-  const isB=S.genre==="B";
+  const isB=isPick(S.genre);
   $("modesLabel").textContent=isB?"出題のしかた":"出題範囲";
   $("modes").style.gridTemplateColumns=`repeat(${isB?2:3},1fr)`;
   $("modesBox").style.display=isB?"none":"flex";
   if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bmode",k); renderPickers(); push();});
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
-  const lvs=S.genre==="B"?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
+  const lvs=isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
-  seg("levels", lvs.map(l=>({key:l.lv,name:l.name})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(S.genre==="B"?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
+  seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
+  if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
   const d=deckFor(S.mode,S.lv);
   $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
@@ -926,8 +1087,8 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){return g==="B"?"関東の鳥":"歴史・"+modeName(mode);}
-function lvName(lv){return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
+function genreLabel(g,mode,bm){return g==="B"?"関東の鳥":g==="T"?"関東の木":"歴史・"+modeName(mode);}
+function lvName(lv,g){ if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
   const box=$("lobbyPlayers"); box.textContent="";
@@ -939,7 +1100,7 @@ function renderLobby(){
   const g=findOpenGame(); const inv=$("invite");
   if(g && S.view==="lobby"){
     inv.hidden=false;
-    $("inviteText").textContent=`${safeName(g)}さんが「${genreLabel(g.genre,g.mode,g.bmode)}・${Array.isArray(g.custom)&&g.custom.length?"リベンジ戦":lvName(g.lv)}」で対戦中です`;
+    $("inviteText").textContent=`${safeName(g)}さんが「${genreLabel(g.genre,g.mode,g.bmode)}・${Array.isArray(g.custom)&&g.custom.length?"リベンジ戦":lvName(g.lv,g.genre)}」で対戦中です`;
   } else inv.hidden=true;
 }
 function findOpenGame(){
@@ -960,7 +1121,7 @@ function beginAsk(){
   const c=S.deck[S.qi];
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.kind==="choice"){
-    $("cEra").textContent="関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
+    $("cEra").textContent=c.tree? "関東の木・"+(c.season==="一年中"?"一年中みどり":"見ごろは"+c.season) : "関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
     $("cEv").textContent=""; $("cEn").textContent="";
     if(c.q==="V"){
       const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
@@ -968,7 +1129,7 @@ function beginAsk(){
       v.append(w,b,el("p","vnote","この声はどの鳥？")); card.insertBefore(v,$("cEv"));
       playVoice(c,false);
     } else {
-      const im=document.createElement("img"); im.className="photo q-x"; im.src=c.m.img[0]; im.alt="この鳥はどれ？"; card.insertBefore(im,$("cEv"));
+      const im=document.createElement("img"); im.className="photo q-x"; im.src=c.m.img[0]; im.alt=c.tree?"この木はどれ？":"この鳥はどれ？"; card.insertBefore(im,$("cEv"));
     }
     preloadNext();
     S.choices=choicesFor(S.deck,S.qi,S.gid);
@@ -980,7 +1141,7 @@ function beginAsk(){
   if(big){ const t=el("span","bigtag","大一番・得点2倍"); $("cEra").prepend(t); }
   card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
   $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
-  $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv)}`;
+  $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
   const isC=c.kind==="choice"; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC;
   if(isC) renderChoices();
   $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
