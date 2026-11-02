@@ -267,6 +267,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <div class="levels" id="counts"></div>
       </div>
       <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
+      <div class="waiting" id="waitStart"></div>
     </div>
 
     <div class="panel">
@@ -333,6 +334,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <button class="btn" id="againBtn" type="button">もう一度</button>
       <button class="btn ghost" id="lobbyBtn" type="button">ロビーへ</button>
     </div>
+    <div class="waiting" id="waitAgain"></div>
   </section>
 
 </div>
@@ -1267,7 +1269,7 @@ const S={
   tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
   genre: store.get("nb-genre")||"H", bmode: store.get("nb-bm2")||"V", choices:[],
   view:"lobby",
-  gid:null, deck:[], qi:0, phase:"ask", input:"", ans:null, ready:-1,
+  gid:null, deck:[], qi:0, phase:"ask", input:"", ans:null, ready:-1, wait:null, again:null,
   score:0, log:[], askStart:0, revealAt:0, custom:null, hist:"", stamp:null, stampN:0,
 };
 if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
@@ -1277,7 +1279,7 @@ let room=null;
 
 function myPresence(){
   return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, cnt:S.cnt, mode:S.mode, genre:S.genre, bmode:S.bmode, qi:S.qi, phase:S.phase,
-    ans:S.ans, skip:S.skip, ready:S.ready, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
+    ans:S.ans, skip:S.skip, ready:S.ready, wait:S.wait, again:S.again, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
 }
 function push(){ if(room){ room.presence(myPresence()).catch(()=>{}); } }
 function others(){
@@ -1348,6 +1350,10 @@ function renderLobby(){
   if(g && S.view==="lobby"){
     inv.hidden=false;
     $("inviteText").textContent=`${safeName(g)}さんが「${genreLabel(g.genre,g.mode,g.bmode)}・${Array.isArray(g.custom)&&g.custom.length?"リベンジ戦":lvName(g.lv,g.genre)}」で対戦中です`;
+  } else if(!S.wait && hostWait() && S.view==="lobby"){
+    const w=hostWait(); const who=lobbyPeers().find(pr=>validWait(pr.wait)&&pr.wait.gid===w.gid);
+    inv.hidden=false;
+    $("inviteText").textContent=`${safeName(who)}さんが「${genreLabel(w.genre,w.mode,w.bmode)}・${lvName(w.lv,w.genre)}」で待っています`;
   } else inv.hidden=true;
 }
 function findOpenGame(){
@@ -1357,10 +1363,33 @@ function findOpenGame(){
   return gs[0];
 }
 
+// ---- みんなOKで進む ----
+function okLine(id, me, rows){
+  const box=$(id); if(!rows.length){ box.textContent=""; return; }
+  const all=[[S.name||"名無し",me],...rows]; const ok=all.filter(r=>r[1]).map(r=>r[0]+" OK！"); const rest=all.length-ok.length;
+  box.textContent=ok.length? ok.join("　")+(rest?`　（あと${rest}人）`:"") : "";
+}
+function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&[1,2,3,4].includes(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
+function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="lobby"); }
+function startFromWait(w){ const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,0,bm,null,w.cnt); }
+function lobbyCheck(){
+  const lp=lobbyPeers(); if(!S.wait){ okLine("waitStart",false,[]); return; }
+  const h=hostWait(); if(h && h.gid>S.wait.gid){ S.wait={...h}; push(); }
+  if(lp.every(pr=>validWait(pr.wait)&&pr.wait.gid===S.wait.gid)){ startFromWait(S.wait); return; }
+  okLine("waitStart", true, lp.map(pr=>[safeName(pr), !!(validWait(pr.wait)&&pr.wait.gid===S.wait.gid)]));
+}
+function hostWait(){ return lobbyPeers().map(pr=>validWait(pr.wait)).filter(Boolean).sort((a,b)=>b.gid.localeCompare(a.gid))[0]||null; }
+function againPeers(){ return gamePeers().filter(pr=>pr.view==="game"||pr.view==="result"); }
+function againCheck(){
+  const ps=againPeers(); if(S.again!==S.gid){ okLine("waitAgain",false,ps.length&&ps.some(pr=>pr.again===S.gid)?ps.map(pr=>[safeName(pr),pr.again===S.gid]):[]); return; }
+  if(ps.every(pr=>pr.again===S.gid)){ const g=(S.gid+"r").slice(-30); S.again=null; $("againBtn").disabled=false; $("waitAgain").textContent=""; startGame(g,S.genre,S.mode,S.lv,0); return; }
+  okLine("waitAgain", true, ps.map(pr=>[safeName(pr),pr.again===S.gid]));
+}
+
 // ---- game ----
 function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
   S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; S.cnt=(cnt===undefined?S.cnt:cnt); if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
-  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi);
+  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi); S.wait=null; S.again=null; $("againBtn").disabled=false; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; $("waitAgain").textContent="";
   S.view="game"; show("game"); beginAsk();
 }
 function beginAsk(){
@@ -1512,7 +1541,7 @@ function buildStamps(){ const box=$("stamps"); STAMPS.forEach(e=>{ const b=el("b
   b.onclick=()=>{ if(S.phase!=="reveal") return; S.stampN++; S.stamp={q:S.qi,e,n:S.stampN}; push(); renderAnswers(); }; box.append(b); }); }
 function next(){
   if(S.phase!=="reveal") return;
-  S.ready=S.qi; $("nextBtn").disabled=true; $("waitNext").textContent="ほかの人を待っています…"; push(); check();
+  S.ready=S.qi; $("nextBtn").disabled=true; push(); check();
 }
 function allReady(){
   return gamePeers().every(pr=> (typeof pr.ready==="number" && pr.ready>=S.qi) || (typeof pr.qi==="number" && pr.qi>S.qi) || pr.view==="result");
@@ -1554,8 +1583,8 @@ function renderGamePlayers(){
   });
 }
 function check(){
-  if(S.view==="lobby"){ renderLobby(); return; }
-  if(S.view==="result"){ renderResult(); return; }
+  if(S.view==="lobby"){ renderLobby(); lobbyCheck(); return; }
+  if(S.view==="result"){ renderResult(); againCheck(); return; }
   const now=Date.now();
   if(S.phase==="ask"){
     $("passBtn").disabled=!!S.ans||!!S.loading;
@@ -1565,7 +1594,8 @@ function check(){
   } else if(S.phase==="reveal"){
     $("skipBtn").hidden=true;
     renderAnswers();
-    if(S.ready>=S.qi && (allReady() || now-S.revealAt>NEXT_MAX_MS)) advance();
+    if(S.ready>=S.qi && allReady()) advance();
+    else okLine("waitNext", S.ready>=S.qi, gamePeers().map(pr=>[safeName(pr),(typeof pr.ready==="number"&&pr.ready>=S.qi)||(typeof pr.qi==="number"&&pr.qi>S.qi)||pr.view==="result"]));
   }
   renderGamePlayers();
 }
@@ -1593,8 +1623,13 @@ document.addEventListener("pointerdown",()=>{ if(!muted) ac(); },{once:true});
 $("muteBtn").onclick=()=>{ muted=!muted; try{localStorage.setItem("nb-mute",muted?"1":"0")}catch(e){} renderMute(); if(!muted){ac(); se("ok");} };
 renderMute();
 { const NICKS=["本能寺の火元","関ヶ原の寝返り役","鳴かぬなら様子見","いい国つくろう係","黒船の見張り番","年号の亡者","ハシブトの親分","カワセミ界のエース","ヒヨドリ通訳","モズの早にえ係"]; $("nick").placeholder="例："+NICKS[Math.floor(Math.random()*NICKS.length)]; }
-$("startBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
-$("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
+$("startBtn").onclick=()=>{
+  if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; push(); check(); return; }
+  if(!lobbyPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,0); return; }
+  const h=hostWait();
+  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode};
+  $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
+$("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
   const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V";
@@ -1603,9 +1638,11 @@ $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
 $("creditLink").onclick=()=>openCredits(null);
 $("creditBack").onclick=()=>show(creditFrom);
 $("nextBtn").onclick=next;
-$("againBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
+$("againBtn").onclick=()=>{
+  if(!againPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,0); return; }
+  S.again=S.gid; $("againBtn").disabled=true; push(); check(); };
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
-function toLobby(){ stopVoice(); S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
+function toLobby(){ stopVoice(); S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
 $("lobbyBtn").onclick=toLobby;
 { let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="やめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="やめる";},3000); }; }
 
