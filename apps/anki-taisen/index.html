@@ -217,6 +217,15 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 #askArea{flex:1}
 #passBtn{margin-top:auto;width:100%}
 #keypad .key.zero{grid-column:span 2}
+h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box-shadow:none;text-shadow:none}
+.more{text-align:center}.more summary{cursor:pointer;padding:6px}
+.cgrp{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:4px 14px}
+.cgrp summary{cursor:pointer;font-weight:800;padding:10px 0}
+.citem{border-top:1px solid var(--line);padding:8px 0;font-size:13px;line-height:1.6}
+.citem b{display:block;font-size:14px}
+.citem a{color:var(--acc-ink)}
+.citem.hit{background:var(--soft-acc);border-radius:8px;padding:8px}
+.clink{font-size:12px;background:transparent;color:var(--card-muted);text-decoration:underline;padding:2px 0;align-self:flex-start}
 [hidden]{display:none!important}
 </style>
 
@@ -257,10 +266,6 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
         <span class="small muted">出題数（ランダムに選ばれます）</span>
         <div class="levels" id="counts"></div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px">
-        <span class="small muted">配色</span>
-        <div class="levels genres" id="tones"></div>
-      </div>
       <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
     </div>
 
@@ -269,6 +274,10 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
       <div class="players" id="lobbyPlayers"></div>
       <p class="small muted" id="roomNote">接続を確認しています…</p>
     </div>
+    <details class="more"><summary class="small muted">配色を変える</summary>
+      <div class="levels genres" id="tones" style="margin-top:8px"></div>
+    </details>
+    <p class="small muted" style="text-align:center"><button class="clink" id="creditLink" type="button" style="align-self:center">写真・鳴き声・資料の出典（クレジット）</button></p>
   </section>
 
   <!-- 出題 -->
@@ -296,6 +305,14 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
       <button class="btn" id="nextBtn" type="button">次へ</button>
       <div class="waiting" id="waitNext"></div>
     </div>
+  </section>
+
+  <!-- 出典 -->
+  <section id="credits" hidden style="display:flex;flex-direction:column;gap:14px">
+    <h1 class="plain">出典・クレジット</h1>
+    <p class="small muted">写真は Wikimedia Commons、鳴き声は xeno-canto、歴史の資料画像は Wikimedia Commons から使わせてもらっています。撮影者・録音者とライセンスを一覧にしています（CC BY など）。名前の先のリンクから元のページに行けます。</p>
+    <div id="creditList" style="display:flex;flex-direction:column;gap:10px"></div>
+    <button class="btn" id="creditBack" type="button">もどる</button>
   </section>
 
   <!-- 結果 -->
@@ -1083,14 +1100,14 @@ function choicesFor(deck,qi,gid){
   return shuffle([c].concat(picks),r).map(x=>x.name);
 }
 const MODES=[{id:"J",name:"日本史"},{id:"W",name:"世界史"},{id:"M",name:"ミックス"}];
-const BMODES=[{id:"V",name:"写真＋鳴き声"}];
+const BMODES=[{id:"V",name:"写真＋鳴き声"},{id:"S",name:"鳴き声のみ"}];
 const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"むずかしい"},{lv:4,name:"今月の鳥"}];
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
-function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P",pi:(c.m.imgs&&c.m.imgs.length>1)?Math.floor(rng(gid+":img:"+c.key)()*c.m.imgs.length):0})); }
+function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="S"&&c.m.snd)?"V":(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P",pi:(c.m.imgs&&c.m.imgs.length>1)?Math.floor(rng(gid+":img:"+c.key)()*c.m.imgs.length):0})); }
 const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.length-1)]:c.m.img;
 function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
   if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
-  if(isPick(genre)){ const m=new Date().getMonth()+1; const dk=birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,hasVoice(genre)?bmode:"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
+  if(isPick(genre)){ const m=new Date().getMonth()+1; const dk=birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img && !(bmode==="S"&&hasVoice(genre)&&!c.m.snd)),gid,hasVoice(genre)?bmode:"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
 }
@@ -1190,16 +1207,23 @@ function preloadNext(){
   if(n.m.snd) loadVoice(n.m.snd[0]);
   if(n.m.img){ const im=new Image(); im.src=imgOf(n)[0]; }
 }
-function creditFor(c){
-  const p=el("p","credit reveal-x"); const add=(label,who,lic,url,extra)=>{
-    if(p.childNodes.length) p.append(document.createElement("br"));
-    p.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／");
-    const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="写真"?"Wikimedia Commons":"xeno-canto"; p.append(a); };
-  if(c.m.imgs&&c.m.imgs.length>1) c.m.imgs.forEach(g=>add("写真",g[1],g[2],g[3],g[4]));
-  else if(c.m.img) add("写真",c.m.img[1],c.m.img[2],c.m.img[3]);
-  if(c.m.snd) add("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4]);
-  return p;
-}
+function creditFor(c){ return creditLink(c.key); }
+function creditLink(key){ const b=el("button","clink reveal-x","写真・鳴き声の出典"); b.type="button"; b.onclick=()=>openCredits(key); return b; }
+const CRGENRES=[["B","関東の鳥"],["D","北海道の鳥"],["T","関東の木"],["J","歴史の資料画像（日本史）"],["W","歴史の資料画像（世界史）"]];
+function crLine(label,who,lic,url,extra){ const d=el("div"); d.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／"); const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="鳴き声"?"xeno-canto":"Wikimedia Commons"; d.append(a); return d; }
+let creditsBuilt=false;
+function buildCredits(){ if(creditsBuilt) return; creditsBuilt=true; const box=$("creditList");
+  CRGENRES.forEach(([g,title])=>{ const det=el("details","cgrp"); det.id="cg-"+g; det.append(el("summary",null,title)); let n=0;
+    ALL[g].forEach(c=>{ const it=el("div","citem"); it.id="cr-"+c.key; it.append(el("b",null,c.kind==="year"?yearText(c.y)+"　"+c.name:c.name));
+      if(c.kind==="year"){ if(!c.doc) return; it.append(crLine("資料",c.doc[1],c.doc[2],c.doc[3])); }
+      else { const im=(c.m.imgs&&c.m.imgs.length>1)?c.m.imgs:(c.m.img?[c.m.img]:[]); im.forEach(x=>it.append(crLine("写真",x[1],x[2],x[3],x[4]))); if(c.m.snd) it.append(crLine("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4])); if(!im.length&&!c.m.snd) return; }
+      det.append(it); n++; });
+    if(n) box.append(det); }); }
+let creditFrom="lobby";
+function openCredits(key){ buildCredits(); creditFrom=S.view==="credits"?creditFrom:S.view; show("credits");
+  document.querySelectorAll(".citem.hit").forEach(n=>n.classList.remove("hit"));
+  const t=key?document.getElementById("cr-"+key):null;
+  if(t){ const g=t.closest("details"); if(g) g.open=true; t.classList.add("hit"); t.scrollIntoView({block:"center"}); } }
 
 const $=id=>document.getElementById(id);
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -1209,14 +1233,14 @@ const S={
   lv: Number(store.get("nb-lv"))||1, cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
   mode: store.get("nb-mode")||"J",
   tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
-  genre: store.get("nb-genre")||"H", bmode: store.get("nb-bmode")||"P", choices:[],
+  genre: store.get("nb-genre")||"H", bmode: store.get("nb-bm2")||"V", choices:[],
   view:"lobby",
   gid:null, deck:[], qi:0, phase:"ask", input:"", ans:null, ready:-1,
   score:0, log:[], askStart:0, revealAt:0, custom:null, hist:"", stamp:null, stampN:0,
 };
 if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
 if(!GENRES.some(g=>g.id===S.genre)) S.genre="H";
-S.bmode="V";
+if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="V";
 let room=null;
 
 function myPresence(){
@@ -1253,8 +1277,8 @@ function renderPickers(){
   const isB=isPick(S.genre);
   $("modesLabel").textContent=isB?"出題のしかた":"出題範囲";
   $("modes").style.gridTemplateColumns=`repeat(${isB?2:3},1fr)`;
-  $("modesBox").style.display=isB?"none":"flex";
-  if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bmode",k); renderPickers(); push();});
+  $("modesBox").style.display=(!isB||hasVoice(S.genre))?"flex":"none";
+  if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bm2",k); renderPickers(); push();});
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
   const lvs=isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
@@ -1264,8 +1288,8 @@ function renderPickers(){
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
-  if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
-  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
+  if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
+  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   const d=deckFor(S.mode,S.lv);
   $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
 }
@@ -1278,7 +1302,7 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){return g==="B"?"関東の鳥":g==="D"?"北海道の鳥":g==="T"?"関東の木":"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){const vo=bm==="S"?"・鳴き声のみ":"";return g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
 function lvName(lv,g){ if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -1421,7 +1445,7 @@ function reveal(){
       b.onclick=()=>{ views.forEach(([,w],j)=>{ w.hidden=j!==i; tabs.children[j].setAttribute("aria-pressed",String(j===i)); }); }; tabs.append(b); });
     card.insertBefore(tabs,yr); card.insertBefore(mp,yr); card.insertBefore(im,yr); }
   else if(mp||im) card.insertBefore(mp||im, yr);
-  if(c.doc){ const cr=el("p","credit reveal-x"); cr.append(`資料：${c.doc[1]}／${c.doc[2]}／`); const a=document.createElement("a"); a.href=c.doc[3]; a.target="_blank"; a.rel="noopener"; a.textContent="Wikimedia Commons"; cr.append(a); card.append(cr); }
+  if(c.doc){ card.append(creditLink(c.key)); }
   $("askArea").hidden=true; $("revealArea").hidden=false; $("waitAsk").textContent="";
   renderAnswers(); push();
 }
@@ -1515,7 +1539,7 @@ function check(){
 }
 $("passBtn").onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(null); if(S.deck[S.qi].kind==="choice") renderChoices(); } };
 $("skipBtn").onclick=()=>{ S.skip=S.qi; push(); check(); };
-function show(v){ ["lobby","game","result"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
+function show(v){ ["lobby","game","result","credits"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
 
 function buildKeypad(){
   const box=$("keypad");
@@ -1541,9 +1565,11 @@ $("startBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
-  const bm="V";
+  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V";
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
   startGame(g.gid,genre,mode,lv,qi,bm,cu,cnt); };
+$("creditLink").onclick=()=>openCredits(null);
+$("creditBack").onclick=()=>show(creditFrom);
 $("nextBtn").onclick=next;
 $("againBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
