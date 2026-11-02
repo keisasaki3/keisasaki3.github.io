@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#241c16">
+<style>body{margin:0}img{max-width:100%}</style>
+<script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<script>
+// 対戦のつなぎ役: Supabase Realtime presence（表は使わない）。publishable key は公開してよい値。
+// ?room=あいことば で部屋を分けられる（省略時は main）。
+window.ANKI_SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx",
+  room:(new URLSearchParams(location.search).get("room")||"main").replace(/[^\w-]/g,"").slice(0,32)||"main"};
+</script>
+</head>
+<body>
+<title>激突！暗記大戦</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: 胡桃材の卓に一枚の札。上に札、下に手元のテンキー。片手で遊べる縦一列。単一テーマ（夜の座敷）で配色を固定。 */
+:root{
+  color-scheme:dark;
+  --table:#241c16; --table-2:#30261e; --ink:#efe6d4; --muted:#b5a68e;
+  --card:#f2e9d6; --card-ink:#2e2219; --card-muted:#7d6a55;
+  --shu:#7a4a2b; --kin:#c8a464; --ok:#8fae74; --ng:#c98c78; --line:#4a3b2e;
+  --digits:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+  --mincho:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic",Meiryo,sans-serif;
+}
+html,body{height:100%}
+body{background:var(--table);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--table)}
+.app{max-width:520px;margin:0 auto;min-height:100%;box-sizing:border-box;padding-block:16px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--digits);font-weight:800;font-size:30px;margin:0;letter-spacing:.04em;line-height:1.3}
+h1 span{color:var(--kin)}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--kin);outline-offset:2px}
+.btn{background:var(--shu);color:#fff;font-weight:700;padding:13px 18px;border-radius:10px;font-size:16px}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.panel{background:var(--table-2);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+label{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
+input,select{font:inherit;font-size:16px;background:var(--table);color:var(--ink);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px}
+.levels{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.lv{background:var(--table);border:1.5px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.lv b{font-size:15px}
+.lv span{font-size:12px;color:var(--muted)}
+.lv[aria-pressed="true"]{border-color:var(--kin);background:#2a2a2a00;box-shadow:inset 0 0 0 1px var(--kin)}
+.players{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:var(--table);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-size:13px;display:inline-flex;gap:6px;align-items:center}
+.chip.me{border-color:var(--kin)}
+.chip .s{font-family:var(--digits);color:var(--kin)}
+.chip .st{font-size:11px;color:var(--muted)}
+.chip .st.ok{color:var(--ok)}
+.invite{background:var(--kin);color:#2a1d10;border-radius:10px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.invite button{background:#1a1408;color:var(--kin);font-weight:700;padding:8px 14px;border-radius:8px}
+/* game */
+.bar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.bar .prog{font-family:var(--digits);color:var(--ink);font-size:15px}
+.timer{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--kin);width:100%;transform-origin:left}
+.card{background:var(--card);color:var(--card-ink);border-radius:14px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:0 10px 30px #0006;position:relative;overflow:hidden}
+.card::after{content:"";position:absolute;inset:6px;border:1px solid #c2ab84;border-radius:10px;pointer-events:none}
+.card .era{font-size:12px;letter-spacing:.2em;color:var(--shu);font-weight:700}
+.card .ev{font-family:var(--mincho);font-weight:700;font-size:clamp(22px,6.4vw,30px);line-height:1.35;text-wrap:balance}
+.card .en{color:var(--card-muted);font-size:14px;line-height:1.4}
+.flip{animation:flip .45s ease-out}
+@keyframes flip{from{transform:perspective(700px) rotateY(80deg);opacity:.2}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.flip{animation:none}}
+.slots{display:flex;justify-content:center;gap:8px}
+.slot{font-weight:700;width:54px;height:66px;border-radius:10px;background:var(--table-2);border:2px solid var(--line);display:grid;place-items:center;font-family:var(--digits);font-size:34px}
+.slot.cur{border-color:var(--kin)}
+.keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.key{font-weight:600;background:var(--table-2);border:1px solid var(--line);border-radius:12px;height:58px;font-family:var(--digits);font-size:26px}
+.key:active{background:var(--line)}
+.key.fn{font-family:var(--body);font-size:15px;font-weight:700}
+.key.pass{color:var(--muted)}
+.waiting{text-align:center;color:var(--muted);font-size:14px;min-height:1.7em}
+/* reveal */
+.year{font-family:var(--digits);font-weight:800;font-variant-numeric:tabular-nums;font-size:56px;line-height:1;color:var(--shu);letter-spacing:.02em}
+.year small{font-size:16px;margin-left:4px;color:var(--card-muted);font-family:var(--body)}
+.expl{font-size:14.5px;line-height:1.85;color:var(--card-ink)}
+.goro{background:#fff6;border:1px dashed #c9b48f;border-radius:8px;padding:6px 10px;font-size:14px}
+.goro b{color:var(--shu)}
+.answers{display:flex;flex-direction:column;gap:6px}
+.arow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;background:var(--table-2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
+.arow .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arow .v{font-family:var(--digits);font-size:18px}
+.mark{font-weight:700;font-size:13px}
+.mark.ok{color:var(--ok)} .mark.ng{color:var(--ng)} .mark.near{color:var(--kin)}
+/* result */
+.banzuke{display:flex;flex-direction:column;gap:8px}
+.rank{display:grid;grid-template-columns:3.2em 1fr auto;gap:10px;align-items:center;background:var(--table-2);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.rank .r{font-family:var(--mincho);font-weight:800;color:var(--kin)}
+.rank .sc{font-family:var(--digits);font-size:22px}
+.rank .nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.miss{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+.miss div{display:grid;grid-template-columns:3.4em 1fr;gap:8px}
+.miss b{font-family:var(--digits);font-weight:700;color:var(--kin)}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row > *{flex:1 1 140px}
+.gap{font-size:12.5px;color:var(--card-muted);margin-top:-2px}
+.flow{display:flex;flex-direction:column;gap:6px;margin-top:6px;border-top:1px solid #d9c9a8;padding-top:10px}
+.fr{font-size:15px;line-height:1.7}
+.fr.arrow{padding-left:1.3em;text-indent:-1.3em}
+.fr.arrow.dot::before{content:"・";color:var(--shu);font-size:1em;font-weight:700}
+.fr.arrow.cz::before{content:"→";font-size:1em;font-weight:700}
+.fr.arrow::before{content:"▶";color:var(--shu);font-size:.8em;display:inline-block;width:1.6em;text-indent:0}
+.fk{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--shu);border:1px solid #e3b9a8;border-radius:4px;text-align:center;padding:1px 0}
+.fv{min-width:0}
+.bce{align-self:flex-end;font-size:14px;color:var(--muted);padding-bottom:6px}
+.genres{grid-template-columns:repeat(2,1fr)}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.choice{background:var(--table-2);border:1px solid var(--line);border-radius:12px;min-height:56px;padding:8px;font-size:16px;font-weight:700;line-height:1.35}
+.choice.pass{grid-column:1/-1;min-height:44px;color:var(--muted);font-weight:500}
+.choice.picked{border-color:var(--kin);box-shadow:inset 0 0 0 1px var(--kin)}
+.choice:disabled{opacity:.6}
+.choice.picked:disabled{opacity:1}
+.qtext{display:flex;flex-direction:column;gap:6px;font-size:17px;line-height:1.7;font-weight:600}
+.photo{width:100%;aspect-ratio:4/3;object-fit:contain;background:#e4d8bf;border-radius:8px;max-width:100%;display:block}
+.voice{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0 8px}
+.voice .wave{display:flex;gap:4px;align-items:center;height:34px}
+.voice .wave i{width:5px;border-radius:3px;background:var(--shu);height:8px;opacity:.5}
+.voice.playing .wave i{animation:wv 1s ease-in-out infinite;opacity:.9}
+.voice .wave i:nth-child(2n){animation-delay:.2s}.voice .wave i:nth-child(3n){animation-delay:.45s}
+@keyframes wv{0%,100%{height:8px}50%{height:32px}}
+@media (prefers-reduced-motion:reduce){.voice.playing .wave i{animation:none;height:20px}}
+.playbtn{background:var(--shu);color:#fff;font-weight:700;border-radius:999px;padding:9px 18px;font-size:15px}
+.voice .vnote{font-size:12.5px;color:var(--card-muted)}
+.credit{font-size:11px;line-height:1.55;color:var(--card-muted);margin-top:6px}
+.credit a{color:inherit}
+.bname{font-size:34px;font-weight:800;color:var(--shu);line-height:1.2}
+.bsub{font-size:13px;color:var(--card-muted)}
+.arow .v.vs{font-size:14px;font-family:var(--body);font-weight:700}
+.mute{background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:12px;color:var(--muted)}
+.answers.flipin .arow{animation:aflip .5s ease-out both}
+.answers.flipin .arow:nth-child(2){animation-delay:.25s}.answers.flipin .arow:nth-child(3){animation-delay:.5s}.answers.flipin .arow:nth-child(4){animation-delay:.75s}.answers.flipin .arow:nth-child(n+5){animation-delay:1s}
+@keyframes aflip{from{transform:perspective(500px) rotateX(-90deg);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.answers.flipin .arow{animation:none}}
+.arow .stp{font-size:20px;line-height:1;min-width:1.2em;text-align:center}
+.arow .stp.pop{animation:pop .6s ease-out}
+@keyframes pop{0%{transform:scale(.2)}60%{transform:scale(1.5)}100%{transform:scale(1)}}
+.stamps{display:flex;justify-content:center;gap:8px}
+.stamps button{background:var(--table-2);border:1px solid var(--line);border-radius:999px;width:48px;height:40px;font-size:20px}
+.stamps button:active{background:var(--line)}
+.card.big{box-shadow:0 0 0 2px var(--kin),0 10px 30px #0006}
+.bigtag{display:inline-block;background:var(--kin);color:#2a1d10;font-size:11.5px;font-weight:800;letter-spacing:.1em;border-radius:4px;padding:1px 8px;margin-right:6px}
+.mapbox{position:relative;border-radius:8px;overflow:hidden;background:#cfd9d6;border:1px solid #c9b48f}
+.mapbox svg{display:block;width:100%;height:auto}
+.mapbox .land{fill:#e9dcc0;stroke:#a88f6a;stroke-width:.8;vector-effect:non-scaling-stroke}
+.mapbox .pin{fill:var(--shu);stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}
+.mapbox .ring{fill:none;stroke:var(--shu);stroke-width:2;vector-effect:non-scaling-stroke;transform-box:fill-box;transform-origin:center;animation:ring 1.6s ease-out infinite}
+@keyframes ring{from{transform:scale(.4);opacity:1}to{transform:scale(2.2);opacity:0}}
+@media (prefers-reduced-motion:reduce){.mapbox .ring{animation:none}}
+.mapcap{position:absolute;left:8px;bottom:6px;background:#2e2219d9;color:#f2e9d6;font-size:12px;font-weight:700;border-radius:4px;padding:2px 8px;max-width:calc(100% - 16px)}
+.links{display:flex;flex-direction:column;gap:6px;margin-top:8px;border-top:1px solid #d9c9a8;padding-top:10px}
+.links .lh{font-size:11.5px;font-weight:700;letter-spacing:.1em;color:var(--shu)}
+.chain{display:flex;flex-direction:column;align-items:stretch;gap:0}
+.node{border:1px solid #cdb995;background:#fff8;border-radius:8px;padding:5px 10px;font-size:13.5px;line-height:1.45}
+.node b{font-weight:800;color:var(--shu);margin-right:6px;font-variant-numeric:tabular-nums}
+.node.me{background:var(--shu);color:#fff;border-color:var(--shu)}
+.node.me b{color:#f2e0b8}
+.node .soon{font-size:10.5px;color:var(--card-muted);border:1px solid #cdb995;border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap}
+.edge{font-size:12px;color:var(--card-muted);padding:3px 0 3px 22px;position:relative}
+.edge::before{content:"";position:absolute;left:12px;top:0;bottom:0;border-left:2px solid #c2ab84}
+.edge::after{content:"▼";position:absolute;left:7.5px;bottom:-4px;font-size:9px;color:#a88f6a}
+.terrain{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:4px}
+.terrain div{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10.5px;color:#b3a184;border-radius:6px;padding:4px 0 3px;background:#0000}
+.terrain svg{width:26px;height:20px}
+.terrain .on{background:#7a4a2b1f;color:var(--shu);font-weight:700}
+.terrain svg *{fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.vtabs{display:flex;gap:4px;margin-bottom:-2px}
+.vtabs button{font-size:12px;font-weight:700;padding:3px 12px;border-radius:999px;background:transparent;border:1px solid #c9b48f;color:var(--card-muted)}
+.vtabs button[aria-pressed="true"]{background:var(--shu);border-color:var(--shu);color:#fff}
+.docimg{margin:0;display:flex;flex-direction:column;gap:3px}
+.docimg img{width:100%;max-height:260px;object-fit:contain;background:#e4d8bf;border-radius:8px;display:block}
+.docimg figcaption{font-size:12.5px;color:var(--card-muted)}
+.rules{margin:0;padding-left:1.2em;color:var(--muted);line-height:1.8}
+.habnote{font-size:13.5px;line-height:1.6}
+.hard{display:flex;flex-direction:column;gap:4px;font-size:13.5px}
+[hidden]{display:none!important}
+</style>
+
+<div class="app" id="app">
+
+  <!-- ロビー -->
+  <section id="lobby" style="display:flex;flex-direction:column;gap:14px">
+    <h1>激突！<span>暗記</span>大戦</h1>
+    <ul class="rules">
+      <li>歴史は年号、鳥は名前を当てる</li>
+      <li>1問10秒。全員答えたら答え合わせ</li>
+      <li>正解で1点。早押しの差はなし</li>
+    </ul>
+
+    <div class="invite" id="invite" hidden>
+      <span id="inviteText"></span>
+      <button id="joinBtn" type="button">参加する</button>
+    </div>
+
+    <div class="panel">
+      <label for="nick">あなたの名前
+        <input id="nick" maxlength="12" placeholder="例：けいた" autocomplete="off">
+      </label>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span class="small muted">ジャンル</span>
+        <div class="levels genres" id="genres"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px" id="modesBox">
+        <span class="small muted" id="modesLabel">出題範囲</span>
+        <div class="levels" id="modes"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span class="small muted">難易度（出題数）</span>
+        <div class="levels" id="levels"></div>
+        <p class="small muted" id="rangeNote"></p>
+      </div>
+      <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
+    </div>
+
+    <div class="panel">
+      <span class="small muted">いまこのページを開いている人</span>
+      <div class="players" id="lobbyPlayers"></div>
+      <p class="small muted" id="roomNote">接続を確認しています…</p>
+    </div>
+  </section>
+
+  <!-- 出題 -->
+  <section id="game" hidden style="display:flex;flex-direction:column;gap:12px">
+    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute" id="muteBtn" type="button" aria-pressed="true">音：オン</button></div>
+    <div class="players" id="gamePlayers"></div>
+    <div class="timer"><i id="timerBar"></i></div>
+    <div class="card" id="card">
+      <span class="era" id="cEra"></span>
+      <span class="ev" id="cEv"></span>
+      <span class="en" id="cEn"></span>
+    </div>
+
+    <div id="askArea" style="display:flex;flex-direction:column;gap:12px">
+      <div class="slots" id="slots"></div>
+      <div class="waiting" id="waitAsk"></div>
+      <div class="keypad" id="keypad"></div>
+      <div class="choices" id="choices" hidden></div>
+    </div>
+
+    <div id="revealArea" hidden style="display:flex;flex-direction:column;gap:12px">
+      <div class="answers" id="answers"></div>
+      <div class="stamps" id="stamps"></div>
+      <button class="btn" id="nextBtn" type="button">次へ</button>
+      <div class="waiting" id="waitNext"></div>
+    </div>
+  </section>
+
+  <!-- 結果 -->
+  <section id="result" hidden style="display:flex;flex-direction:column;gap:14px">
+    <h1>番付</h1>
+    <div class="banzuke" id="banzuke"></div>
+    <div class="panel">
+      <span class="small muted">あなたが外した札（復習用）</span>
+      <div class="miss" id="missList"></div>
+      <button class="btn" id="revengeBtn" type="button" hidden>外した札だけでリベンジ戦</button>
+    </div>
+    <div class="panel" id="hardBox" hidden>
+      <span class="small muted">全員が外した今日の難問</span>
+      <div class="hard" id="hardList"></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="againBtn" type="button">もう一度</button>
+      <button class="btn ghost" id="lobbyBtn" type="button">ロビーへ</button>
+    </div>
+  </section>
+
+</div>
+
+<script src="map.js"></script>
+<script>
+// 形式: [年(紀元前はマイナス), 難易度(1やさしい 2ふつう 3むずかしい), 出来事, 英名, 時代/地域, きっかけ, できごと, その後, 語呂]
+const JP = [
+[57,2,"奴国の王が金印を授かる","King of Na receives a gold seal from Han China","弥生","小さな国々が争い、強い後ろ盾が欲しかった","九州北部の奴国王が後漢に使いを送り、金印を授かる","日本が文字の記録に初めて登場。金印は江戸時代に志賀島で見つかる"],
+[239,1,"卑弥呼が魏に使いを送る","Himiko sends envoys to the Wei court","弥生","国内の争いを、大国の権威で抑えたかった","邪馬台国の女王・卑弥呼が魏に使いを送り「親魏倭王」の称号を得る","中国の歴史書『魏志』倭人伝に記録が残る。邪馬台国の場所は今も論争中"],
+[538,1,"仏教が伝わる","Buddhism arrives in Japan","古墳","朝鮮半島の百済が、日本の助けを求めていた","百済から仏像と経典が贈られる（552年説もある）","受け入れをめぐり蘇我氏と物部氏が争い、勝った蘇我氏が権力を握る"],
+[593,2,"聖徳太子が摂政になる","Prince Shōtoku becomes regent","飛鳥","豪族の力が強く、天皇中心の国にまとめたかった","推古天皇の摂政となり、蘇我馬子と組んで政治を動かす","冠位十二階・十七条の憲法・遣隋使と、改革が次々に始まる"],
+[604,3,"十七条の憲法","Seventeen-Article Constitution","飛鳥","豪族を「天皇に仕える役人」に変えたかった","「和をもって貴しとなす」で始まる役人の心得を定める","家柄より能力で人を使う国づくりの方向が示される"],
+[607,2,"小野妹子を隋に送る","Ono no Imoko sent as envoy to Sui China","飛鳥","中国の進んだ制度を学び、対等な関係を結びたかった","「日出づる処の天子」の国書を届け、隋の皇帝を怒らせる","留学生が中国の制度を持ち帰り、のちの大化の改新を支える"],
+[645,1,"乙巳の変（大化の改新）","Isshi Incident / Taika Reform","飛鳥","蘇我氏が天皇をしのぐほどの力を持っていた","中大兄皇子と中臣鎌足が蘇我入鹿を討つ","土地と人を国のものにする改革が始まり、天皇中心の国へ","虫殺し（645）の大化の改新"],
+[663,3,"白村江の戦い","Battle of Baekgang (Hakusukinoe)","飛鳥","友好国の百済が、唐と新羅に滅ぼされた","百済を助けに大軍を送るが、唐・新羅の連合軍に大敗","侵攻に備えて九州に守りを築き、国内の体制固めを急ぐ"],
+[672,2,"壬申の乱","Jinshin War","飛鳥","天智天皇の死後、弟と息子が皇位を争った","古代最大の内乱。弟の大海人皇子が勝つ","天武天皇として強い権力を握り、律令国家づくりを一気に進める"],
+[701,2,"大宝律令","Taihō Code","飛鳥","唐のように法で治める国をつくりたかった","刑法（律）と行政法（令）がそろう","戸籍をもとに税を集める律令国家の仕組みが完成する"],
+[710,1,"平城京に都を移す","Capital moves to Heijō-kyō (Nara)","奈良","律令国家にふさわしい本格的な都が必要だった","唐の長安をまねた碁盤の目の都を奈良につくる","約70年の奈良時代が始まる。地方から税や特産物が集まる","なんと（710）きれいな平城京"],
+[743,3,"墾田永年私財法","Law on permanent ownership of newly cultivated land","奈良","人口が増え、配る田んぼ（口分田）が足りなくなった","新しく開墾した土地は永久に自分のものにしてよいと定める","貴族や寺社が私有地（荘園）を広げ、公地公民が崩れていく"],
+[752,3,"東大寺の大仏が完成","Great Buddha of Tōdai-ji consecrated","奈良","疫病や反乱が続き、聖武天皇は仏の力にすがった","奈良の東大寺で大仏の開眼供養が行われる","巨額の出費で国の財政が苦しくなる"],
+[794,1,"平安京に都を移す","Capital moves to Heian-kyō (Kyoto)","平安","奈良の大寺院が政治に口を出し、桓武天皇は距離を置きたかった","京都に新しい都・平安京をつくる","約400年の平安時代へ。京都はこの後1000年以上都であり続ける","鳴くよ（794）ウグイス平安京"],
+[894,2,"遣唐使をやめる","Missions to Tang China suspended","平安","唐が衰え、命がけの航海に見合わなくなった","菅原道真の提案で遣唐使の派遣を停止する","日本風の国風文化が育ち、かな文字や『源氏物語』が生まれる","白紙（894）に戻そう遣唐使"],
+[939,3,"平将門の乱","Rebellion of Taira no Masakado","平安","地方で武士が力をつけ、朝廷の支配がゆるんでいた","関東で平将門が反乱を起こし「新皇」を名乗る","鎮圧したのも武士。朝廷は武士に頼らざるを得なくなる"],
+[1016,2,"藤原道長が摂政になる","Fujiwara no Michinaga becomes regent","平安","娘を天皇の后にし、孫を天皇にするのが権力への道だった","道長が孫の天皇の摂政となり、権力の頂点に立つ","「この世をば わが世とぞ思ふ」と詠んだ摂関政治の全盛期"],
+[1086,3,"白河上皇が院政を始める","Retired Emperor Shirakawa begins cloistered rule","平安","藤原氏の摂関政治から、天皇家が実権を取り戻したかった","位を譲った上皇が、院で政治の実権を握り続ける","上皇が警護に武士を使い、武士が中央の政治に入り込む"],
+[1167,2,"平清盛が太政大臣になる","Taira no Kiyomori becomes Grand Minister","平安","保元・平治の乱に勝ち、平氏が武士の頂点に立った","清盛が武士として初めて太政大臣になる","一族で高い位を独占して反感を買い、源氏の挙兵を招く"],
+[1185,1,"壇ノ浦の戦い（平氏滅亡）","Battle of Dan-no-ura","鎌倉","平氏の独占に反発し、源頼朝らが挙兵した（源平合戦）","源義経らが壇ノ浦で平氏を滅ぼす","頼朝が全国に守護・地頭を置き、鎌倉幕府が実質的に成立","いい箱（1185）つくろう鎌倉幕府"],
+[1192,2,"源頼朝が征夷大将軍になる","Minamoto no Yoritomo becomes shōgun","鎌倉","武士の政権を朝廷に正式に認めさせたかった","頼朝が朝廷から征夷大将軍に任じられる","かつて鎌倉幕府成立とされた年。今は1185年説が主流","いい国（1192）つくろう（昔の覚え方）"],
+[1221,2,"承久の乱","Jōkyū War","鎌倉","後鳥羽上皇が、朝廷の力を取り戻そうとした","上皇が挙兵するが、北条政子の演説で結束した幕府軍に敗れる","幕府が京都に六波羅探題を置き、朝廷を見張るようになる"],
+[1232,3,"御成敗式目","Goseibai Shikimoku (Kamakura legal code)","鎌倉","武士どうしの土地争いが増え、裁く基準が必要だった","執権・北条泰時が武士のための最初の法律をつくる","以後の武家の法律の手本になる"],
+[1274,1,"元寇（文永の役）","First Mongol invasion of Japan","鎌倉","大帝国となった元（モンゴル）が日本に服属を求め、幕府が拒んだ","元と高麗の軍が九州北部に攻め込む","集団戦法や火薬に苦戦するが、元軍は引き揚げる。1281年に2度目が来る"],
+[1281,3,"弘安の役（元寇2回目）","Second Mongol invasion of Japan","鎌倉","元が再び大軍を送ってきた","防塁と暴風雨で元軍を退ける","勝っても領地は増えず、御家人に恩賞を払えず不満がたまる"],
+[1333,1,"鎌倉幕府がほろびる","Fall of the Kamakura shogunate","鎌倉","元寇の恩賞不足などで、御家人の不満が高まっていた","後醍醐天皇の呼びかけに足利尊氏らが応じ、幕府を倒す","後醍醐天皇が天皇中心の政治（建武の新政）を始める","一味散々（1333）鎌倉幕府"],
+[1334,3,"建武の新政","Kenmu Restoration","室町","幕府を倒した後醍醐天皇が、天皇中心の政治を目指した","公家を重んじる政治を始める","武士の不満が爆発し、わずか2年あまりで崩れる"],
+[1338,1,"室町幕府が始まる","Ashikaga Takauji founds the Muromachi shogunate","室町","建武の新政に不満な武士が、足利尊氏のもとに集まった","尊氏が京都で征夷大将軍となる","後醍醐天皇は吉野へ逃れ、約60年の南北朝の争いが続く"],
+[1392,3,"南北朝の統一","Reunification of the Northern and Southern Courts","室町","3代将軍・足利義満の力が強まり、南朝は弱っていた","義満が南朝と北朝を一つにまとめる","幕府の最盛期。義満は金閣を建て、明との貿易を始める"],
+[1404,3,"日明貿易（勘合貿易）が始まる","Tally trade with Ming China begins","室町","明は海賊の倭寇に悩み、幕府は貿易の利益が欲しかった","「勘合」という合い札で正式な船を見分けて貿易する","幕府は大きな利益を得る"],
+[1467,1,"応仁の乱","Ōnin War","室町","将軍のあとつぎ争いに、有力大名どうしの対立が絡んだ","京都を戦場に11年続く大乱","幕府の権威が失われ、実力で奪い合う戦国時代へ","人の世むなし（1467）応仁の乱"],
+[1543,1,"鉄砲が伝わる","Firearms arrive at Tanegashima","戦国","ポルトガル人がアジアの海に進出していた","種子島に流れ着いた船のポルトガル人が鉄砲を伝える","すぐに国内で大量生産され、戦い方と城のつくりが変わる","以後予算（1543）増える鉄砲伝来"],
+[1549,2,"キリスト教が伝わる","Francis Xavier brings Christianity to Japan","戦国","宗教改革に対抗するカトリックが、アジアでの布教に力を入れていた","イエズス会のザビエルが鹿児島に上陸して布教する","南蛮貿易の利益も求めて、キリシタン大名が現れる","以後よく（1549）広まるキリスト教"],
+[1560,2,"桶狭間の戦い","Battle of Okehazama","戦国","大大名の今川義元が大軍で尾張に攻め込んだ","小大名の織田信長が奇襲で義元を討ち取る","信長の名が広まり、天下統一への出発点になる"],
+[1573,2,"室町幕府がほろびる","Fall of the Muromachi shogunate","戦国","将軍・足利義昭が、信長を倒そうと諸大名と手を組んだ","信長が義昭を京都から追放する","約240年続いた室町幕府が終わる"],
+[1575,3,"長篠の戦い","Battle of Nagashino","戦国","武田氏の騎馬隊が織田・徳川を脅かしていた","織田・徳川連合軍が大量の鉄砲で武田勝頼を破る","鉄砲が戦の主役になったことを示す"],
+[1582,1,"本能寺の変","Honnō-ji Incident","戦国","天下統一目前の信長は、京都に少ない手勢でいた","家臣の明智光秀が本能寺の信長を襲い、信長は自害する","光秀を討った羽柴（豊臣）秀吉が後継者として台頭する","いちごパンツ（1582）の本能寺"],
+[1590,2,"豊臣秀吉の天下統一","Toyotomi Hideyoshi unifies Japan","戦国","秀吉が信長の事業を引き継ぎ、各地の大名を従えていった","小田原の北条氏を降伏させ、全国を統一する","検地と刀狩で、武士と農民の身分を分ける"],
+[1592,3,"朝鮮出兵（文禄の役）","Japanese invasion of Korea","戦国","国内を統一した秀吉が、明の征服を目指した","朝鮮に大軍を送る（1597年にも再出兵）","秀吉の死で撤兵。豊臣家の家臣団に亀裂が入る"],
+[1600,1,"関ヶ原の戦い","Battle of Sekigahara","江戸","秀吉の死後、徳川家康と石田三成が対立した","東軍の家康が西軍の三成に1日で勝つ","家康が天下の実権を握る"],
+[1603,1,"江戸幕府を開く","Tokugawa Ieyasu founds the Edo shogunate","江戸","関ヶ原に勝った家康が、支配を正式なものにしたかった","家康が征夷大将軍となり、江戸に幕府を開く","約260年の江戸時代が始まる"],
+[1615,2,"大坂夏の陣（豊臣家滅亡）","Siege of Osaka (Summer Campaign)","江戸","大坂城の豊臣家が、徳川にとって最後の脅威だった","家康が大坂城を攻め、豊臣家が滅ぶ","武家諸法度で大名を統制し、戦国の世が終わる"],
+[1635,3,"参勤交代を制度にする","Alternate attendance (sankin-kōtai) made law","江戸","幕府は大名の反乱を防ぎたかった","大名に江戸と領地を1年おきに行き来させ、妻子は江戸に置かせる","大名の財政は苦しくなるが、街道や宿場町が栄える"],
+[1637,2,"島原・天草一揆","Shimabara Rebellion","江戸","重い年貢とキリシタンへの弾圧に人々が苦しんでいた","天草四郎を中心に農民らが原城に立てこもる","幕府はキリスト教への警戒を強め、鎖国へ進む"],
+[1639,1,"鎖国の完成","Completion of sakoku (national isolation)","江戸","布教と結びつくポルトガルを、島原・天草一揆の後で恐れた","ポルトガル船の来航を禁止する","貿易相手はオランダと中国だけに。約200年続く"],
+[1716,2,"享保の改革","Kyōhō Reforms","江戸","平和が続き、幕府の財政が苦しくなっていた","8代将軍・徳川吉宗が倹約、新田開発、目安箱などを進める","財政は一時立ち直る。吉宗は「米将軍」と呼ばれた"],
+[1787,3,"寛政の改革","Kansei Reforms","江戸","天明の大飢饉で農村が荒れ、田沼意次の政治への反発も強かった","老中・松平定信が倹約と農村の立て直しを進める","厳しすぎて反感を買い、短期間で終わる"],
+[1825,3,"異国船打払令","Edict to Repel Foreign Ships","江戸","外国船が日本の近海にたびたび現れた","外国船を砲撃して追い払うよう命じる","アヘン戦争で清が負けたと知り、1842年に緩める"],
+[1841,3,"天保の改革","Tenpō Reforms","江戸","天保の大飢饉や一揆で、幕府の支配が揺らいでいた","老中・水野忠邦が倹約令や株仲間の解散を進める","反発が強く2年あまりで失敗。幕府の衰えがあらわに"],
+[1853,1,"ペリー来航","Arrival of Commodore Perry","江戸","アメリカは捕鯨船の補給と中国貿易の中継地が欲しかった","ペリーが軍艦4隻で浦賀に来て開国を求める","幕府が大名に意見を聞き、政治に口を出す勢力が増える","いやでござんす（1853）ペリーさん"],
+[1854,2,"日米和親条約","Convention of Kanagawa","江戸","ペリーが翌年、さらに大きな艦隊で戻ってきた","下田と函館を開き、アメリカ船に燃料や食料を与えると約束する","約200年の鎖国が終わる"],
+[1858,2,"日米修好通商条約","Treaty of Amity and Commerce (Harris Treaty)","江戸","アメリカが本格的な貿易を求め、清の敗北で幕府も焦っていた","大老・井伊直弼が朝廷の許しなしに通商条約を結ぶ","不平等条約で、その改正が明治政府の長い課題になる"],
+[1860,3,"桜田門外の変","Sakuradamon Incident","江戸","井伊直弼が、条約に反対する人々を安政の大獄で処罰した","江戸城の桜田門外で井伊直弼が暗殺される","幕府の権威が大きく傷つく"],
+[1867,2,"大政奉還","Return of political power to the Emperor (Taisei Hōkan)","江戸","薩摩・長州が武力で幕府を倒そうとしていた","15代将軍・徳川慶喜が政権を朝廷に返す","朝廷は王政復古の大号令で応じ、幕府が終わる","一夜むなしく（1867）大政奉還"],
+[1868,1,"明治維新（戊辰戦争）","Meiji Restoration / Boshin War","明治","新政府と旧幕府勢力の対立が戦争になった","戊辰戦争が始まり、五箇条の御誓文で新しい政治の方針を示す","元号は明治に、江戸は東京に。近代国家づくりが始まる","一つやろうや（1868）明治維新"],
+[1871,2,"廃藩置県","Abolition of the han system","明治","藩が残ったままでは、国全体をまとめて動かせなかった","藩を廃止して府県を置き、政府が知事を送る","大名の支配が終わり、中央集権国家になる"],
+[1873,3,"地租改正と徴兵令","Land tax reform and conscription","明治","米で納める税では収入が安定せず、国の軍隊もなかった","土地の値段の3%をお金で納める税と、徴兵制を始める","富国強兵の土台ができる"],
+[1877,2,"西南戦争","Satsuma Rebellion","明治","特権を失った士族の不満が高まっていた","西郷隆盛を中心に鹿児島の士族が反乱を起こす","徴兵の政府軍が勝ち、反政府運動は言論（自由民権運動）へ移る"],
+[1889,1,"大日本帝国憲法の発布","Promulgation of the Meiji Constitution","明治","自由民権運動が国会と憲法を求め、条約改正にも近代的な法が必要だった","伊藤博文がドイツを手本につくった憲法が発布される","アジア初の近代憲法。翌年、帝国議会が開かれる","いち早く（1889）憲法発布"],
+[1894,2,"日清戦争","First Sino-Japanese War","明治","朝鮮をめぐって清と対立した","清と戦って勝ち、下関条約で台湾などを得る","三国干渉で遼東半島を返し、ロシアへの反感が強まる"],
+[1902,3,"日英同盟","Anglo-Japanese Alliance","明治","南に勢力を広げるロシアを、日本もイギリスも警戒した","日本とイギリスが同盟を結ぶ","後ろ盾を得た日本は、ロシアとの戦争に踏み切る"],
+[1904,1,"日露戦争","Russo-Japanese War","明治","満州と朝鮮をめぐってロシアと対立した","ロシアと戦って勝つ","賠償金が取れず、国民の不満が日比谷焼き打ち事件に"],
+[1910,2,"韓国併合","Japanese annexation of Korea","明治","日露戦争後、韓国を保護国にしていた","韓国を併合し、植民地支配を始める","翌年に関税自主権を回復し、条約改正が完成する"],
+[1914,2,"第一次世界大戦に参戦","Japan enters World War I","大正","ヨーロッパで大戦が始まり、日本には日英同盟があった","ドイツに宣戦し、中国の山東半島などを攻める","輸出が急増して大戦景気が起こる"],
+[1918,3,"米騒動と原敬内閣","Rice Riots; Hara Takashi's party cabinet","大正","シベリア出兵を見込んだ買い占めで米の値段が急騰した","富山から始まった米騒動が全国に広がる","内閣が倒れ、初の本格的な政党内閣（原敬）が生まれる"],
+[1923,2,"関東大震災","Great Kantō Earthquake","大正","","9月1日、大地震が首都圏を襲い、火災などで10万人以上が亡くなる","混乱の中で朝鮮人らが殺される事件も起き、経済も大打撃を受ける"],
+[1925,3,"普通選挙法と治安維持法","General Election Law and Peace Preservation Law","大正","大正デモクラシーで選挙権の拡大を求める声が高まった","25歳以上の男子すべてに選挙権を与える","同時に治安維持法で社会運動の取り締まりも強める"],
+[1931,1,"満州事変","Mukden Incident (Manchurian Incident)","昭和","世界恐慌で不景気が深まり、軍は満州を生命線と考えた","関東軍が鉄道を爆破し、中国のしわざとして満州を占領する","満州国をつくり、批判を受けて国際連盟を脱退する"],
+[1932,3,"五・一五事件","May 15 Incident","昭和","政党政治への不満が軍の若手に広がっていた","海軍の青年将校らが犬養毅首相を暗殺する","政党内閣が途切れ、軍の発言力が強まる"],
+[1936,3,"二・二六事件","February 26 Incident","昭和","陸軍の中に、武力で政治を変えようとする動きがあった","陸軍の青年将校らが兵を率いて大臣らを殺害する","反乱は鎮圧されるが、軍部の政治支配が強まる"],
+[1937,2,"日中戦争","Second Sino-Japanese War","昭和","満州から華北へ勢力を広げ、中国との緊張が高まっていた","盧溝橋事件をきっかけに中国との全面戦争に入る","戦争は長引き、国の資源と人を総動員する体制に"],
+[1941,1,"太平洋戦争が始まる","Pacific War begins (Attack on Pearl Harbor)","昭和","日中戦争が長引き、アメリカに石油を止められた","日本軍が真珠湾とマレー半島を攻撃し、米英と開戦する","戦線はアジア・太平洋全域に広がる"],
+[1945,1,"終戦（ポツダム宣言受諾）","Surrender of Japan","昭和","原子爆弾の投下とソ連の参戦で、戦争を続けられなくなった","ポツダム宣言を受け入れ、8月15日に天皇がラジオで伝える","連合国軍（GHQ）による占領と民主化改革が始まる"],
+[1946,2,"日本国憲法の公布","Promulgation of the Constitution of Japan","昭和","GHQの民主化改革のもとで、新しい憲法がつくられた","11月3日に公布（施行は翌年5月3日）","国民主権・基本的人権の尊重・平和主義が柱になる"],
+[1951,1,"サンフランシスコ平和条約","Treaty of San Francisco","昭和","冷戦が始まり、アメリカは日本を早く独立させ味方にしたかった","48か国と平和条約を結ぶ","翌年に独立を回復。同じ日に日米安全保障条約も結ぶ"],
+[1956,3,"国際連合に加盟","Japan joins the United Nations","昭和","日ソ共同宣言でソ連との国交が回復し、反対がなくなった","日本が国際連合に加盟する","国際社会に本格的に復帰する"],
+[1964,1,"東京オリンピック","Tokyo Olympics","昭和","高度経済成長で、日本は急速に豊かになっていた","アジア初のオリンピックを開き、直前に東海道新幹線が開業","戦後復興と高度成長のシンボルになる"],
+[1972,2,"沖縄返還と日中国交正常化","Return of Okinawa; Japan–China normalization","昭和","沖縄はアメリカの統治下にあり、中国とは国交がなかった","5月に沖縄が返還され、9月に中国と国交を正常化する","沖縄には米軍基地が多く残り、今も課題になっている"],
+[1989,1,"平成に改元・バブル絶頂","Heisei era begins; peak of the bubble economy","平成","低金利と金余りで、株と土地の値段が膨らんでいた","昭和天皇が亡くなり平成に。年末に株価が当時の最高値をつける","翌年から株価が急落し、バブル崩壊と長い停滞が始まる"],
+[1995,2,"阪神・淡路大震災","Great Hanshin–Awaji Earthquake","平成","","1月17日、兵庫県南部を大地震が襲い、6000人以上が亡くなる","全国からボランティアが集まり「ボランティア元年」と呼ばれる"],
+[2011,1,"東日本大震災","Great East Japan Earthquake","平成","","3月11日、巨大地震と津波で死者・行方不明者は約1万8000人に","福島第一原発の事故が起き、エネルギー政策が問い直される"],
+];
+const WD = [
+[-334,3,"アレクサンドロス大王の東方遠征","Alexander the Great's eastern campaign","西アジア","マケドニアがギリシャを従え、宿敵ペルシャに向かった","アレクサンドロスが遠征を始め、ペルシャを滅ぼしてインドまで進む","ギリシャとオリエントの文化が混ざるヘレニズム文化が生まれる"],
+[-221,1,"秦の始皇帝が中国を統一","Qin Shi Huang unifies China","中国","戦国時代の七つの国が何百年も争っていた","秦王の政が六国を滅ぼし、初めて「皇帝」を名乗る","文字・貨幣・度量衡を統一。英語のChinaは秦が語源とされる"],
+[-27,2,"ローマが帝政になる","Augustus becomes the first Roman emperor","ヨーロッパ","内乱が続き、共和政では広い領土を治めきれなかった","オクタウィアヌスがアウグストゥスの称号を受け、初代皇帝になる","約200年の「ローマの平和」が始まる"],
+[313,3,"ミラノ勅令（キリスト教公認）","Edict of Milan","ヨーロッパ","迫害されても、キリスト教徒は帝国中に増えていた","コンスタンティヌス帝がキリスト教を公認する","392年には国教となり、ヨーロッパ文化の土台になる"],
+[375,2,"ゲルマン人の大移動","Great Migration of the Germanic peoples","ヨーロッパ","アジア系のフン人が東から押し寄せた","ゲルマン人がローマ帝国内へ大移動を始める","ローマ帝国が揺らぎ、395年に東西に分裂する"],
+[476,1,"西ローマ帝国の滅亡","Fall of the Western Roman Empire","ヨーロッパ","ゲルマン人の大移動で帝国が弱っていた","ゲルマン人傭兵隊長オドアケルが皇帝を退位させる","ヨーロッパは中世へ。東ローマ帝国は1453年まで続く"],
+[618,1,"唐が建国される","Founding of the Tang dynasty","中国","隋が大運河づくりや遠征で人々を疲れさせ、反乱で倒れた","李淵が唐を建てる","律令や長安の都が日本の手本になり、遣唐使が送られる"],
+[622,2,"ヒジュラ（聖遷）","Hijra: Muhammad's migration to Medina","西アジア","ムハンマドがメッカで迫害を受けていた","ムハンマドが信者とメディナに移る。イスラム暦の元年","イスラム教団が力をつけ、のちに大帝国へ広がる"],
+[800,2,"カール大帝の戴冠","Coronation of Charlemagne","ヨーロッパ","フランク王国が西ヨーロッパの大半を統一していた","ローマ教皇がカールに西ローマ皇帝の冠を授ける","ローマ・キリスト教・ゲルマンが融合した西ヨーロッパ世界が生まれる"],
+[962,3,"神聖ローマ帝国の成立","Founding of the Holy Roman Empire","ヨーロッパ","ドイツのオットー1世がマジャール人を撃退し名声を得た","教皇がオットー1世に皇帝の冠を授ける","1806年まで続くドイツ中心の帝国になる"],
+[1066,3,"ノルマン・コンクエスト","Norman Conquest of England","ヨーロッパ","イングランドの王位継承をめぐる争いがあった","フランスのノルマンディー公ウィリアムがイングランドを征服する","英語にフランス語の単語が大量に入る"],
+[1096,1,"第1回十字軍","First Crusade","ヨーロッパ","イスラム勢力に押されたビザンツ皇帝が、教皇に助けを求めた","教皇の呼びかけで西欧の騎士たちが聖地エルサレムへ向かう","約200年続く十字軍で、東西の交易と文化の交流が進む"],
+[1206,1,"チンギス・ハンの即位","Genghis Khan becomes Great Khan","アジア","モンゴル高原の遊牧部族がばらばらに争っていた","テムジンが部族をまとめ、チンギス・ハンとなる","史上最大級のモンゴル帝国が生まれ、のちの元寇につながる"],
+[1215,2,"マグナ・カルタ","Magna Carta","ヨーロッパ","イギリスのジョン王が重税と失政を重ねた","貴族が王に、勝手に課税しないと約束させる","王も法に従うという考えの出発点。のちの議会政治へ"],
+[1299,3,"オスマン帝国の成立","Founding of the Ottoman Empire","西アジア","モンゴルの侵入などで、アナトリアの勢力図が乱れていた","オスマン1世がアナトリアに国を建てる","1453年に東ローマを滅ぼし、約600年続く大帝国になる"],
+[1339,3,"百年戦争が始まる","Hundred Years' War begins","ヨーロッパ","フランス王位と、羊毛産地フランドルをめぐる争いがあった","イギリスとフランスが断続的に戦い始める","ジャンヌ・ダルクの活躍でフランスが勝ち、両国で王の力が強まる"],
+[1368,2,"明が建国される","Founding of the Ming dynasty","中国","モンゴル人の元の支配に反発し、紅巾の乱が起きた","朱元璋（洪武帝）が明を建て、元を北へ追う","日本の足利義満と勘合貿易を行う"],
+[1453,2,"東ローマ帝国の滅亡","Fall of Constantinople","ヨーロッパ","オスマン帝国が勢力を広げ、東ローマは首都の周りだけになっていた","オスマン帝国がコンスタンティノープルを攻め落とす","東の交易路を押さえられた西欧は、海の道を探し始める"],
+[1492,1,"コロンブスがアメリカに到達","Columbus reaches the Americas","大航海時代","アジアの香辛料を、オスマン帝国を通さずに手に入れたかった","スペインの支援を受けたコロンブスがカリブ海の島に着く","ヨーロッパによるアメリカ大陸の征服と植民地化が始まる","意欲に（1492）燃えるコロンブス"],
+[1517,1,"ルターの宗教改革","Protestant Reformation begins","ヨーロッパ","教会が免罪符（贖宥状）を売って資金を集めていた","ルターが「95か条の論題」で教会を批判する","プロテスタントが生まれ、カトリックは対抗してアジア布教を強める"],
+[1519,3,"マゼランの世界周航","Magellan's circumnavigation begins","大航海時代","スペインは西回りで香辛料の島に行く航路が欲しかった","マゼランの船団がスペインを出航する","マゼランは途中で死ぬが、1522年に一行が世界一周を果たす"],
+[1588,3,"アルマダの海戦","Defeat of the Spanish Armada","ヨーロッパ","スペインとイギリスが、宗教と海の覇権で対立していた","イギリス海軍がスペインの無敵艦隊を破る","イギリスが海洋大国として台頭する"],
+[1600,3,"イギリス東インド会社の設立","English East India Company founded","アジア","アジアの香辛料貿易で大きな利益が見込めた","女王の特許を得た貿易会社が設立される","のちにインドを支配する。1602年にはオランダ東インド会社も設立"],
+[1618,3,"三十年戦争","Thirty Years' War","ヨーロッパ","神聖ローマ帝国でカトリックとプロテスタントが対立していた","宗教対立から始まり、ヨーロッパ諸国を巻き込む大戦になる","1648年のウェストファリア条約で、主権国家が並び立つ体制ができる"],
+[1644,3,"明が滅び、清が中国を支配","Fall of the Ming; Qing rule begins in China","中国","明では反乱が相次ぎ、北では満州族の清が力をつけていた","反乱で明が滅び、清が北京に入る","清は1912年まで続く中国最後の王朝になる"],
+[1688,2,"名誉革命","Glorious Revolution","ヨーロッパ","イギリス王ジェームズ2世が議会を無視し、カトリックを復活させようとした","議会が王を追放し、オランダから新しい国王夫妻を迎える","翌年の権利の章典で、議会が王より強い立憲君主制が固まる"],
+[1769,2,"ワットが蒸気機関を改良","Watt's improved steam engine","ヨーロッパ","イギリスで綿織物の需要が急増し、強い動力が求められていた","ワットが効率の良い蒸気機関の特許を取る","工場で機械が動く産業革命が加速する"],
+[1776,1,"アメリカ独立宣言","U.S. Declaration of Independence","アメリカ","イギリスが植民地に重い税をかけ「代表なくして課税なし」と反発が起きた","13の植民地がイギリスからの独立を宣言する","独立戦争に勝ち、大統領を選ぶ共和国が生まれる"],
+[1789,1,"フランス革命","French Revolution","ヨーロッパ","国の財政破綻と、特権身分への不満が爆発した","パリ市民がバスティーユ牢獄を襲い、人権宣言が出される","王政が倒れ、自由・平等の理念がヨーロッパ中に広がる","火縄（1789）くすぶるフランス革命"],
+[1804,2,"ナポレオンが皇帝になる","Napoleon crowned Emperor","ヨーロッパ","革命後の混乱を、軍人ナポレオンが収めて人気を得た","国民投票を経てナポレオンが皇帝になる","ヨーロッパの大半を支配し、ナポレオン法典で革命の理念を広める"],
+[1815,3,"ウィーン会議","Congress of Vienna","ヨーロッパ","ナポレオン戦争で、ヨーロッパの秩序がばらばらになった","各国の代表が戦後の国境と体制を話し合う","革命前の秩序に戻す「ウィーン体制」ができる"],
+[1840,1,"アヘン戦争","First Opium War","アジア","イギリスは茶の代金を取り戻すため、清にアヘンを密輸していた","アヘンを取り締まった清とイギリスが戦い、清が敗れる","清は香港を失う。知らせを聞いた日本の幕府は危機感を強める"],
+[1848,3,"1848年革命","Revolutions of 1848","ヨーロッパ","ウィーン体制への不満と、凶作による生活苦が広がっていた","フランスの二月革命をきっかけに、各地で革命が起きる","ウィーン体制が崩れる。同じ年にマルクスらが『共産党宣言』を出す"],
+[1861,2,"南北戦争","American Civil War","アメリカ","奴隷制と貿易のあり方をめぐって、北部と南部が対立した","南部の州が連邦を離れ、北部と戦争になる","北部が勝って奴隷制が廃止され、アメリカは工業大国へ"],
+[1869,3,"スエズ運河の開通","Opening of the Suez Canal","アフリカ","ヨーロッパとアジアを結ぶ近道が求められていた","地中海と紅海を結ぶ運河が開通する","アフリカを回らずにアジアへ行けるようになり、世界の交易が変わる"],
+[1871,2,"ドイツ帝国の成立","Unification of Germany","ヨーロッパ","小さな国に分かれたドイツを、プロイセンがまとめようとしていた","フランスに勝ったプロイセンの王がドイツ皇帝になる","強国ドイツの誕生。明治日本は憲法づくりでドイツを手本にする"],
+[1911,2,"辛亥革命","Xinhai Revolution","中国","列強に押され続ける清に、人々は見切りをつけていた","武昌の蜂起をきっかけに各地が独立し、翌年に中華民国が成立する","約2000年続いた皇帝の支配が終わる"],
+[1914,1,"第一次世界大戦","World War I begins","ヨーロッパ","列強が二つの陣営に分かれ、バルカン半島で緊張が高まっていた","サラエボでオーストリアの皇太子が暗殺され、大戦が始まる","戦車や毒ガスが使われ、約1000万人の兵士が亡くなる総力戦に"],
+[1917,1,"ロシア革命","Russian Revolution","ヨーロッパ","大戦で物資が不足し、人々の不満が皇帝に向かった","皇帝が退位し、レーニン率いるボリシェヴィキが権力を握る","1922年に世界初の社会主義国家・ソ連が生まれる"],
+[1919,2,"ベルサイユ条約","Treaty of Versailles","ヨーロッパ","第一次世界大戦が終わり、戦後処理が必要だった","パリ講和会議で、敗れたドイツに巨額の賠償を課す","国際連盟がつくられるが、ドイツの恨みが次の大戦の種になる"],
+[1929,1,"世界恐慌","Great Depression begins","アメリカ","大戦後のアメリカで、株価が実体以上に膨らんでいた","ニューヨークの株価が大暴落し、不況が世界に広がる","失業があふれ、ドイツや日本で軍国主義が力を伸ばす"],
+[1939,1,"第二次世界大戦","World War II begins","ヨーロッパ","世界恐慌の後、ナチス・ドイツが領土拡大を進めた","ドイツがポーランドに侵攻し、英仏がドイツに宣戦する","1941年に日本も参戦し、史上最大の戦争になる"],
+[1945,2,"国際連合の発足","United Nations founded","世界","二度の世界大戦を防げなかった国際連盟の反省があった","51か国で国際連合が発足する","米ソなど5大国が拒否権を持つ安全保障理事会が中心になる"],
+[1949,1,"中華人民共和国の成立","Founding of the People's Republic of China","中国","日中戦争の後、国民党と共産党の内戦が続いた","毛沢東が北京で中華人民共和国の成立を宣言する","国民党は台湾へ移る。冷戦がアジアにも広がる"],
+[1950,2,"朝鮮戦争","Korean War begins","アジア","日本の支配が終わった朝鮮は、米ソによって南北に分かれていた","北朝鮮が韓国に攻め込む","1953年に休戦。日本は軍需で好景気になる（朝鮮特需）"],
+[1962,2,"キューバ危機","Cuban Missile Crisis","アメリカ","ソ連がアメリカの目の前のキューバにミサイル基地を築いた","アメリカが海上封鎖し、核戦争の一歩手前までいく","ソ連が基地を撤去。米ソの首脳を結ぶホットラインが引かれる"],
+[1969,2,"アポロ11号の月面着陸","Apollo 11 Moon landing","アメリカ","米ソが宇宙開発で競い、アメリカはソ連に先を越されていた","アームストロングらが人類で初めて月に降り立つ","宇宙開発競争でアメリカが優位に立つ"],
+[1989,1,"ベルリンの壁崩壊","Fall of the Berlin Wall","ヨーロッパ","ソ連のゴルバチョフが改革を進め、東欧の民主化が広がった","東西ベルリンを隔てていた壁が開かれ、壊される","翌年ドイツが統一。冷戦の終わりが決定的になる"],
+[1991,1,"ソ連の崩壊","Dissolution of the Soviet Union","ヨーロッパ","経済の行き詰まりと、各共和国の独立運動が強まった","ソ連を構成していた共和国が独立し、ソ連が消滅する","冷戦が完全に終わり、ロシアなど15か国に分かれる"],
+[1993,3,"EUの発足","European Union established","ヨーロッパ","二度の大戦の反省から、ヨーロッパは統合を進めてきた","マーストリヒト条約が発効し、ヨーロッパ連合が生まれる","1999年に共通通貨ユーロが導入される"],
+[2001,1,"アメリカ同時多発テロ","September 11 attacks","アメリカ","イスラム過激派のアル・カーイダが、アメリカへの敵意を強めていた","乗っ取られた旅客機がニューヨークの世界貿易センタービルなどに突入","アメリカはアフガニスタン、のちにイラクとの戦争を始める"],
+[2008,2,"リーマン・ショック","Global financial crisis (Lehman shock)","世界","アメリカで低所得者向けの住宅ローンが証券化され、バブルが膨らんでいた","大手投資銀行リーマン・ブラザーズが破綻する","世界的な金融危機と不況に。日本の輸出企業も大打撃を受ける"],
+];
+
+// 関東の鳥  [和名, 難易度, 英名, 学名, グループ, 季節, 特徴, 見分けどころ, 豆知識]
+// 写真: Wikimedia Commons／鳴き声: xeno-canto。 [写真ファイル, 撮影者, ライセンス, 出典URL] と [音声ファイル, 録音者, ライセンス, XC番号, 録音地]
+const MEDIA = {"Passer montanus":{"img":["b/passer-montanus.jpg","Laitche","Public domain","https://commons.wikimedia.org/wiki/File%3ATree_Sparrow_August_2007_Osaka_Japan.jpg"],"snd":["b/passer-montanus.mp3","Andrew Spencer","CC BY-NC-SA 3.0","168777","日本"]},
+"Corvus macrorhynchos":{"img":["b/corvus-macrorhynchos.jpg","Tisha Mukherjee","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ALarge-billed_Crow_in_Bhigwan_August_2025_by_Tisha_Mukherjee_01.jpg"],"snd":["b/corvus-macrorhynchos.mp3","Uku Paal","CC BY-NC-SA 4.0","1016619","日本"]},
+"Corvus corone":{"img":["b/corvus-corone.jpg","Alexis Lours","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3ACarrion_crow_2022_04_05_05_02.jpg"],"snd":["b/corvus-corone.mp3","Joshua Chong","CC BY-NC-SA 4.0","858015","日本"]},
+"Streptopelia orientalis":{"img":["b/streptopelia-orientalis.jpg","J. Patrick Fischer","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3A2026-08-27_Streptopelia_orientalis_in_Chitose.jpg"],"snd":["b/streptopelia-orientalis.mp3","Rolf A. de By","CC BY-NC-SA 4.0","470246","日本"]},
+"Columba livia":{"img":["b/columba-livia.jpg","william_stephens","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3AColumba_livia_%28Rock_Dove%2C_wild%29%2C_Duncansby_Head%2C_Caithness%2C_Scotland_1.jpg"],"snd":["b/columba-livia.mp3","Stanislas Wroza","CC BY-NC-SA 4.0","462611","Poland"]},
+"Hypsipetes amaurotis":{"img":["b/hypsipetes-amaurotis.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AHypsipetes_amaurotis_%28Microscelis_amaurotis%29.JPG"],"snd":["b/hypsipetes-amaurotis.mp3","Guy Kirwan","CC BY-NC-SA 4.0","409025","日本"]},
+"Spodiopsar cineraceus":{"img":["b/spodiopsar-cineraceus.jpg","切干大根","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ASpodiopsar_cineraceus_Higashi-hagoromo_station.jpg"],"snd":["b/spodiopsar-cineraceus.mp3","Joshua Chong","CC BY-NC-SA 4.0","858065","日本"]},
+"Zosterops japonicus":{"img":["b/zosterops-japonicus.jpg","Laitche","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AJapanese_white-eye_at_Tenn%C5%8Dji_Park_in_Osaka%2C_January_2016_II.jpg"],"snd":["b/zosterops-japonicus.mp3","Xavier Riera","CC BY-NC-SA 4.0","993082","日本"]},
+"Parus minor":{"img":["b/parus-minor.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AParus_minor_male.JPG"],"snd":["b/parus-minor.mp3","JJSUN","CC BY-NC-SA 4.0","1069474","日本"]},
+"Motacilla alba":{"img":["b/motacilla-alba.jpg","Kyu3a","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ABlack-backed_Wagtail_in_Irigaike_Park.jpg"],"snd":["b/motacilla-alba.mp3","Amar-Singh HSS","CC BY-NC-SA 4.0","506183","日本"]},
+"Hirundo rustica":{"img":["b/hirundo-rustica.jpg","Andreas Trepte","CC BY-SA 2.5","https://commons.wikimedia.org/wiki/File%3ARauchschwalbe_Hirundo_rustica.jpg"],"snd":["b/hirundo-rustica.mp3","Olivier SWIFT","CC BY-NC-SA 4.0","1149071","France"]},
+"Chloris sinica":{"img":["b/chloris-sinica.jpg","se1","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3AGrey-capped_Greenfinch%2C_Longquanyi%2C_Chengdu%2C_Sichuan%2C_China_1.jpg"],"snd":["b/chloris-sinica.mp3","Amar-Singh HSS","CC BY-NC-SA 4.0","506555","日本"]},
+"Horornis diphone":{"img":["b/horornis-diphone.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ACettia_diphone_%28crying%29.JPG"],"snd":["b/horornis-diphone.mp3","Hideki Osaka","CC BY-NC-SA 4.0","419699","日本"]},
+"Cyanopica cyanus":{"img":["b/cyanopica-cyanus.jpg","zinogre","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3A2022-07-18_Azure-winged_Magpie%2C_Zhengzhou%2C_Henan%2C_China_%28cropped%29.jpg"],"snd":["b/cyanopica-cyanus.mp3","Aladdin","CC BY-NC-SA 4.0","465141","日本"]},
+"Anas zonorhyncha":{"img":["b/anas-zonorhyncha.jpg","Laitche","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ASpot-billed_duck_at_Expo%E2%80%9970_Commemorative_Park_in_Osaka%2C_November_2015_II.jpg"],"snd":["b/anas-zonorhyncha.mp3","Joshua Chong","CC BY-NC-SA 4.0","858061","日本"]},
+"Ardea cinerea":{"img":["b/ardea-cinerea.jpg","Bengt Nyman from Vaxholm, Sweden","CC BY 2.0","https://commons.wikimedia.org/wiki/File%3AArdea_cinerea_EM1A2714_%2827349354381%29.jpg"],"snd":["b/ardea-cinerea.mp3","Thierry THOMAS","CC BY-NC-SA 4.0","1045036","France"]},
+"Ardea alba":{"img":["b/ardea-alba.jpg","Alandmanson","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3AEgret_Great_2017_10_09_7587.jpg"],"snd":["b/ardea-alba.mp3","Geoff Carey","CC BY-NC-SA 4.0","794542","China"]},
+"Phalacrocorax carbo":{"img":["b/phalacrocorax-carbo.jpg","MPF","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3A2021-05-05_Phalacrocorax_carbo_carbo%2C_Killingworth_Lake%2C_Northumberland_1-2.jpg"],"snd":["b/phalacrocorax-carbo.mp3","Barry Edmonston","CC BY-NC-SA 4.0","884129","日本"]},
+"Milvus migrans":{"img":["b/milvus-migrans.jpg","Yathin S Krishnappa","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3A2007-black-kite.jpg"],"snd":["b/milvus-migrans.mp3","Antony Schubert","CC BY-NC-SA 4.0","284649","日本"]},
+"Chroicocephalus ridibundus":{"img":["b/chroicocephalus-ridibundus.jpg","Rhododendrites","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ABlack-headed_gull_%2805557%29.jpg"],"snd":["b/chroicocephalus-ridibundus.mp3","Hideki Osaka","CC BY-NC-SA 4.0","459240","日本"]},
+"Turdus eunomus":{"img":["b/turdus-eunomus.jpg","Alpsdake","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ATurdus_eunomus_s3.jpg"],"snd":["b/turdus-eunomus.mp3","Barry Edmonston","CC BY-NC-SA 4.0","884476","日本"]},
+"Phoenicurus auroreus":{"img":["b/phoenicurus-auroreus.jpg","Laitche","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ADaurian_redstart_at_Daisen_Park_in_Osaka%2C_January_2016.jpg"],"snd":["b/phoenicurus-auroreus.mp3","Ray Tsu 诸仁","CC BY-NC-SA 4.0","1087929","China"]},
+"Lanius bucephalus":{"img":["b/lanius-bucephalus.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ALanius_bucephalus.JPG"],"snd":["b/lanius-bucephalus.mp3","GABRIEL LEITE","CC BY-NC-SA 4.0","841025","日本"]},
+"Yungipicus kizuki":{"img":["b/yungipicus-kizuki.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ADendrocopos_kizuki_on_tree.JPG"],"snd":["b/yungipicus-kizuki.mp3","Jerome Chie-Jen Ko","CC BY-NC-SA 4.0","1009208","日本"]},
+"Aegithalos caudatus":{"img":["b/aegithalos-caudatus.jpg","Rhododendrites","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ALong-tailed_tit_%2874940%29.jpg"],"snd":["b/aegithalos-caudatus.mp3","GABRIEL LEITE","CC BY-NC-SA 4.0","841034","日本"]},
+"Sittiparus varius":{"img":["b/sittiparus-varius.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3APoecile_varius_on_plate.JPG"],"snd":["b/sittiparus-varius.mp3","Barry Edmonston","CC BY-NC-SA 4.0","884463","日本"]},
+"Coccothraustes coccothraustes":{"img":["b/coccothraustes-coccothraustes.jpg","Marek Szczepanek","GFDL","https://commons.wikimedia.org/wiki/File%3ACoccothraustes_coccothraustes_1_%28Marek_Szczepanek%29.jpg"],"snd":["b/coccothraustes-coccothraustes.mp3","Eric DeFonso","CC BY-NC-SA 4.0","581689","日本"]},
+"Monticola solitarius":{"img":["b/monticola-solitarius.jpg","KKPCW","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AMale_Monticola_solitarius_philippensis_in_the_park_-_1.jpg"],"snd":["b/monticola-solitarius.mp3","Ross Gallardy","CC BY-NC-SA 4.0","192409","日本"]},
+"Motacilla grandis":{"img":["b/motacilla-grandis.jpg","Materialscientist","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ASegurosekirei.JPG"],"snd":["b/motacilla-grandis.mp3","Phil Gregory","CC BY-NC-SA 4.0","454869","日本"]},
+"Motacilla cinerea":{"img":["b/motacilla-cinerea.jpg","Dûrzan cîrano","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ATer%C3%AEhejoka_bo%C3%A7ikzer.jpg"],"snd":["b/motacilla-cinerea.mp3","Olivier SWIFT","CC BY-NC-SA 4.0","697734","France"]},
+"Alcedo atthis":{"img":["b/alcedo-atthis.jpg","Shantanu Kuveskar","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3A%E2%99%82_Common_Kingfisher_%28Alcedo_atthis%29_Photograph_By_Shantanu_Kuveskar%2C_Mangaon%2C_Maharashtra%2C_India.jpg"],"snd":["b/alcedo-atthis.mp3","Bo Shunqi 薄顺奇","CC BY-NC-SA 4.0","840479","China"]},
+"Egretta garzetta":{"img":["b/egretta-garzetta.jpg","Birdman1","GFDL","https://commons.wikimedia.org/wiki/File%3ALittle_Egret_Reflection.jpg"],"snd":["b/egretta-garzetta.mp3","Olivier SWIFT","CC BY-NC-SA 4.0","1151421","France"]},
+"Nycticorax nycticorax":{"img":["b/nycticorax-nycticorax.jpg","Rhododendrites","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ABlack-crowned_night_heron_in_PP_%2836399%29.jpg"],"snd":["b/nycticorax-nycticorax.mp3","Xavier Riera","CC BY-NC-SA 4.0","1180903","Spain"]},
+"Fulica atra":{"img":["b/fulica-atra.jpg","Alexis Lours","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3AFulica_atra_Georges-Valbon_01.jpg"],"snd":["b/fulica-atra.mp3","Joshua Chong","CC BY-NC-SA 4.0","858054","日本"]},
+"Gallinula chloropus":{"img":["b/gallinula-chloropus.jpg","Alexis Lours","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3ACommon_moorhen_%28Gallinula_chloropus%29_France.jpg"],"snd":["b/gallinula-chloropus.mp3","Bo Shunqi 薄顺奇","CC BY-NC-SA 4.0","925230","China"]},
+"Anas crecca":{"img":["b/anas-crecca.jpg","Koshy Koshy from Faridabad, Haryana, India","CC BY 2.0","https://commons.wikimedia.org/wiki/File%3ACommon_Teal_Male_%288602525826%29.jpg"],"snd":["b/anas-crecca.mp3","Stanislas Wroza","CC BY-NC-SA 4.0","1168468","Finland"]},
+"Anas platyrhynchos":{"img":["b/anas-platyrhynchos.jpg","Calibas (edit by Aqwis)","GFDL","https://commons.wikimedia.org/wiki/File%3AMale_mallard3.jpg"],"snd":["b/anas-platyrhynchos.mp3","Ross Gallardy","CC BY-NC-SA 4.0","294836","日本"]},
+"Anas acuta":{"img":["b/anas-acuta.jpg","Frank Schulenburg","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AMale_northern_pintail_at_Llano_Seco.jpg"],"snd":["b/anas-acuta.mp3","Stanislas Wroza","CC BY-NC-SA 4.0","1167242","Finland"]},
+"Mareca penelope":{"img":["b/mareca-penelope.jpg","Andreas Trepte","CC BY-SA 2.5","https://commons.wikimedia.org/wiki/File%3AEurasian_Wigeon_-_male.jpg"],"snd":["b/mareca-penelope.mp3","Guy Kirwan","CC BY-NC-SA 4.0","409618","日本"]},
+"Aythya fuligula":{"img":["b/aythya-fuligula.jpg","Alexis Lours","CC BY 4.0","https://commons.wikimedia.org/wiki/File%3ATufted_Duck_09_05_2025_02.jpg"],"snd":["b/aythya-fuligula.mp3","Jarek Matusiak","CC BY-NC-SA 4.0","246677","Poland"]},
+"Tachybaptus ruficollis":{"img":["b/tachybaptus-ruficollis.jpg","Zeynel Cebeci","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ALittle_Grebe_-_Tachybaptus_ruficollis_15-1.jpg"],"snd":["b/tachybaptus-ruficollis.mp3","Mats Olsson","CC BY-NC-SA 4.0","545992","Sweden"]},
+"Alauda arvensis":{"img":["b/alauda-arvensis.jpg","El Golli Mohamed","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3AAlouette_des_champs_Zaghouan001.jpg"],"snd":["b/alauda-arvensis.mp3","Gerbenth","CC BY-NC-SA 4.0","443117","日本"]},
+"Emberiza spodocephala":{"img":["b/emberiza-spodocephala.jpg","Materialscientist","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AAoji_male.JPG"],"snd":["b/emberiza-spodocephala.mp3","Uku Paal","CC BY-NC-SA 4.0","1016830","日本"]},
+"Turdus pallidus":{"img":["b/turdus-pallidus.jpg","Alpsdake","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3ATurdus_pallidus.JPG"],"snd":["b/turdus-pallidus.mp3","Ko Chie-Jen (Jerome)","CC BY-NC-SA 4.0","282243","日本"]},
+"Garrulax canorus":{"img":["b/garrulax-canorus.jpg","DickDaniels (http://theworldbirds.org/)","CC BY-SA 3.0","https://commons.wikimedia.org/wiki/File%3AChinese_Hwamei_RWD.jpg"]},
+"Psittacula krameri":{"img":["b/psittacula-krameri.jpg","Charles J. Sharp","CC BY-SA 4.0","https://commons.wikimedia.org/wiki/File%3ARose-ringed_parakeet_%28Psittacula_krameri_borealis%29_male_Jaipur.jpg"],"snd":["b/psittacula-krameri.mp3","David Darrell-Lambert","CC BY-NC-SA 4.0","1105526","United Kingdom"]},
+"Bambusicola thoracicus":{"img":["b/bambusicola-thoracicus.jpg","OpenCage","CC BY-SA 2.5","https://commons.wikimedia.org/wiki/File%3ABambusicola_thoracicus_by_OpenCage.jpg"],"snd":["b/bambusicola-thoracicus.mp3","Penghui Lou","CC BY-NC-SA 4.0","1006319","China"]},
+"Falco tinnunculus":{"img":["b/falco-tinnunculus.jpg","Andreas Trepte","CC BY-SA 2.5","https://commons.wikimedia.org/wiki/File%3ACommon_kestrel_falco_tinnunculus.jpg"],"snd":["b/falco-tinnunculus.mp3","Johannes Dag Mayer","CC BY-NC-SA 4.0","1158090","Germany"]},
+"Accipiter gentilis":{"img":["b/accipiter-gentilis.jpg","Norbert Kenntner, Berlin","GFDL","https://commons.wikimedia.org/wiki/File%3ANorthern_Goshawk_ad_M2.jpg"],"snd":["b/accipiter-gentilis.mp3","Walter Wallner","CC BY-NC-SA 4.0","1163231","Austria"]}};
+const HMEDIA = {};
+// 関東での分布 [地形(山M 林F 農地A 街U 川R 海S), ひとこと]
+const HAB = {
+"Passer montanus":["UA","関東全域の人家のまわり。人のいない山奥にはいない"],
+"Corvus macrorhynchos":["UFM","都心のビル街から山の森まで"],
+"Corvus corone":["AR","郊外の畑や河川敷。都心には少ない"],
+"Streptopelia orientalis":["UFA","関東全域。住宅地の電線や公園"],
+"Columba livia":["U","駅前・神社・公園など街なか"],
+"Hypsipetes amaurotis":["UFM","関東全域。街路樹から山の森まで"],
+"Spodiopsar cineraceus":["UA","住宅地や田畑。夕方は駅前の木に集まる"],
+"Zosterops japonicus":["UF","公園や庭の木。花の咲く木に来る"],
+"Parus minor":["UFM","公園・雑木林・山。巣箱もよく使う"],
+"Motacilla alba":["URS","駐車場・川・海岸。冬は街なかに多い"],
+"Hirundo rustica":["UA","駅や商店の軒下に巣。田んぼの上を飛ぶ"],
+"Chloris sinica":["ARU","河川敷・畑・公園"],
+"Horornis diphone":["FM","やぶのある林や山。冬は平地の公園にも下りる"],
+"Cyanopica cyanus":["UF","平野部の住宅地や公園の林"],
+"Anas zonorhyncha":["RA","川・池・田んぼ"],
+"Ardea cinerea":["RS","川・池・干潟"],
+"Ardea alba":["RAS","川・田んぼ・干潟"],
+"Phalacrocorax carbo":["RS","川・湖・東京湾。大きな池の木にねぐら"],
+"Milvus migrans":["SRM","海岸や大きな川。三浦半島や湘南に多い"],
+"Chroicocephalus ridibundus":["RS","冬の東京湾・隅田川・多摩川の下流"],
+"Turdus eunomus":["AU","冬の田畑・芝生・河川敷"],
+"Phoenicurus auroreus":["UAF","冬の公園・畑・住宅地"],
+"Lanius bucephalus":["AFR","農地・河川敷・林の縁"],
+"Yungipicus kizuki":["FU","雑木林や公園、街路樹"],
+"Aegithalos caudatus":["FU","公園や雑木林。群れで移動する"],
+"Sittiparus varius":["FM","林や山。都内では大きな公園の林"],
+"Coccothraustes coccothraustes":["UF","冬の公園や林"],
+"Monticola solitarius":["SU","海岸の岩場。近年は内陸の駅やビルにも"],
+"Motacilla grandis":["R","川の中流から上流の河原"],
+"Motacilla cinerea":["RM","渓流や川。冬は街なかの水路にも"],
+"Alcedo atthis":["R","川や池。都心の大きな公園の池にも"],
+"Egretta garzetta":["RA","川・田んぼ・池"],
+"Nycticorax nycticorax":["R","川や池。昼は水辺の木で休む"],
+"Fulica atra":["R","池・湖・川の下流"],
+"Gallinula chloropus":["RA","水草の多い池や田んぼ"],
+"Anas crecca":["R","冬の川や池"],
+"Anas platyrhynchos":["R","冬の池・湖・川"],
+"Anas acuta":["R","冬の公園の池や湖"],
+"Mareca penelope":["RS","冬の池・川・海岸"],
+"Aythya fuligula":["RS","冬の池・湖・港"],
+"Tachybaptus ruficollis":["R","池や湖"],
+"Alauda arvensis":["A","畑・河川敷・草地"],
+"Emberiza spodocephala":["FA","冬の林の縁ややぶ"],
+"Turdus pallidus":["FU","冬の公園や林の地面"],
+"Garrulax canorus":["FM","丘陵や山すその林。東京西部や神奈川・埼玉の丘陵"],
+"Psittacula krameri":["U","東京や神奈川の住宅地と大きな公園"],
+"Bambusicola thoracicus":["FA","丘陵や林のやぶ"],
+"Falco tinnunculus":["AR","河川敷や農地。橋などで子育て"],
+"Accipiter gentilis":["FU","林や大きな公園。冬は水辺でカモを狙う"],
+};
+// 場所 [緯度, 経度, 地名, 表示("w"=世界地図), 世界地図の表示幅(度)]
+const PLACE = {
+J57:[33.6,130.4,"奴国（福岡）"],J239:[33.4,130.5,"邪馬台国（九州説・畿内説あり）"],J538:[34.47,135.82,"飛鳥（奈良）"],J593:[34.47,135.82,"飛鳥（奈良）"],
+J604:[34.47,135.82,"飛鳥（奈良）"],J607:[34.47,135.82,"飛鳥から隋へ"],J645:[34.47,135.82,"飛鳥板蓋宮（奈良）"],J663:[36.0,126.7,"白村江（朝鮮半島）"],
+J672:[35.0,136.2,"近江・美濃"],J701:[34.5,135.8,"藤原京（奈良）"],J710:[34.69,135.8,"平城京（奈良）"],J743:[34.69,135.8,"平城京（奈良）"],
+J752:[34.69,135.84,"東大寺（奈良）"],J794:[35.01,135.76,"平安京（京都）"],J894:[35.01,135.76,"平安京（京都）"],J939:[36.1,139.9,"下総（茨城・千葉）"],
+J1016:[35.01,135.76,"平安京（京都）"],J1086:[35.01,135.76,"京都"],J1167:[35.01,135.76,"京都"],J1185:[33.96,130.96,"壇ノ浦（山口県下関）"],
+J1192:[35.32,139.55,"鎌倉"],J1221:[35.01,135.76,"京都"],J1232:[35.32,139.55,"鎌倉"],J1274:[33.6,130.4,"博多湾（福岡）"],J1281:[33.6,130.4,"博多湾（福岡）"],
+J1333:[35.32,139.55,"鎌倉"],J1334:[35.01,135.76,"京都"],J1338:[35.01,135.76,"京都（室町）"],J1392:[35.01,135.76,"京都"],J1404:[34.57,135.48,"堺・博多から明へ"],
+J1467:[35.01,135.76,"京都"],J1543:[30.6,131.0,"種子島（鹿児島）"],J1549:[31.6,130.56,"鹿児島"],J1560:[35.05,136.99,"桶狭間（愛知）"],J1573:[35.01,135.76,"京都"],
+J1575:[34.92,137.56,"長篠（愛知）"],J1582:[35.01,135.76,"本能寺（京都）"],J1590:[35.25,139.15,"小田原（神奈川）"],J1592:[35.2,129.0,"釜山（朝鮮半島）"],
+J1600:[35.37,136.46,"関ヶ原（岐阜）"],J1603:[35.68,139.75,"江戸"],J1615:[34.69,135.53,"大坂城"],J1635:[35.68,139.75,"江戸"],J1637:[32.63,130.26,"原城（長崎・島原）"],
+J1639:[32.74,129.87,"長崎"],J1716:[35.68,139.75,"江戸"],J1787:[35.68,139.75,"江戸"],J1825:[35.68,139.75,"江戸"],J1841:[35.68,139.75,"江戸"],
+J1853:[35.24,139.72,"浦賀（神奈川）"],J1854:[35.45,139.65,"横浜（神奈川）"],J1858:[35.45,139.65,"神奈川沖"],J1860:[35.68,139.75,"江戸城・桜田門"],
+J1867:[35.01,135.75,"二条城（京都）"],J1868:[34.94,135.75,"鳥羽・伏見（京都）"],J1871:[35.68,139.76,"東京"],J1873:[35.68,139.76,"東京"],J1877:[31.6,130.56,"鹿児島・熊本"],
+J1889:[35.68,139.76,"東京"],J1894:[37.5,126.9,"朝鮮半島と黄海"],J1902:[51.5,-0.12,"ロンドン（調印）","w",60],J1904:[40.5,122.5,"旅順・奉天（満州）"],
+J1910:[37.57,126.98,"漢城（ソウル）"],J1914:[36.07,120.38,"青島（中国・山東半島）","w",40],J1918:[36.7,137.2,"富山"],J1923:[35.6,139.7,"東京・横浜"],
+J1925:[35.68,139.76,"東京"],J1931:[41.8,123.43,"柳条湖（奉天郊外）"],J1932:[35.68,139.76,"東京"],J1936:[35.68,139.76,"東京"],J1937:[39.85,116.22,"盧溝橋（北京郊外）","w",40],
+J1941:[21.36,-157.95,"真珠湾（ハワイ）","w",130],J1945:[35.68,139.76,"東京"],J1946:[35.68,139.76,"東京"],J1951:[37.78,-122.42,"サンフランシスコ","w",150],
+J1956:[40.75,-73.97,"ニューヨーク（国連本部）","w",120],J1964:[35.68,139.76,"東京"],J1972:[26.2,127.68,"沖縄"],J1989:[35.68,139.76,"東京"],J1995:[34.69,135.19,"神戸（兵庫）"],
+J2011:[38.3,142.4,"三陸沖（東北）"],
+"W-334":[32.54,44.42,"バビロン（遠征の中心）","w",80],"W-221":[34.34,108.94,"咸陽（西安）"],"W-27":[41.9,12.5,"ローマ"],W313:[45.46,9.19,"ミラノ"],
+W375:[46.5,31,"黒海の北（フン人が西へ）"],W476:[44.42,12.2,"ラヴェンナ（西ローマの都）"],W618:[34.34,108.94,"長安（西安）"],W622:[24.47,39.61,"メディナ"],
+W800:[41.9,12.5,"ローマ（戴冠）"],W962:[41.9,12.5,"ローマ（戴冠）"],W1066:[50.91,0.49,"ヘイスティングス（イングランド）"],W1096:[31.78,35.22,"エルサレム（目的地）"],
+W1206:[47.9,106.9,"モンゴル高原"],W1215:[51.44,-0.56,"ラニーミード（ロンドン郊外）"],W1299:[40.1,30,"アナトリア北西部"],W1339:[47.5,1.5,"フランス"],
+W1368:[32.06,118.8,"南京"],W1453:[41.01,28.98,"コンスタンティノープル"],W1492:[24,-74.5,"サンサルバドル島（カリブ海）","w",110],W1517:[51.87,12.65,"ヴィッテンベルク（ドイツ）"],
+W1519:[36.78,-6.35,"スペインを出航","w",160],W1588:[50.2,-3,"イギリス海峡"],W1600:[51.5,-0.12,"ロンドン"],W1618:[50.09,14.42,"プラハ（ボヘミア）"],
+W1644:[39.9,116.4,"北京"],W1688:[51.5,-0.12,"ロンドン"],W1769:[55.86,-4.25,"グラスゴー（イギリス）"],W1776:[39.95,-75.17,"フィラデルフィア"],
+W1789:[48.86,2.35,"パリ"],W1804:[48.86,2.35,"パリ"],W1815:[48.21,16.37,"ウィーン"],W1840:[23.1,113.3,"広州・香港"],W1848:[48.86,2.35,"パリから各地へ"],
+W1861:[37.5,-79,"アメリカ（北部と南部の境）"],W1869:[30.6,32.3,"スエズ運河（エジプト）"],W1871:[48.8,2.12,"ヴェルサイユ（宣言の場所）"],W1911:[30.55,114.3,"武昌（武漢）"],
+W1914:[43.86,18.41,"サラエボ"],W1917:[59.94,30.31,"ペトログラード"],W1919:[48.8,2.12,"ヴェルサイユ"],W1929:[40.71,-74,"ニューヨーク"],W1939:[52.2,21,"ポーランド"],
+W1945:[37.78,-122.42,"サンフランシスコ（国連憲章）"],W1949:[39.9,116.4,"北京"],W1950:[38,127,"北緯38度線"],W1962:[21.5,-79.5,"キューバ"],
+W1969:[28.57,-80.65,"フロリダから月へ"],W1989:[52.52,13.4,"ベルリン"],W1991:[55.75,37.62,"モスクワ"],W1993:[50.85,5.69,"マーストリヒト（オランダ）"],
+W2001:[40.71,-74,"ニューヨーク"],W2008:[40.71,-74,"ニューヨーク（ウォール街）"],
+};
+// 因果のつながり [原因の札, 結果の札, つながりのひとこと]
+const LINKS = [
+["J57","J239","中国の後ろ盾を求める外交が続く"],["J538","J593","仏教を受け入れた蘇我氏が実権を握る"],["J593","J604","太子の改革"],["J593","J607","太子の外交"],
+["J607","J645","留学生が持ち帰った知識が改革を支える"],["J645","J663","改革のさなかに百済を救援"],["J663","J701","唐に負けない国づくりを急ぐ"],["J672","J701","天武天皇が律令づくりを進める"],
+["W618","J701","唐の律令を手本にする"],["J701","J710","律令国家にふさわしい都"],["J710","J743","人口が増え口分田が足りなくなる"],["J710","J752","仏教で国を守ろうとする"],
+["J752","J794","大寺院が政治に口を出し、都を離れる"],["W618","J894","衰えた唐への派遣をやめる"],["J743","J939","私有地が広がり、地方で武士が力をつける"],
+["J1016","J1086","摂関政治から院政へ"],["J1086","J1167","院が武士を使い、平氏が台頭"],["J939","J1167","武士の力が中央に届く"],["J1167","J1185","平氏の独占に源氏が挙兵"],
+["J1185","J1192","武士の政権が正式に認められる"],["J1192","J1221","幕府と朝廷がぶつかる"],["J1221","J1232","武士の世の決まりが要る"],["W1206","J1274","モンゴル帝国が日本に迫る"],
+["J1274","J1281","元が再び来る"],["J1281","J1333","恩賞がなく御家人が不満"],["J1333","J1334","後醍醐天皇の新しい政治"],["J1334","J1338","新政に不満な武士が尊氏につく"],
+["J1338","J1392","義満が南北朝をまとめる"],["J1392","J1404","最盛期の義満が明と貿易"],["W1368","J1404","明が倭寇に悩み貿易を求める"],["J1338","J1467","将軍家の跡継ぎ争いが大乱に"],
+["J1467","J1560","実力で奪い合う戦国時代"],["W1492","J1543","ヨーロッパ人がアジアの海へ"],["W1517","J1549","宗教改革に対抗してアジア布教"],["J1543","J1575","鉄砲が戦の主役になる"],
+["J1560","J1573","台頭した信長が将軍を追う"],["J1573","J1582","天下統一まであと一歩"],["J1582","J1590","光秀を討った秀吉が後継者に"],["J1590","J1592","統一した秀吉が海外へ"],
+["J1592","J1600","豊臣家の家臣団が割れる"],["J1600","J1603","勝った家康が幕府を開く"],["J1603","J1615","最後の脅威・豊臣家を滅ぼす"],["J1615","J1635","大名を統制する仕組みづくり"],
+["J1549","J1637","キリシタンの増加と弾圧"],["J1637","J1639","キリスト教を警戒し鎖国へ"],["J1716","J1787","財政難と改革のくり返し"],["J1787","J1841","財政難と改革のくり返し"],
+["J1639","J1853","鎖国の日本に開国を迫る"],["W1840","J1858","清の敗北で幕府が焦る"],["J1853","J1854","翌年また来て開国させる"],["J1854","J1858","本格的な貿易へ"],
+["J1858","J1860","条約と弾圧への反発"],["J1860","J1867","幕府の権威が崩れる"],["J1867","J1868","新政府と旧幕府の戦い"],["J1868","J1871","中央集権の国へ"],
+["J1871","J1873","富国強兵の土台づくり"],["J1873","J1877","特権を失った士族が反乱"],["J1877","J1889","反政府運動が言論へ移り、憲法を求める"],["W1871","J1889","ドイツを手本に憲法をつくる"],
+["J1894","J1902","三国干渉でロシアを警戒"],["J1902","J1904","後ろ盾を得てロシアと戦う"],["J1904","J1910","韓国を保護国にし、併合へ"],["W1914","J1914","日英同盟を理由に参戦"],
+["J1914","J1918","大戦景気と物価高"],["J1918","J1925","政党政治と選挙権拡大の声"],["W1929","J1931","恐慌の中で満州に活路を求める"],["J1931","J1932","軍の発言力が強まる"],
+["J1932","J1936","軍の暴走が続く"],["J1936","J1937","軍部が政治を支配し戦線拡大"],["J1937","J1941","戦争が長引き石油を止められる"],["W1939","J1941","欧州の大戦と同時に進む"],
+["J1941","J1945","戦争の終わり"],["J1945","J1946","占領下の民主化"],["W1950","J1951","冷戦の中で独立を急がせる"],["J1951","J1956","独立回復後、国際社会へ"],["W1945","J1956","国際連合への加盟"],
+["J1951","J1964","独立後の高度経済成長"],["J1964","J1989","成長の果てのバブル"],
+["W-27","W313","帝国内でキリスト教徒が増える"],["W375","W476","大移動で帝国が弱る"],["W476","W800","西ローマ亡き後の西欧をまとめる"],["W800","W962","皇帝の冠の受け継ぎ"],
+["W622","W1096","イスラム勢力の拡大"],["W1206","W1368","モンゴル人の元への反発"],["W1299","W1453","オスマン帝国が勢力を広げる"],["W1453","W1492","東の交易路を押さえられ海の道へ"],
+["W1492","W1519","西回りの航路を探す"],["W1517","W1618","カトリックとプロテスタントの対立"],["W1588","W1600","海洋大国イギリスがアジアへ"],["W1368","W1644","明の衰えと滅亡"],
+["W1776","W1789","独立の理念がフランスにも"],["W1789","W1804","革命後の混乱をナポレオンが収める"],["W1804","W1815","ナポレオン後の秩序づくり"],["W1815","W1848","ウィーン体制への不満"],
+["W1600","W1840","東インド会社の貿易"],["W1769","W1840","産業革命で茶と綿の貿易が拡大"],["W1840","W1911","列強に押され続けた清が倒れる"],["W1871","W1914","強国ドイツと列強の対立"],
+["W1914","W1917","大戦の苦しさが革命に"],["W1914","W1919","大戦の戦後処理"],["W1919","W1939","ドイツの恨みが次の大戦へ"],["W1929","W1939","恐慌でナチスが台頭"],
+["W1939","W1945","大戦の反省から国際連合"],["W1949","W1950","冷戦がアジアに広がる"],["W1917","W1991","社会主義国家ソ連の終わり"],["W1989","W1991","東欧の民主化がソ連にも及ぶ"],
+["W1945","W1993","大戦の反省からヨーロッパ統合"],
+];
+
+const BIRDS = [
+["スズメ",1,"Eurasian Tree Sparrow","Passer montanus","小鳥","一年中","茶色の頭に白いほお。人家の近くで群れる","ほおの黒い点が目印。ほかの茶色い小鳥にはこの点がない","人のいない場所ではほとんど暮らさない。ここ数十年で数が大きく減ったとされる"],
+["ハシブトガラス",1,"Large-billed Crow","Corvus macrorhynchos","カラス・ハト","一年中","全身真っ黒の大きな鳥。都会のゴミ置き場の主役","くちばしが太く、額が出っ張る。「カァカァ」と澄んだ声","もとは森の鳥。ビルを崖に見立てて都会に住みついた"],
+["ハシボソガラス",1,"Carrion Crow","Corvus corone","カラス・ハト","一年中","全身真っ黒。畑や河川敷に多い","くちばしが細く額がなだらか。「ガァガァ」と濁った声で、地面をよく歩く","クルミを車にひかせて割る行動が知られる"],
+["キジバト",1,"Oriental Turtle Dove","Streptopelia orientalis","カラス・ハト","一年中","ぶどう色の体に、うろこ模様の翼","首に青と黒のしま模様。「デデーポッポー」と鳴く","別名ヤマバト。2羽のつがいでいることが多い"],
+["ドバト",1,"Feral Pigeon (Rock Dove)","Columba livia","カラス・ハト","一年中","駅や公園で群れる灰色のハト","首が緑や紫に光る。羽の色は個体差が大きい","飼われていたカワラバトが野生化したもの"],
+["ヒヨドリ",1,"Brown-eared Bulbul","Hypsipetes amaurotis","小鳥","一年中","灰色で尾が長め。頭の羽がボサボサ","ほおに茶色の斑。「ヒーヨ、ヒーヨ」とやかましい","花の蜜が好きで、ツバキや梅に顔をつっこむ。ほぼ日本周辺だけにいる鳥"],
+["ムクドリ",1,"White-cheeked Starling","Spodiopsar cineraceus","小鳥","一年中","茶色っぽい体に黄色いくちばしと足","顔が白っぽい。地面をよちよち歩く","夕方に駅前の街路樹へ大群で集まり、騒音やふんが問題になる"],
+["メジロ",1,"Warbling White-eye","Zosterops japonicus","小鳥","一年中","黄緑色の小さな鳥","目のまわりの白い輪","梅や桜の蜜を吸う。「うぐいす色」と思われがちな色は、実はメジロの色"],
+["シジュウカラ",1,"Japanese Tit","Parus minor","小鳥","一年中","黒い頭に白いほお","胸に黒いネクタイ模様。「ツピー、ツピー」と鳴く","鳴き声を組み合わせて文のように使うことが研究で示されている"],
+["ハクセキレイ",1,"White Wagtail","Motacilla alba","小鳥","一年中","白と黒の体。駐車場をちょこちょこ走る","長い尾を上下に振る。顔は白く、目を通る黒い線","もとは北の鳥。ここ数十年で関東の街なかでも子育てするようになった"],
+["ツバメ",1,"Barn Swallow","Hirundo rustica","小鳥","夏","春に南から来て軒下に巣をつくる","二つに割れた長い尾と赤い喉","東南アジアなどから毎年戻る。人の近くに巣をつくり、カラスやヘビを避ける"],
+["カワラヒワ",1,"Grey-capped Greenfinch","Chloris sinica","小鳥","一年中","茶色がかった緑の体","飛ぶと翼に鮮やかな黄色の帯。くちばしはピンクで太い","「キリキリ、コロロ」と鳴く。太いくちばしで草の種を割って食べる"],
+["ウグイス",1,"Japanese Bush Warbler","Horornis diphone","小鳥","一年中","地味な茶色がかった緑の鳥","姿はあまり見せず「ホーホケキョ」の声で分かる","冬は「チャッ、チャッ」と地鳴きだけ。梅の木にいる緑の鳥は、たいていメジロ"],
+["オナガ",1,"Azure-winged Magpie","Cyanopica cyanus","カラス・ハト","一年中","黒い頭に水色の翼","体より長い水色の尾。「ギューイ」としわがれた声","カラスの仲間。日本では関東を中心とした東日本に多い"],
+["カルガモ",1,"Eastern Spot-billed Duck","Anas zonorhyncha","カモ","一年中","川や池に一年中いる茶色のカモ","くちばしの先が黄色。オスとメスがほぼ同じ見た目","多くのカモは冬だけ来るが、カルガモは日本で子育てする。ヒナの引っ越し行列で有名"],
+["アオサギ",1,"Grey Heron","Ardea cinerea","サギ","一年中","灰色の大きなサギ","灰色の体と、頭の後ろの黒い飾り羽","日本で見られるサギでいちばん大きい。じっと立って魚を待つ"],
+["ダイサギ",1,"Great Egret","Ardea alba","サギ","一年中","真っ白で大きなサギ","首が長くS字に曲がる。口の切れ目が目の後ろまで続く","「シラサギ」は白いサギの総称で、そういう名前の種はいない"],
+["カワウ",1,"Great Cormorant","Phalacrocorax carbo","水鳥","一年中","黒くて首の長い水鳥","潜って魚をとり、岸で翼を広げて干す","羽が水をはじきにくいので干す。一時は減ったが今は増え、アユなどを食べる漁業被害も"],
+["トビ",1,"Black Kite","Milvus migrans","猛禽","一年中","茶色の大きな鳥が輪をかいて飛ぶ","尾の先が三味線のバチ形。「ピーヒョロロ」","海辺では人の食べ物を空から奪うことも"],
+["ユリカモメ",1,"Black-headed Gull","Chroicocephalus ridibundus","水鳥","冬","冬の川や海にいる白いカモメ","赤いくちばしと赤い足。冬は目の後ろに黒い点","東京都の鳥。『伊勢物語』の「都鳥」はこの鳥とされる"],
+["ツグミ",2,"Dusky Thrush","Turdus eunomus","小鳥","冬","冬に芝生でよく見る茶色の鳥","白い眉と胸の黒いまだら。数歩歩いては胸を張って止まる","シベリアから冬に渡ってくる。冬は鳴かず「口をつぐむ」が名の由来という説も"],
+["ジョウビタキ",2,"Daurian Redstart","Phoenicurus auroreus","小鳥","冬","冬の小鳥。オスは銀色の頭とオレンジの腹","翼に白い紋。「ヒッ、ヒッ」と鳴いて尾を震わせる","冬鳥だが、近年は国内で子育てする例も増えている"],
+["モズ",2,"Bull-headed Shrike","Lanius bucephalus","小鳥","一年中","頭が大きく尾の長い茶色の鳥","目を通る黒い線と、先の曲がったくちばし","捕まえた虫やカエルを枝に刺す「はやにえ」で知られる。秋の高鳴きは縄張り宣言"],
+["コゲラ",2,"Japanese Pygmy Woodpecker","Yungipicus kizuki","キツツキ","一年中","スズメほどの小さなキツツキ","背中に白と茶色のしま。木の幹をらせん状に登る","日本でいちばん小さいキツツキ。「ギー」と鳴き、街路樹でも見られる"],
+["エナガ",2,"Long-tailed Tit","Aegithalos caudatus","小鳥","一年中","白くて丸い小さな体に長い尾","体より長い尾と、ごく小さな黒いくちばし","北海道のシマエナガは顔が真っ白。関東のエナガは目の上に黒い線がある"],
+["ヤマガラ",2,"Varied Tit","Sittiparus varius","小鳥","一年中","オレンジ色の腹の小鳥","クリーム色の顔と、栗色の腹","木の実を隠して蓄える。昔はおみくじを引く芸を仕込まれた"],
+["シメ",2,"Hawfinch","Coccothraustes coccothraustes","小鳥","冬","ずんぐりした茶色の冬鳥","とても太いくちばしと、目のまわりの黒","太いくちばしで硬い木の実もかみ割る"],
+["イソヒヨドリ",2,"Blue Rock Thrush","Monticola solitarius","小鳥","一年中","オスは青い背中と赤茶色の腹","オスの青とレンガ色の組み合わせ。美しい声でさえずる","本来は海辺の鳥だが、近年は内陸の街のビルにも進出。ヒヨドリの仲間ではない"],
+["セグロセキレイ",2,"Japanese Wagtail","Motacilla grandis","小鳥","一年中","黒と白のセキレイ","顔が黒く、白い眉がある（ハクセキレイは顔が白い）","ほぼ日本だけで子育てする鳥。川原の砂利地に多い"],
+["キセキレイ",2,"Grey Wagtail","Motacilla cinerea","小鳥","一年中","黄色い腹のセキレイ","腹が黄色で背中は灰色。尾をよく振る","渓流など水辺を好むが、街なかの川でも見られる"],
+["カワセミ",2,"Common Kingfisher","Alcedo atthis","水鳥","一年中","青く光る小さな水辺の鳥","背中のコバルトブルー、オレンジの腹、長いくちばし","「飛ぶ宝石」。一時は都市から消えたが、川がきれいになり都心の公園にも戻った"],
+["コサギ",2,"Little Egret","Egretta garzetta","サギ","一年中","小さめの白いサギ","くちばしが黒く、足の指が黄色","黄色い指を水中で震わせて、魚を追い出して捕る"],
+["ゴイサギ",2,"Black-crowned Night Heron","Nycticorax nycticorax","サギ","一年中","ずんぐりした灰色のサギ","紺色の頭と背中、赤い目。首が短い","夜に活動する。天皇から五位の位を授かったという伝説が名の由来"],
+["オオバン",2,"Eurasian Coot","Fulica atra","水鳥","一年中","黒い体の水鳥","白いくちばしと白い額","足は水かきではなく、指にひれのような膜がつく。近年関東の池で急に増えた"],
+["バン",2,"Common Moorhen","Gallinula chloropus","水鳥","一年中","黒っぽい水鳥","赤い額と、先が黄色いくちばし","泳ぎながら首を前後に振る。歩くのもうまい"],
+["コガモ",2,"Eurasian Teal","Anas crecca","カモ","冬","小さなカモ","オスは栗色の頭に緑の帯、お尻に黄色い三角","日本で見るカモで最小級。「ピリッ、ピリッ」と笛のような声"],
+["マガモ",2,"Mallard","Anas platyrhynchos","カモ","冬","オスの頭が緑色のカモ","緑の頭、白い首輪、黄色いくちばし","アヒルの先祖。オスは「青首」と呼ばれる"],
+["オナガガモ",2,"Northern Pintail","Anas acuta","カモ","冬","首のすらりと長いカモ","オスは尾が細長くとがり、首に白い線","人に慣れやすく、公園の池でエサをねだる"],
+["ヒドリガモ",2,"Eurasian Wigeon","Mareca penelope","カモ","冬","オスの頭が赤茶色のカモ","赤茶色の頭に、クリーム色の額","「ピューイ」と口笛のように鳴く。陸に上がって芝を食べる"],
+["キンクロハジロ",2,"Tufted Duck","Aythya fuligula","カモ","冬","黒と白のカモ","金色の目と、後頭部の寝ぐせのような冠羽","名前は金（目）・黒（体）・羽白（翼の白帯）から。潜って貝などを食べる"],
+["カイツブリ",2,"Little Grebe","Tachybaptus ruficollis","水鳥","一年中","池にいる小さな丸い水鳥","栗色の首。すぐ水に潜る","滋賀県の鳥。古名「にお」は琵琶湖の別名「におの海」の由来"],
+["ヒバリ",2,"Eurasian Skylark","Alauda arvensis","小鳥","一年中","畑や河川敷の茶色い小鳥","頭に小さな冠羽。空高く舞い上がってさえずる","春の季語。空中で長いあいださえずり続ける"],
+["アオジ",2,"Black-faced Bunting","Emberiza spodocephala","小鳥","冬","黄色い腹の小鳥","オスは顔が暗い緑灰色で、腹が黄色。茂みのそばの地面にいる","関東では冬鳥。「チッ」と鳴いて茂みに隠れる"],
+["シロハラ",2,"Pale Thrush","Turdus pallidus","小鳥","冬","ツグミに似た茶色の鳥","腹が白っぽく模様がない。飛ぶと尾の先が白い","落ち葉をかき分けて虫を探す、ガサガサという音で気づくことが多い"],
+["ガビチョウ",2,"Chinese Hwamei","Garrulax canorus","外来種","一年中","茶色の中型の鳥","目のまわりから後ろへ伸びる白い模様","中国原産。飼い鳥が逃げて野生化し、特定外来生物に指定されている。大声でさえずる"],
+["ワカケホンセイインコ",2,"Rose-ringed Parakeet","Psittacula krameri","外来種","一年中","都内の公園にいる緑のインコ","全身黄緑で赤いくちばし、長い尾","ペットが野生化し、東京などで大群のねぐらをつくっている"],
+["コジュケイ",2,"Chinese Bamboo Partridge","Bambusicola thoracicus","外来種","一年中","茂みにいる、ずんぐりした鳥","「ちょっと来い、ちょっと来い」と聞こえる大声","大正時代に狩猟用として中国から持ち込まれ、放された"],
+["チョウゲンボウ",2,"Common Kestrel","Falco tinnunculus","猛禽","一年中","赤茶色の小さなハヤブサの仲間","空中で羽ばたきながら一点に止まる「ホバリング」","崖の代わりに橋や建物で子育てすることもある"],
+["オオタカ",2,"Northern Goshawk","Accipiter gentilis","猛禽","一年中","ハトくらいの鳥を狩るタカ","目の上の白い眉と、胸の細かい横じま","一時は絶滅が心配されたが、今は都市の公園で子育てする例もある"],
+];
+
+const toCard=src=>c=>({kind:"year",key:src+c[0],y:c[0],lv:c[1],name:c[2],en:c[3],era:c[4],why:c[5],what:c[6],then:c[7],goro:c[8]||"",src,place:PLACE[src+c[0]],doc:HMEDIA[src+c[0]]});
+const ALL={J:JP.map(toCard("J")), W:WD.map(toCard("W")),
+  B:BIRDS.map(b=>({kind:"choice",name:b[0],lv:b[1],en:b[2],sci:b[3],grp:b[4],season:b[5],f1:b[6],f2:b[7],f3:b[8],m:MEDIA[b[3]]||{},hab:HAB[b[3]]||["",""],key:"B"+b[3]}))};
+const BYKEY={}; ["J","W","B"].forEach(k=>ALL[k].forEach(c=>BYKEY[c.key]=c));
+const CAUSES={}, EFFECTS={}; LINKS.forEach(([a,b,t])=>{ if(!BYKEY[a]||!BYKEY[b]) return; (CAUSES[b]=CAUSES[b]||[]).push([a,t]); (EFFECTS[a]=EFFECTS[a]||[]).push([b,t]); });
+// 季節: 冬鳥は10〜4月、夏鳥は4〜9月
+function inSeason(c,m){ return c.season==="冬"? (m>=10||m<=4) : c.season==="夏"? (m>=4&&m<=9) : true; }
+const GENRES=[{id:"H",name:"歴史"},{id:"B",name:"関東の鳥"}];
+function rng(seedStr){let h=1779033703^seedStr.length;for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
+  return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
+function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function choicesFor(deck,qi,gid){
+  const c=deck[qi], r=rng(gid+":"+qi), pool=deck.filter(x=>x!==c);
+  const same=shuffle(pool.filter(x=>x.grp===c.grp),r), other=shuffle(pool.filter(x=>x.grp!==c.grp),r);
+  const picks=same.slice(0,2).concat(other).slice(0,3);
+  return shuffle([c].concat(picks),r).map(x=>x.name);
+}
+const MODES=[{id:"J",name:"日本史"},{id:"W",name:"世界史"},{id:"M",name:"ミックス"}];
+const BMODES=[{id:"P",name:"写真であてる"},{id:"V",name:"鳴き声であてる"}];
+const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"むずかしい"},{lv:4,name:"今月の鳥"}];
+function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
+function deckFor(mode,lv,genre,gid,bmode,custom){
+  if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return genre==="B"? (gid?shuffle(d,rng(gid)):d) : sortYears(d); }
+  if(genre==="B"){ const m=new Date().getMonth()+1; const d=ALL.B.filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && (bmode==="V"?c.m.snd:c.m.img)); return gid? shuffle(d,rng(gid)) : d; }
+  const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
+  return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
+}
+const yearText=y=>(y<0?"紀元前":"")+Math.abs(y);
+const tagOf=c=>c.src==="J"?`日本・${c.era}時代`:`世界・${c.era}`;
+let AC=null, muted=(()=>{try{return localStorage.getItem("nb-mute")==="1"}catch(e){return false}})();
+function ac(){ try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==="suspended") AC.resume(); }catch(e){ AC=null; } return AC; }
+function tone(freq,start,dur,vol,type){ const a=ac(); if(!a) return; const t=a.currentTime+start;
+  const o=a.createOscillator(), g=a.createGain(); o.type=type||"sine"; o.frequency.value=freq;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g).connect(a.destination); o.start(t); o.stop(t+dur+0.05); }
+function se(kind){ if(muted) return;
+  if(kind==="ok"){ tone(784,0,0.35,0.12); tone(1175,0.09,0.5,0.10); }        // ソ→レ、軽い鈴のような2音
+  else if(kind==="ng"){ tone(311,0,0.32,0.09,"triangle"); tone(233,0.12,0.4,0.08,"triangle"); } // 低めに下がる2音
+  else if(kind==="flip"){ tone(1568,0,0.06,0.03); }
+}
+function renderMute(){ const b=$("muteBtn"); if(b){ b.textContent=muted?"音：オフ":"音：オン"; b.setAttribute("aria-pressed",String(!muted)); } }
+const ASK_MS=10000, NEXT_MAX_MS=90000;
+// ---- 地図・つながり・分布 ----
+const SVGNS="http://www.w3.org/2000/svg";
+function svgEl(t,a){ const e=document.createElementNS(SVGNS,t); for(const k in a) e.setAttribute(k,a[k]); return e; }
+function mapFor(c){
+  if(!c.place||typeof GEO==="undefined") return null;
+  const [lat,lon,label,view,wdeg]=c.place; let path,x,y,vb;
+  if(view==="w"||c.src==="W"){
+    const K=GEO.K, w=(wdeg||55)*K, h=w*0.6; x=lon*K; y=-lat*K;
+    let x0=x-w/2, y0=Math.max(-75*K, Math.min(y-h/2, 60*K-h)); vb=[x0,y0,w,h]; path=GEO.world;
+  } else {
+    const J=GEO.J, w=13*J*GEO.c, h=w*0.62; x=(lon-122)*GEO.c*J; y=(46-lat)*J;
+    let x0=Math.max(0,Math.min(x-w/2,GEO.jw-w)), y0=Math.max(0,Math.min(y-h/2,GEO.jh-h)); vb=[x0,y0,w,h]; path=GEO.japan;
+  }
+  const r=vb[2]/70;
+  const svg=svgEl("svg",{viewBox:vb.join(" "),role:"img","aria-label":"地図："+label});
+  svg.append(svgEl("path",{d:path,class:"land"}), svgEl("circle",{cx:x,cy:y,r:r*1.6,class:"ring"}), svgEl("circle",{cx:x,cy:y,r:r,class:"pin"}));
+  const box=el("div","mapbox reveal-x"); box.append(svg, el("span","mapcap","📍 "+label)); return box;
+}
+function docFor(c){
+  if(!c.doc) return null; const f=el("figure","docimg reveal-x"); const im=document.createElement("img"); im.src=c.doc[0]; im.alt=c.doc[4]; im.loading="lazy";
+  f.append(im, el("figcaption",null,c.doc[4])); return f;
+}
+function nodeFor(k,me){
+  const c=BYKEY[k]; const n=el("div","node"+(me?" me":"")); n.append(el("b",null,yearText(c.y)), document.createTextNode(c.name));
+  if(!me){ const i=S.deck.indexOf(c); if(i>S.qi) n.append(el("span","soon","この先に出ます")); }
+  return n;
+}
+function linksFor(c){
+  const ca=(CAUSES[c.key]||[]).slice(-2), ef=(EFFECTS[c.key]||[]).slice(0,2);
+  if(!ca.length&&!ef.length) return null;
+  const box=el("div","links reveal-x"); box.append(el("span","lh","つながり"));
+  const ch=el("div","chain");
+  ca.forEach(([k,t])=>{ ch.append(nodeFor(k)); ch.append(el("div","edge",t)); });
+  ch.append(nodeFor(c.key,true));
+  ef.forEach(([k,t])=>{ ch.append(el("div","edge",t)); ch.append(nodeFor(k)); });
+  box.append(ch); return box;
+}
+const TERR=[["M","山地",'<path d="M2 18 L10 5 L15 12 L18 8 L24 18 Z"/>'],["F","丘陵・林",'<path d="M7 18V12M19 18V13"/><circle cx="7" cy="8" r="4.5"/><circle cx="19" cy="9" r="3.8"/>'],
+  ["A","畑・草地",'<path d="M2 17h22M4 13h18M6 9.5h14"/><path d="M13 9.5V5M11 6.5l2-1.5 2 1.5"/>'],["U","街・公園",'<path d="M3 18V9h6v9M9 18V5h7v13M16 18v-7h6v7M2 18h22"/>'],
+  ["R","川・池",'<path d="M2 8c3-2 5 2 8 0s5 2 8 0 4 1 6 0M2 14c3-2 5 2 8 0s5 2 8 0 4 1 6 0"/>'],["S","海・干潟",'<path d="M2 11c2-3 4-3 6 0s4 3 6 0 4-3 6 0 3 2 4 1M2 17h22"/>']];
+function habitatFor(c){
+  const box=el("div","links reveal-x"); box.append(el("span","lh","関東のどこにいる？"));
+  const g=el("div","terrain"); TERR.forEach(([k,n,icon])=>{ const d=el("div",c.hab[0].includes(k)?"on":""); d.innerHTML=`<svg viewBox="0 0 26 20" aria-hidden="true">${icon}</svg>`; d.append(n); g.append(d); });
+  box.append(g, el("p","habnote",c.hab[1]+"。")); return box;
+}
+// ---- 鳴き声 ----
+const VOICE_BUF=new Map(); let voiceSrc=null, voiceEl=null;
+function loadVoice(url){
+  if(VOICE_BUF.has(url)) return VOICE_BUF.get(url);
+  const p=fetch(url).then(r=>{ if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+    .then(ab=>{ const a=ac(); if(!a) throw new Error("noaudio"); return new Promise((ok,ng)=>a.decodeAudioData(ab,ok,ng)); });
+  p.catch(()=>VOICE_BUF.delete(url)); VOICE_BUF.set(url,p); return p;
+}
+function setPlaying(on){ const v=document.getElementById("voiceBox"); if(v) v.classList.toggle("playing",on); }
+function stopVoice(){ try{ if(voiceSrc) voiceSrc.stop(); }catch(e){} voiceSrc=null; if(voiceEl){ voiceEl.pause(); voiceEl=null; } setPlaying(false); }
+function playVoice(c,manual){
+  if(!c.m.snd || (muted && !manual)) return;
+  const url=c.m.snd[0], qi=S.qi; stopVoice();
+  loadVoice(url).then(buf=>{ if(S.qi!==qi||S.view!=="game") return; const a=ac(); stopVoice();
+    const src=a.createBufferSource(), g=a.createGain(); g.gain.value=0.9; src.buffer=buf; src.connect(g).connect(a.destination);
+    src.onended=()=>{ if(voiceSrc===src){ voiceSrc=null; setPlaying(false);} }; src.start(); voiceSrc=src; setPlaying(true);
+  }).catch(()=>{ // Web Audioが使えない端末は audio 要素で
+    if(S.qi!==qi) return; const au=new Audio(url); voiceEl=au; au.onended=()=>setPlaying(false); au.play().then(()=>setPlaying(true)).catch(()=>{});
+  });
+}
+function preloadNext(){
+  const n=S.deck[S.qi+1]; if(!n||n.kind!=="choice") return;
+  if(S.bmode==="V"&&n.m.snd) loadVoice(n.m.snd[0]);
+  if(n.m.img){ const im=new Image(); im.src=n.m.img[0]; }
+}
+function creditFor(c){
+  const p=el("p","credit reveal-x"); const add=(label,who,lic,url,extra)=>{
+    if(p.childNodes.length) p.append(document.createElement("br"));
+    p.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／");
+    const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="写真"?"Wikimedia Commons":"xeno-canto"; p.append(a); };
+  if(c.m.img) add("写真",c.m.img[1],c.m.img[2],c.m.img[3]);
+  if(S.bmode==="V"&&c.m.snd) add("鳴き声",c.m.snd[1],c.m.snd[2],"https://xeno-canto.org/"+c.m.snd[3],c.m.snd[4]);
+  return p;
+}
+
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+const S={
+  name: store.get("nb-name")||"",
+  lv: Number(store.get("nb-lv"))||1,
+  mode: store.get("nb-mode")||"J",
+  genre: store.get("nb-genre")||"H", bmode: store.get("nb-bmode")||"P", choices:[],
+  view:"lobby",
+  gid:null, deck:[], qi:0, phase:"ask", input:"", ans:null, ready:-1,
+  score:0, log:[], askStart:0, revealAt:0, custom:null, hist:"", stamp:null, stampN:0,
+};
+if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
+if(!GENRES.some(g=>g.id===S.genre)) S.genre="H";
+if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="P";
+let room=null;
+
+function myPresence(){
+  return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, mode:S.mode, genre:S.genre, bmode:S.bmode, qi:S.qi, phase:S.phase,
+    ans:S.ans, ready:S.ready, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
+}
+function push(){ if(room){ room.presence(myPresence()).catch(()=>{}); } }
+function others(){
+  if(!room) return [];
+  return room.peers().filter(p=>!p.sameTab && p.kind==="viewer" && p.presence && typeof p.presence==="object");
+}
+function safeName(p){ const n=p&&typeof p.name==="string"?p.name.slice(0,12):""; return n||"名無し"; }
+function gamePeers(){ return S.gid? others().filter(p=>p.presence.gid===S.gid).map(p=>p.presence) : []; }
+
+// ---- lobby ----
+function seg(boxId, items, cur, label, onPick){
+  const box=$(boxId); box.textContent="";
+  items.forEach(it=>{
+    const b=document.createElement("button"); b.type="button"; b.className="lv";
+    b.setAttribute("aria-pressed", String(cur===it.key));
+    const t=document.createElement("b"); t.textContent=it.name;
+    b.append(t);
+    if(label){const s=document.createElement("span"); s.textContent=label(it); b.append(s);}
+    b.onclick=()=>onPick(it.key);
+    box.append(b);
+  });
+}
+function renderPickers(){
+  seg("genres", GENRES.map(g=>({key:g.id,name:g.name})), S.genre, null, k=>{S.genre=k; store.set("nb-genre",k); renderPickers(); push();});
+  const isB=S.genre==="B";
+  $("modesLabel").textContent=isB?"出題のしかた":"出題範囲";
+  $("modes").style.gridTemplateColumns=`repeat(${isB?2:3},1fr)`;
+  if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bmode",k); renderPickers(); push();});
+  else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
+  const lvs=S.genre==="B"?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
+  if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
+  $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
+  seg("levels", lvs.map(l=>({key:l.lv,name:l.name})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(S.genre==="B"?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
+  if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="V"?"。鳴き声は約10秒。答え合わせで写真も出ます":"。答え合わせで特徴と豆知識が出ます"); return; }
+  const d=deckFor(S.mode,S.lv);
+  $("rangeNote").textContent=`${yearText(d[0].y)}年「${d[0].name}」から ${yearText(d[d.length-1].y)}年「${d[d.length-1].name}」まで`;
+}
+function chip(name, opts={}){
+  const c=document.createElement("span"); c.className="chip"+(opts.me?" me":"");
+  const n=document.createElement("span"); n.textContent=name+(opts.me?"（あなた）":"");
+  c.append(n);
+  if(opts.score!=null){const s=document.createElement("span");s.className="s";s.textContent=opts.score;c.append(s);}
+  if(opts.st){const s=document.createElement("span");s.className="st"+(opts.stOk?" ok":"");s.textContent=opts.st;c.append(s);}
+  return c;
+}
+function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
+function genreLabel(g,mode,bm){return g==="B"?(bm==="V"?"関東の鳥・鳴き声":"関東の鳥・写真"):"歴史・"+modeName(mode);}
+function lvName(lv){return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
+const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+function renderLobby(){
+  const box=$("lobbyPlayers"); box.textContent="";
+  box.append(chip(S.name||"名無し",{me:true}));
+  others().forEach(p=>{
+    const pr=p.presence; const st=pr.view==="game"?"対戦中":(pr.view==="result"?"結果":"ロビー");
+    box.append(chip(safeName(pr),{st}));
+  });
+  const g=findOpenGame(); const inv=$("invite");
+  if(g && S.view==="lobby"){
+    inv.hidden=false;
+    $("inviteText").textContent=`${safeName(g)}さんが「${genreLabel(g.genre,g.mode,g.bmode)}・${Array.isArray(g.custom)&&g.custom.length?"リベンジ戦":lvName(g.lv)}」で対戦中です`;
+  } else inv.hidden=true;
+}
+function findOpenGame(){
+  const gs=others().map(p=>p.presence).filter(pr=>typeof pr.gid==="string" && pr.view==="game");
+  if(!gs.length) return null;
+  gs.sort((a,b)=>String(b.gid).localeCompare(String(a.gid)));
+  return gs[0];
+}
+
+// ---- game ----
+function startGame(gid, genre, mode, lv, qi, bmode, custom){
+  S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
+  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode); } S.qi=Math.min(qi||0,S.deck.length-1); S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi);
+  S.view="game"; show("game"); beginAsk();
+}
+function beginAsk(){
+  S.phase="ask"; S.input=""; S.ans=null; S.askStart=Date.now(); S.stamp=null; stopVoice(); se("flip");
+  const c=S.deck[S.qi];
+  const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
+  if(c.kind==="choice"){
+    $("cEra").textContent="関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
+    $("cEv").textContent=""; $("cEn").textContent="";
+    if(S.bmode==="V"){
+      const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i"));
+      const b=el("button","playbtn","もう一度聞く"); b.type="button"; b.onclick=()=>playVoice(c,true);
+      v.append(w,b,el("p","vnote","この声はどの鳥？")); card.insertBefore(v,$("cEv"));
+      playVoice(c,false);
+    } else {
+      const im=document.createElement("img"); im.className="photo q-x"; im.src=c.m.img[0]; im.alt="この鳥はどれ？"; card.insertBefore(im,$("cEv"));
+    }
+    preloadNext();
+    S.choices=choicesFor(S.deck,S.qi,S.gid);
+  } else {
+    $("cEra").textContent=tagOf(c);
+    $("cEv").textContent=c.name; $("cEn").textContent=c.en;
+  }
+  const big=isBig(); card.classList.toggle("big",big);
+  if(big){ const t=el("span","bigtag","大一番・得点2倍"); $("cEra").prepend(t); }
+  card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
+  $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
+  $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv)}`;
+  const isC=c.kind==="choice"; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC;
+  if(isC) renderChoices();
+  $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
+  renderSlots(); renderGamePlayers(); push();
+}
+function renderChoices(){
+  const box=$("choices"); box.textContent="";
+  S.choices.forEach(n=>{const b=el("button","choice",n); b.type="button";
+    if(S.ans){ b.disabled=true; if(S.ans.v===n) b.classList.add("picked"); }
+    b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans){ answer(n); renderChoices(); } }; box.append(b);});
+  const p=el("button","choice pass","パス"); p.type="button"; p.disabled=!!S.ans; p.onclick=()=>{ if(!S.ans){answer(null); renderChoices();} }; box.append(p);
+}
+function renderSlots(){
+  const c=S.deck[S.qi]; if(c.kind!=="year") return; const len=String(Math.abs(c.y)).length; const box=$("slots"); box.textContent="";
+  if(c.y<0){const b=document.createElement("span");b.className="bce";b.textContent="紀元前";box.append(b);}
+  for(let i=0;i<len;i++){const d=document.createElement("div");d.className="slot"+(i===S.input.length?" cur":"");d.textContent=S.input[i]||"";box.append(d);}
+  const y=document.createElement("span");y.className="bce";y.textContent="年";box.append(y);
+}
+function press(k){
+  if(S.view!=="game"||S.phase!=="ask"||S.ans) return;
+  if(S.deck[S.qi].kind!=="year"){ if(k==="pass") answer(null); return; }
+  const len=String(Math.abs(S.deck[S.qi].y)).length;
+  if(k==="del"){S.input=S.input.slice(0,-1);renderSlots();return;}
+  if(k==="pass"){answer(null);return;}
+  if(S.input.length>=len) return;
+  S.input+=k; renderSlots();
+  if(S.input.length===len) setTimeout(()=>answer(S.input),180);
+}
+function isBig(){ return S.deck.length>=6 && S.qi>=S.deck.length-3; }
+function answer(v){
+  if(S.ans) return;
+  const c=S.deck[S.qi];
+  const ok = v!=null && (c.kind==="choice" ? v===c.name : Number(v)===Math.abs(c.y));
+  const near = !ok && v!=null && c.kind==="year" && Math.abs(Number(v)-Math.abs(c.y))<=3;
+  const pt=(ok?1:near?0.5:0)*(isBig()?2:1);
+  S.ans={q:S.qi, v:v==null?"":String(v), ok, pt};
+  S.score+=pt; S.hist+=ok?"1":near?"h":"0";
+  S.log.push({c, ok, pt});
+  $("waitAsk").textContent="ほかの人の回答を待っています…";
+  push(); check();
+}
+function allAnswered(){
+  return gamePeers().every(pr=> (pr.ans && pr.ans.q===S.qi) || (typeof pr.qi==="number" && pr.qi>S.qi));
+}
+function el(tag, cls, text){const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e;}
+function reveal(){
+  if(!S.ans) answer(null);
+  S.phase="reveal"; S.revealAt=Date.now();
+  se(S.ans&&S.ans.ok?"ok":"ng");
+  const c=S.deck[S.qi], prev=S.qi>0?S.deck[S.qi-1]:null;
+  const card=$("card");
+  if(c.kind==="choice"){
+    if(S.bmode==="V" && c.m.img){ const im=document.createElement("img"); im.className="photo reveal-x"; im.src=c.m.img[0]; im.alt=c.name; card.insertBefore(im,$("cEv")); }
+    const nm=el("div","bname reveal-x",c.name); card.insertBefore(nm,$("cEv"));
+    card.insertBefore(el("p","bsub reveal-x",`${c.en}　${c.sci}`),$("cEv"));
+    card.querySelectorAll(".qtext").forEach(n=>n.remove());
+    const flow=el("div","flow reveal-x");
+    [c.f1,c.f2,c.f3].forEach((v,i)=>{const r=el("div","fr arrow dot"); r.textContent=v+"。"; flow.append(r);});
+    card.append(flow); card.append(habitatFor(c)); card.append(creditFor(c));
+    $("askArea").hidden=true; $("revealArea").hidden=false; $("waitAsk").textContent="";
+    renderAnswers(); push(); return;
+  }
+  const yr=el("div","year reveal-x", yearText(c.y)); yr.append(el("small",null,"年"));
+  card.insertBefore(yr, $("cEv"));
+  if(prev){
+    const gap=c.y-prev.y;
+    card.insertBefore(el("p","gap reveal-x", gap===0?`前の札「${prev.name}」と同じ年`:`前の札「${prev.name}」から ${gap}年後`), $("cEv"));
+  }
+  const flow=el("div","flow reveal-x");
+  [c.why,c.what,c.then].filter(Boolean).forEach((v,i)=>{ const r=el("div","fr"+(i?" arrow cz":"")); r.textContent=v+"。"; flow.append(r); });
+  card.append(flow);
+  if(c.goro){const g=el("p","goro reveal-x"); g.append(el("b",null,"語呂 "), document.createTextNode(c.goro)); card.append(g);}
+  const lk=linksFor(c); if(lk) card.append(lk);
+  const mp=mapFor(c), im=docFor(c);
+  if(mp&&im){ const tabs=el("div","vtabs reveal-x"); const views=[["地図",mp],["資料",im]]; im.hidden=true;
+    views.forEach(([n,v],i)=>{ const b=el("button",null,n); b.type="button"; b.setAttribute("aria-pressed",String(i===0));
+      b.onclick=()=>{ views.forEach(([,w],j)=>{ w.hidden=j!==i; tabs.children[j].setAttribute("aria-pressed",String(j===i)); }); }; tabs.append(b); });
+    card.insertBefore(tabs,yr); card.insertBefore(mp,yr); card.insertBefore(im,yr); }
+  else if(mp||im) card.insertBefore(mp||im, yr);
+  if(c.doc){ const cr=el("p","credit reveal-x"); cr.append(`資料：${c.doc[1]}／${c.doc[2]}／`); const a=document.createElement("a"); a.href=c.doc[3]; a.target="_blank"; a.rel="noopener"; a.textContent="Wikimedia Commons"; cr.append(a); card.append(cr); }
+  $("askArea").hidden=true; $("revealArea").hidden=false; $("waitAsk").textContent="";
+  renderAnswers(); push();
+}
+function markFor(a, y){
+  if(!a || a.v==="") return ["パス","ng"];
+  if(a.ok) return ["正解","ok"];
+  if(typeof y!=="number") return ["はずれ","ng"];
+  if(Math.abs(Number(a.v)-Math.abs(y))<=3) return ["惜しい","near"];
+  return ["はずれ","ng"];
+}
+let ansSig="", flipQ=-1; const seenStamp={};
+function stampOf(st){ return st&&st.q===S.qi&&typeof st.e==="string"&&STAMPS.includes(st.e)?st:null; }
+function renderAnswers(){
+  const cc=S.deck[S.qi]; const y=cc.kind==="year"?cc.y:null; const box=$("answers");
+  const rows=[{name:(S.name||"名無し")+"（あなた）", ans:S.ans, st:stampOf(S.stamp)}];
+  gamePeers().forEach(pr=>{const has=pr.ans&&pr.ans.q===S.qi; rows.push({name:safeName(pr), ans:has?pr.ans:null, wait:!has&&!(pr.qi>S.qi), st:stampOf(pr.stamp)});});
+  const sig=S.qi+JSON.stringify(rows); if(sig===ansSig) return; ansSig=sig;
+  box.textContent=""; box.classList.toggle("flipin", flipQ!==S.qi); 
+  if(flipQ!==S.qi){ flipQ=S.qi; setTimeout(()=>box.classList.remove("flipin"),1600); }
+  rows.forEach((r,i)=>{
+    const d=el("div","arow"); d.style.gridTemplateColumns="1fr auto auto auto";
+    const [t,cl]=r.wait?["時間切れ","ng"]:markFor(r.ans,y);
+    const pt=r.ans&&typeof r.ans.pt==="number"&&r.ans.pt>0?` +${fmt(r.ans.pt)}`:"";
+    const sp=el("span","stp",r.st?r.st.e:"");
+    const id=r.name+":"+S.qi; if(r.st && seenStamp[id]!==r.st.n){ seenStamp[id]=r.st.n; sp.classList.add("pop"); }
+    d.append(el("span","nm",r.name), sp, el("span","v"+(y==null?" vs":""),r.ans&&r.ans.v?r.ans.v:"—"), el("span","mark "+cl,t+pt));
+    box.append(d);
+  });
+}
+const STAMPS=["👏","😱","🤣","🔥","🤔"];
+function buildStamps(){ const box=$("stamps"); STAMPS.forEach(e=>{ const b=el("button",null,e); b.type="button"; b.setAttribute("aria-label","スタンプ "+e);
+  b.onclick=()=>{ if(S.phase!=="reveal") return; S.stampN++; S.stamp={q:S.qi,e,n:S.stampN}; push(); renderAnswers(); }; box.append(b); }); }
+function next(){
+  if(S.phase!=="reveal") return;
+  S.ready=S.qi; $("nextBtn").disabled=true; $("waitNext").textContent="ほかの人を待っています…"; push(); check();
+}
+function allReady(){
+  return gamePeers().every(pr=> (typeof pr.ready==="number" && pr.ready>=S.qi) || (typeof pr.qi==="number" && pr.qi>S.qi) || pr.view==="result");
+}
+function advance(){
+  $("nextBtn").disabled=false; $("waitNext").textContent="";
+  if(S.qi+1>=S.deck.length){ finish(); return; }
+  S.qi++; beginAsk();
+}
+function finish(){ stopVoice(); S.view="result"; S.phase="done"; show("result"); push(); renderResult(); }
+function renderResult(){
+  const rows=[{name:(S.name||"名無し")+"（あなた）",score:S.score}];
+  others().filter(p=>p.presence.gid===S.gid).forEach(p=>rows.push({name:safeName(p.presence),score:Number(p.presence.score)||0}));
+  rows.sort((a,b)=>b.score-a.score);
+  const titles=["横綱","大関","関脇","小結","前頭"];
+  const box=$("banzuke"); box.textContent="";
+  rows.forEach((r,i)=>{
+    const d=el("div","rank");
+    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"/"+(S.deck.length+Math.min(3,S.deck.length>=6?3:0))));
+    box.append(d);
+  });
+  const ml=$("missList"); ml.textContent="";
+  const miss=S.log.filter(l=>!l.ok);
+  $("revengeBtn").hidden=!miss.length;
+  const peers=others().filter(p=>p.presence.gid===S.gid).map(p=>p.presence).filter(pr=>typeof pr.hist==="string");
+  const hard=peers.length? S.deck.filter((c,i)=>S.hist[i]!=="1" && peers.every(pr=>pr.hist[i]!=="1") && i<S.hist.length) : [];
+  $("hardBox").hidden=!hard.length; const hl=$("hardList"); hl.textContent="";
+  hard.forEach(c=>{ const d=el("div"); d.append(el("b",null,c.kind==="year"?yearText(c.y)+"　":""), document.createTextNode(c.name)); hl.append(d); });
+  if(!miss.length){ml.append(el("p",null,"全問正解です。お見事。"));}
+  miss.forEach(l=>{const d=el("div"); if(l.c.kind==="choice") d.append(el("b",null,l.c.name), el("span",null,l.c.f2)); else d.append(el("b",null,yearText(l.c.y)), el("span",null,l.c.name)); ml.append(d);});
+}
+function renderGamePlayers(){
+  const box=$("gamePlayers"); box.textContent="";
+  box.append(chip(S.name||"名無し",{me:true,score:fmt(S.score),st:S.phase==="ask"?(S.ans?"回答済":"考え中"):"",stOk:!!S.ans}));
+  gamePeers().forEach(pr=>{
+    const answered=pr.ans&&pr.ans.q===S.qi;
+    const st=S.phase==="ask"?(answered||pr.qi>S.qi?"回答済":"考え中"):((pr.ready>=S.qi||pr.qi>S.qi)?"次へOK":"読んでいる");
+    box.append(chip(safeName(pr),{score:fmt(Number(pr.score)||0),st,stOk:st==="回答済"||st==="次へOK"}));
+  });
+}
+function check(){
+  if(S.view==="lobby"){ renderLobby(); return; }
+  if(S.view==="result"){ renderResult(); return; }
+  const now=Date.now();
+  if(S.phase==="ask"){
+    const left=Math.max(0,ASK_MS-(now-S.askStart));
+    $("timerBar").style.transform=`scaleX(${left/ASK_MS})`;
+    if(left<=0 || (S.ans && allAnswered())) reveal();
+  } else if(S.phase==="reveal"){
+    $("timerBar").style.transform="scaleX(0)";
+    renderAnswers();
+    if(S.ready>=S.qi && (allReady() || now-S.revealAt>NEXT_MAX_MS)) advance();
+  }
+  renderGamePlayers();
+}
+function show(v){ ["lobby","game","result"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
+
+function buildKeypad(){
+  const box=$("keypad");
+  ["1","2","3","4","5","6","7","8","9","pass","0","del"].forEach(k=>{
+    const b=document.createElement("button"); b.type="button"; b.className="key"+(k.length>1?" fn":"")+(k==="pass"?" pass":"");
+    b.textContent=k==="pass"?"パス":k==="del"?"消す":k; b.onclick=()=>press(k); box.append(b);
+  });
+}
+const newGid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+document.addEventListener("keydown",e=>{
+  if(S.view!=="game"||document.activeElement===$("nick")) return;
+  if(/^[0-9]$/.test(e.key)) press(e.key);
+  else if(e.key==="Backspace") press("del");
+  else if(e.key==="Enter" && S.phase==="reveal") next();
+});
+$("nick").value=S.name;
+$("nick").addEventListener("input",e=>{S.name=e.target.value.trim().slice(0,12); store.set("nb-name",S.name); push(); renderLobby();});
+document.addEventListener("pointerdown",()=>{ if(!muted) ac(); },{once:true});
+$("muteBtn").onclick=()=>{ muted=!muted; try{localStorage.setItem("nb-mute",muted?"1":"0")}catch(e){} renderMute(); if(!muted){ac(); se("ok");} };
+renderMute();
+$("startBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
+$("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
+  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1;
+  const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
+  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"P";
+  const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
+  startGame(g.gid,genre,mode,lv,qi,bm,cu); };
+$("nextBtn").onclick=next;
+$("againBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
+$("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
+$("lobbyBtn").onclick=()=>{ stopVoice(); S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); };
+
+// 公開版: Supabase Realtime の presence で同じ部屋の人をつなぐ（DBの表は使わない）
+function sbRoom(cfg){
+  const sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false,autoRefreshToken:false}});
+  const me=Math.random().toString(36).slice(2,10); let list=[], cbs=[], errCb=null, ready=false, pending=null, timer=null, lastSent=0;
+  const ch=sb.channel("anki-taisen:"+cfg.room,{config:{presence:{key:me}}});
+  ch.on("presence",{event:"sync"},()=>{ const st=ch.presenceState();
+    list=Object.entries(st).filter(([k])=>k!==me).map(([k,arr])=>({sameTab:false,kind:"viewer",presence:(arr[arr.length-1]||{}).p}));
+    cbs.forEach(f=>{try{f()}catch(e){}}); });
+  const flush=()=>{ timer=null; if(!ready||!pending) return; lastSent=Date.now(); const p=pending; pending=null; ch.track({p}).catch(()=>{}); };
+  const api={
+    presence(p){ pending=p; if(!timer){ const wait=Math.max(0,200-(Date.now()-lastSent)); timer=setTimeout(flush,wait); } return Promise.resolve(); },
+    peers(){ return list; },
+    onPeers(f,e){ cbs.push(f); errCb=e; }
+  };
+  return new Promise(res=>{ let done=false; ch.subscribe(st=>{
+    if(st==="SUBSCRIBED"){ ready=true; if(pending) flush(); if(!done){done=true;res(api);} }
+    else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT"||st==="CLOSED"){ if(!done){done=true;res(null);} else if(errCb) errCb(); }
+  }); setTimeout(()=>{ if(!done){done=true;res(null);} },10000); });
+}
+renderPickers(); buildKeypad(); buildStamps(); renderLobby();
+setInterval(check,150);
+
+(async()=>{
+  try{ room = window.claude && window.claude.use ? await window.claude.use("room") : (window.ANKI_SB ? await sbRoom(window.ANKI_SB) : null); }catch(e){ room=null; }
+  if(!room){ $("roomNote").textContent="いまは一人で遊べます。友人と対戦するには、このページを友人と共有して同時に開いてください。"; return; }
+  $("roomNote").textContent="同じページを開いた友人がここに並びます。誰かが「対戦をはじめる」を押すと、ほかの人に参加ボタンが出ます。";
+  room.onPeers(()=>check(), ()=>{ $("roomNote").textContent="接続できませんでした。一人で遊べます。"; room=null; });
+  push();
+})();
+</script>
+
+
+
+</body>
+</html>
