@@ -45,8 +45,10 @@ html,body{height:100%}
 body{background:var(--pg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;margin:0;-webkit-tap-highlight-color:transparent}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--pg)}
 .app{max-width:520px;margin:0 auto;min-height:100%;box-sizing:border-box;padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
-h1{font-family:var(--digits);font-weight:800;font-size:26px;margin:0;letter-spacing:.05em;line-height:1.35;background:var(--head);color:var(--onhead);border-radius:16px;padding:14px 18px}
+h1{font-family:var(--digits);font-weight:900;font-size:clamp(28px,8.6vw,46px);margin:0;letter-spacing:0;white-space:nowrap;line-height:1.15;background:var(--head);color:var(--onhead);border-radius:26px;padding:22px 14px 20px;text-align:center;text-shadow:0 4px 0 #0003;box-shadow:0 6px 0 #0002}
 h1 span{color:var(--acc)}
+h1 .tilt{display:inline-block;font-size:1.55em;line-height:.8;color:var(--acc);transform:rotate(-16deg) translateY(-.02em);margin:0 .08em;text-shadow:0 5px 0 #0003}
+h1 small{display:block;font-size:.3em;font-weight:700;letter-spacing:.3em;color:var(--onhead);opacity:.75;text-shadow:none;margin-top:6px}
 p{margin:0}
 .muted{color:var(--muted)}
 .small{font-size:12.5px}
@@ -209,7 +211,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 
   <!-- ロビー -->
   <section id="lobby" style="display:flex;flex-direction:column;gap:14px">
-    <h1>激突！<span>暗記</span>大戦</h1>
+    <h1>激<span class="tilt">突</span>！<span>暗記</span>大戦<small>年号も鳥も木も、みんなで覚える</small></h1>
     <ul class="rules">
       <li>歴史は年号、鳥と木は名前を当てる</li>
       <li>1問10秒。全員答えたら答え合わせ</li>
