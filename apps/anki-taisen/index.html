@@ -253,6 +253,10 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
         <div class="levels" id="levels"></div>
         <p class="small muted" id="rangeNote"></p>
       </div>
+      <div id="cntBox" style="display:none;flex-direction:column;gap:6px">
+        <span class="small muted">出題数（ランダムに選ばれます）</span>
+        <div class="levels" id="counts"></div>
+      </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <span class="small muted">配色</span>
         <div class="levels genres" id="tones"></div>
@@ -1084,9 +1088,9 @@ const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"む
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
 function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P",pi:(c.m.imgs&&c.m.imgs.length>1)?Math.floor(rng(gid+":img:"+c.key)()*c.m.imgs.length):0})); }
 const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.length-1)]:c.m.img;
-function deckFor(mode,lv,genre,gid,bmode,custom){
+function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
   if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
-  if(isPick(genre)){ const m=new Date().getMonth()+1; return birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,hasVoice(genre)?bmode:"P"); }
+  if(isPick(genre)){ const m=new Date().getMonth()+1; const dk=birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img),gid,hasVoice(genre)?bmode:"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
 }
@@ -1202,7 +1206,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 
 const S={
   name: store.get("nb-name")||"",
-  lv: Number(store.get("nb-lv"))||1,
+  lv: Number(store.get("nb-lv"))||1, cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
   mode: store.get("nb-mode")||"J",
   tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
   genre: store.get("nb-genre")||"H", bmode: store.get("nb-bmode")||"P", choices:[],
@@ -1216,7 +1220,7 @@ S.bmode="V";
 let room=null;
 
 function myPresence(){
-  return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, mode:S.mode, genre:S.genre, bmode:S.bmode, qi:S.qi, phase:S.phase,
+  return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, cnt:S.cnt, mode:S.mode, genre:S.genre, bmode:S.bmode, qi:S.qi, phase:S.phase,
     ans:S.ans, skip:S.skip, ready:S.ready, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
 }
 function push(){ if(room){ room.presence(myPresence()).catch(()=>{}); } }
@@ -1256,6 +1260,9 @@ function renderPickers(){
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
+  $("cntBox").style.display=isB?"flex":"none";
+  if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
+    seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"; return; }
@@ -1295,9 +1302,9 @@ function findOpenGame(){
 }
 
 // ---- game ----
-function startGame(gid, genre, mode, lv, qi, bmode, custom){
-  S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
-  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode); } S.qi=Math.min(qi||0,S.deck.length-1); S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi);
+function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
+  S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; S.cnt=(cnt===undefined?S.cnt:cnt); if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
+  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi);
   S.view="game"; show("game"); beginAsk();
 }
 function beginAsk(){
@@ -1532,11 +1539,11 @@ renderMute();
 { const NICKS=["本能寺の火元","関ヶ原の寝返り役","鳴かぬなら様子見","いい国つくろう係","黒船の見張り番","年号の亡者","ハシブトの親分","カワセミ界のエース","ヒヨドリ通訳","モズの早にえ係"]; $("nick").placeholder="例："+NICKS[Math.floor(Math.random()*NICKS.length)]; }
 $("startBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g) return;
-  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1;
+  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
   const bm="V";
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
-  startGame(g.gid,genre,mode,lv,qi,bm,cu); };
+  startGame(g.gid,genre,mode,lv,qi,bm,cu,cnt); };
 $("nextBtn").onclick=next;
 $("againBtn").onclick=()=>startGame(newGid(),S.genre,S.mode,S.lv,0);
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
