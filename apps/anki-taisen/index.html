@@ -1390,7 +1390,7 @@ function renderGenreTree(){
       b.onclick=()=>{ S.genre=n.id; store.set("nb-genre",n.id); renderPickers(); push(); }; }
     else { const inSel=gLeaves(n).includes(S.genre); b.setAttribute("aria-pressed","false"); if(inSel) b.classList.add("has");
       b.append(el("b",null,n.name+" ›")); b.append(el("span",null,gLeaves(n).map(gName).slice(0,3).join("・")+(gLeaves(n).length>3?"…":"")));
-      b.onclick=()=>{ gNav=gNav.concat([n]); renderPickers(); }; }
+      b.onclick=()=>{ gNav=gNav.concat([n]); const lv=gLeaves(n); if(lv.length&&!lv.includes(S.genre)){ S.genre=lv[0]; store.set("nb-genre",S.genre); } renderPickers(); push(); }; }
     box.append(b); });
   const pth=gPathTo(S.genre)||[]; $("gsel").textContent="選んでいるのは："+pth.map(n=>n.name).concat([gName(S.genre)]).join(" › ");
 }
