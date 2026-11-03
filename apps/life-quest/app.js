@@ -596,10 +596,15 @@ async function maybeOfferLegacyMigration() {
 let activeUserId = null;
 
 // 他のアプリ（暗記大戦など）から ?back=アプリ名 で来たときは、ログインできたらそのアプリへ戻す（2026-11-03 Keita依頼）
-const BACK_APP = (() => { const b = new URLSearchParams(location.search).get('back') || ''; return /^[a-z][a-z0-9-]{0,40}$/.test(b) ? b : null; })();
+// Googleログインは往復でクエリが消えるので、タブのsessionStorageにも覚えておく
+const BACK_APP = (() => {
+  let b = new URLSearchParams(location.search).get('back') || '';
+  try { if (b) sessionStorage.setItem('lq-back', b); else b = sessionStorage.getItem('lq-back') || ''; } catch {}
+  return /^[a-z][a-z0-9-]{0,40}$/.test(b) ? b : null;
+})();
 
 async function handleSession(nextSession) {
-  if (nextSession && BACK_APP) { location.replace(`../${BACK_APP}/`); return; }
+  if (nextSession && BACK_APP) { try { sessionStorage.removeItem('lq-back'); } catch {} location.replace(`../${BACK_APP}/`); return; }
   session = nextSession;
   activeUserId = session?.user?.id || null;
   if (!session) {
