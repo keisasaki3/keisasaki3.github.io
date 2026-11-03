@@ -285,7 +285,6 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
   <!-- 出題 -->
   <section id="game" hidden style="display:flex;flex-direction:column;gap:12px">
     <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute" id="muteBtn" type="button" aria-pressed="true">音：オン</button><button class="mute" id="quitBtn" type="button">やめる</button></div>
-    <div class="waiting" id="netBadge" hidden>回線が切れました。自動でつなぎ直しています…</div>
     <div class="players" id="gamePlayers"></div>
     <div class="card" id="card">
       <span class="era" id="cEra"></span>
@@ -340,6 +339,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 
 </div>
 
+<div id="netBadge" hidden style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:50;background:var(--surf);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:12px;pointer-events:none">通信が不安定です。自動でつなぎ直しています</div>
 <script src="map.js"></script>
 <script>
 // 形式: [年(紀元前はマイナス), 難易度(1やさしい 2ふつう 3むずかしい), 出来事, 英名, 時代/地域, きっかけ, できごと, その後, 語呂]
@@ -1649,49 +1649,53 @@ $("lobbyBtn").onclick=toLobby;
 
 // 公開版: Supabase Realtime の presence で同じ部屋の人をつなぐ（DBの表は使わない）
 function sbRoom(cfg){
-  // 切れても落とさない: 自動で入り直し、入り直したら自分の状態を送り直す。
-  // 一瞬消えた相手は30秒は残しておく（裏に回した・回線が揺れたときに一人プレイにならないように）。
-  const GRACE=30000;
-  let sb=null; try{ sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false,autoRefreshToken:false},realtime:{worker:true,heartbeatIntervalMs:15000}}); }
-  catch(e){ sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false,autoRefreshToken:false}}); }
+  // 在室確認（presence）は入室時に1回だけ。ゲームの状態はブロードキャストで送る。
+  // presence を状態のたびに更新すると Supabase の回数制限（10秒に数回）を超えて部屋から切られるため。
+  // 状態は変わったとき＋3秒ごとに送り直す。つなぎ直しは supabase の自動再接続にまかせ、20秒つながらないときだけ作り直す。
+  const GRACE=30000, BEAT=3000, LIVE=10000;
+  const sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:false,autoRefreshToken:false},realtime:{heartbeatIntervalMs:15000}});
   let me=null; try{ me=sessionStorage.getItem("nb-me"); }catch(e){}
   if(!me){ me=Math.random().toString(36).slice(2,10); try{ sessionStorage.setItem("nb-me",me); }catch(e){} }
-  const seen={}; let cbs=[], stCbs=[], ch=null, ready=false, last=null, timer=null, lastSent=0, retry=0, rtimer=null, state="connecting";
+  const seen={}, here={}; let cbs=[], stCbs=[], ch=null, ready=false, last=null, timer=null, lastSent=0, downSince=Date.now(), resetting=false, state="connecting";
   const fire=()=>cbs.forEach(f=>{try{f()}catch(e){}});
   const setState=x=>{ if(state===x) return; state=x; stCbs.forEach(f=>{try{f(x)}catch(e){}}); };
-  const flush=()=>{ timer=null; if(!ready||!last||!ch) return; lastSent=Date.now(); ch.track({p:last}).catch(()=>{}); };
-  const schedule=()=>{ if(!timer){ timer=setTimeout(flush,Math.max(0,200-(Date.now()-lastSent))); } };
-  function join(){
-    clearTimeout(rtimer); rtimer=null;
-    if(ch){ try{ sb.removeChannel(ch); }catch(e){} ch=null; }
-    ready=false; setState("connecting");
-    const c=sb.channel("anki-taisen:"+cfg.room,{config:{presence:{key:me}}}); ch=c;
-    c.on("presence",{event:"sync"},()=>{ if(c!==ch) return; const st=c.presenceState(), now=Date.now();
-      Object.entries(st).forEach(([k,arr])=>{ if(k!==me) seen[k]={p:(arr[arr.length-1]||{}).p, t:now, live:true}; });
-      Object.keys(seen).forEach(k=>{ if(!st[k]) seen[k].live=false; });
-      fire(); });
+  const flush=()=>{ timer=null; if(!ready||!last||!ch) return; lastSent=Date.now(); ch.send({type:"broadcast",event:"st",payload:{k:me,p:last}}).catch(()=>{}); };
+  const schedule=()=>{ if(!timer){ timer=setTimeout(flush,Math.max(0,150-(Date.now()-lastSent))); } };
+  function open(){
+    const c=sb.channel("anki-taisen:"+cfg.room,{config:{presence:{key:me},broadcast:{self:false}}}); ch=c;
+    c.on("broadcast",{event:"st"},m=>{ if(c!==ch) return; const d=m&&m.payload; if(!d||typeof d.k!=="string"||d.k===me||!d.p||typeof d.p!=="object") return;
+      const isNew=!seen[d.k]; seen[d.k]={p:d.p,t:Date.now()}; if(isNew) flush(); fire(); });
+    c.on("broadcast",{event:"bye"},m=>{ const d=m&&m.payload; if(d&&typeof d.k==="string"&&seen[d.k]){ delete seen[d.k]; delete here[d.k]; fire(); } });
+    c.on("presence",{event:"sync"},()=>{ if(c!==ch) return; const st=c.presenceState(); let nw=false;
+      Object.keys(here).forEach(k=>{ if(!st[k]) delete here[k]; });
+      Object.keys(st).forEach(k=>{ if(k!==me){ if(!here[k]) nw=true; here[k]=Date.now(); } });
+      if(nw){ lastSent=0; flush(); } fire(); });
     c.subscribe(st=>{ if(c!==ch) return;
-      if(st==="SUBSCRIBED"){ ready=true; retry=0; setState("ok"); flush(); }
-      else if(st==="CHANNEL_ERROR"||st==="TIMED_OUT"||st==="CLOSED"){ ready=false; setState("retry"); again(); }
+      if(st==="SUBSCRIBED"){ ready=true; downSince=0; setState("ok"); c.track({on:1}).catch(()=>{}); lastSent=0; flush(); }
+      else { if(ready||!downSince) downSince=Date.now(); ready=false; setState("retry"); }
     });
-    // 入れないまま12秒たったら入り直す
-    setTimeout(()=>{ if(c===ch && !ready) again(); },12000);
   }
-  function again(){ if(rtimer) return; const w=Math.min(15000,1000*Math.pow(2,retry++)); rtimer=setTimeout(join,w); }
-  // 画面に戻ったとき・回線が戻ったときはすぐ確認して、必要なら入り直す
-  const wake=()=>{ if(document.visibilityState==="hidden") return; if(!ready){ if(state==="connecting") return; retry=0; clearTimeout(rtimer); rtimer=null; join(); } else { lastSent=0; flush(); } };
+  async function reset(){
+    if(resetting) return; resetting=true; ready=false; ch=null;
+    try{ await sb.removeAllChannels(); }catch(e){}
+    try{ sb.realtime.connect(); }catch(e){}
+    downSince=Date.now(); open(); resetting=false;
+  }
+  setInterval(()=>{ if(!ready && downSince && Date.now()-downSince>20000) reset(); },3000);
+  const wake=()=>{ if(document.visibilityState==="hidden") return; try{ if(!sb.realtime.isConnected()) sb.realtime.connect(); }catch(e){} if(ready){ lastSent=0; flush(); } };
   document.addEventListener("visibilitychange",wake); window.addEventListener("online",wake); window.addEventListener("pageshow",wake);
-  // 消えた相手は猶予を過ぎたら外す
-  setInterval(()=>{ const now=Date.now(); let ch2=false; Object.keys(seen).forEach(k=>{ const v=seen[k]; if(!v.live && now-v.t>GRACE){ delete seen[k]; ch2=true; } else if(v.live) v.t=now; }); if(ch2) fire(); },2000);
-  // 30秒ごとに自分の状態を送り直す（取りこぼし対策）
-  setInterval(()=>{ if(ready&&last&&Date.now()-lastSent>30000) flush(); },5000);
+  window.addEventListener("pagehide",()=>{ try{ if(ch&&ready) ch.send({type:"broadcast",event:"bye",payload:{k:me}}); }catch(e){} });
+  // 3秒ごとに状態を送り直す。在室でも状態が10秒来ない相手、どちらもない相手は30秒で外す
+  setInterval(()=>{ if(ready&&last&&Date.now()-lastSent>=BEAT-200) flush();
+    const now=Date.now(); let chg=false; Object.keys(seen).forEach(k=>{ if(here[k]&&now-seen[k].t<LIVE) return; if(here[k]) return; if(now-seen[k].t>GRACE){ delete seen[k]; chg=true; } }); if(chg) fire(); },1000);
   const api={
     presence(p){ last=p; schedule(); return Promise.resolve(); },
-    peers(){ return Object.values(seen).filter(v=>v.p&&typeof v.p==="object").map(v=>({sameTab:false,kind:"viewer",presence:v.p,stale:!v.live})); },
+    peers(){ const now=Date.now(); return Object.entries(seen).map(([k,v])=>({sameTab:false,kind:"viewer",presence:v.p,stale:!(here[k]||now-v.t<LIVE)})); },
     onPeers(f){ cbs.push(f); },
     onState(f){ stCbs.push(f); f(state); }
   };
-  join();
+  window.__nb={sb,reset,get ready(){return ready}};
+  open();
   return Promise.resolve(api);
 }
 renderPickers(); buildKeypad(); buildStamps(); renderLobby();
@@ -1702,7 +1706,7 @@ setInterval(check,150);
   if(!room){ $("roomNote").textContent="いまは一人で遊べます。友人と対戦するには、このページを友人と共有して同時に開いてください。"; return; }
   $("roomNote").textContent="同じページを開いた友人がここに並びます。誰かが「対戦をはじめる」を押すと、ほかの人に参加ボタンが出ます。";
   room.onPeers(()=>check());
-  if(room.onState){ const base=$("roomNote").textContent; room.onState(st=>{ $("roomNote").textContent= st==="ok"? base : st==="connecting"? "接続しています…" : "回線が切れました。自動でつなぎ直しています…"; const b=$("netBadge"); if(b) b.hidden=st==="ok"; }); }
+  if(room.onState){ let t=null; room.onState(st=>{ const b=$("netBadge"); clearTimeout(t); if(st==="ok"){ b.hidden=true; return; } t=setTimeout(()=>{ b.hidden=false; },5000); }); }
   push();
 })();
 </script>
