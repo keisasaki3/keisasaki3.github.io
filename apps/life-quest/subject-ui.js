@@ -534,7 +534,7 @@ drawSubject = function drawStatusTopics(statusId, query) {
       } else {
         const on = isMastered(t);
         d.className = 'topic' + (on ? ' on' : '');
-        d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody">${names}${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}${editMode ? '' : `<button type="button" class="tojdi">${esc(tr('wish.toJdi'))}</button>`}`;
+        d.innerHTML = `<div class="check">${on ? '✓' : ''}</div><div class="topicbody">${names}${source}</div>${on ? '<div class="master">MASTER!</div>' : ''}${!t.custom && quizMastery.has(t.id) ? `<div class="quizpct" title="${esc(tr('quiz.masteryTitle'))}">${esc(tr('quiz.mastery'))} ${quizMastery.get(t.id)}%</div>` : ''}${editMode ? '' : `<button type="button" class="tojdi">${esc(tr('wish.toJdi'))}</button>`}`;
         // 👉️JDI: このトピックをJUST DO IT!へ送る（#mid:トピックID 付き。2026-11-01 Keita依頼）
         const send = d.querySelector('.tojdi');
         if (send) send.onclick = e => {

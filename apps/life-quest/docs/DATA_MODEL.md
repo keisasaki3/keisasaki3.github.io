@@ -71,6 +71,25 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 チェック解除時は該当行をDELETEする。チェック型トピックのみ対象。
 
+### quest_card_progress
+
+激突！暗記大戦（`apps/anki-taisen/`）の札ごとの学習記録（migration 013、2026-11-03 Keita依頼）。1行 = 1人 × 札1枚。
+
+- user_id: uuid FK -> profiles.user_id
+- card_key: text（暗記大戦の札の番号。例 `E:機会費用`）
+- topic_id: text nullable FK -> quest_topics.topic_id（札が属するトピック）
+- correct_days: 正解した日数（1日1回まで）
+- stage: 定着度 0〜3（前回と別の日に正解で+1、不正解で-1）
+- last_correct_on / last_wrong_on: date
+- last_seen_at: timestamptz
+- PK(user_id, card_key)
+
+トピックの習得度は保存しない。`stage`（最後に見てから30日ごとに1下げる）の合計 ÷（3 × そのトピックの札の枚数）で計算する。札の枚数は `apps/anki-taisen/data/topics.json`。
+
+### quest_card_reports
+
+暗記大戦の「資料がおかしい」報告。anon/authenticated は insert のみ、読むのは service_role だけ。card_key・comment（300字まで）・user_id（ログイン時）・resolved・created_at。
+
 ### quest_user_settings
 
 人生クエストの個人設定。`profiles` は夏の果てと共有なので列を足さない。

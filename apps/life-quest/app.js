@@ -50,6 +50,8 @@ let fields = [];
 let topics = [];
 let prerequisites = [];
 let mastery = new Set();
+// 激突！暗記大戦の札の定着度から出すトピックの習得度（%）。quest_card_progress と ../anki-taisen/data/topics.json（トピック→札の枚数）から計算。2026-11-03 Keita依頼
+let quizMastery = new Map();
 let topicById = new Map();
 let fieldById = new Map();
 // 起動時に一度だけ作る索引（毎回の全件 filter/sort をなくす）
@@ -241,7 +243,7 @@ function renderAuth() {
       showError(tr('authInvalid'));
       return;
     }
-    const redirectTo = `${location.origin}${location.pathname}`;
+    const redirectTo = `${location.origin}${location.pathname}${location.search}`;
     const { data, error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } });
     if (error) {
       showError(error.message);
@@ -257,7 +259,7 @@ function renderAuth() {
     $('#googleLogin').onclick = async () => {
       const { error } = await sb.auth.signInWithOAuth({
         provider: 'google',
-        options: { redirectTo: `${location.origin}${location.pathname}` }
+        options: { redirectTo: `${location.origin}${location.pathname}${location.search}` }
       });
       if (error) showError(error.message);
     };
@@ -317,7 +319,8 @@ async function loadApp() {
     fetchAllRows(opts => sb.from('quest_topics').select('*', opts).eq('active', true).order('recommended_order').order('topic_id')),
     fetchAllRows(opts => sb.from('quest_topic_prerequisites').select('topic_id,prerequisite_topic_id', opts).order('topic_id').order('prerequisite_topic_id')),
     fetchAllRows(opts => sb.from('quest_topic_mastery').select('topic_id', opts).eq('user_id', user.id).order('topic_id')),
-    sb.from('player_presence').select('*').eq('user_id', user.id).maybeSingle()
+    sb.from('player_presence').select('*').eq('user_id', user.id).maybeSingle(),
+    loadQuizMastery(user).catch(() => {})
   ]);
   const failures = [subjectRes, presenceRes].filter(r => r.error);
   if (failures.length) throw failures[0].error;
@@ -592,7 +595,11 @@ async function maybeOfferLegacyMigration() {
 
 let activeUserId = null;
 
+// 他のアプリ（暗記大戦など）から ?back=アプリ名 で来たときは、ログインできたらそのアプリへ戻す（2026-11-03 Keita依頼）
+const BACK_APP = (() => { const b = new URLSearchParams(location.search).get('back') || ''; return /^[a-z][a-z0-9-]{0,40}$/.test(b) ? b : null; })();
+
 async function handleSession(nextSession) {
+  if (nextSession && BACK_APP) { location.replace(`../${BACK_APP}/`); return; }
   session = nextSession;
   activeUserId = session?.user?.id || null;
   if (!session) {
@@ -654,3 +661,24 @@ document.addEventListener('DOMContentLoaded', async function boot() {
   if (data.session && data.session.user.id === activeUserId) return;
   await handleSession(data.session);
 });
+
+// 暗記大戦の札の定着度（0〜3、最後に見てから30日ごとに1下がる）を、トピックごとに「合計 ÷ (3 × 札の枚数)」で習得度にする
+async function loadQuizMastery(user) {
+  const [rowsRes, cntRes] = await Promise.all([
+    fetchAllRows(opts => sb.from('quest_card_progress').select('topic_id,stage,last_seen_at', opts).eq('user_id', user.id).not('topic_id', 'is', null).order('card_key')),
+    fetch('../anki-taisen/data/topics.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+  ]);
+  const sum = new Map();
+  const now = Date.now();
+  for (const r of rowsRes || []) {
+    const days = Math.floor((now - Date.parse(r.last_seen_at)) / 864e5);
+    const eff = Math.max(0, (r.stage || 0) - Math.floor(days / 30));
+    sum.set(r.topic_id, (sum.get(r.topic_id) || 0) + eff);
+  }
+  const out = new Map();
+  for (const [tid, s] of sum) {
+    const n = cntRes[tid];
+    if (n > 0) out.set(tid, Math.min(100, Math.round(s / (3 * n) * 100)));
+  }
+  quizMastery = out;
+}

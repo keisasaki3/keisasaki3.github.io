@@ -2,7 +2,7 @@
 
 このリポジトリを触るAI（Claude、GPTなど）と人は、最初にこのファイルを読む。会話履歴が無くても、GitHub上の文書だけで安全に作業を続けられるようにするためのもの（2026-10-04 Keita依頼）。
 
-対象: 人生クエスト（`apps/life-quest/`）と、夏の果てと共通のバックエンド（`shared-world-core/`）。夏の果ては `keisasaki3/summer-end-3pm`、NEWSPAPERのデータは `keisasaki3/life-quest-newspaper-data`（それぞれの `AGENTS.md` を読む）。
+対象: 人生クエスト（`apps/life-quest/`）、激突！暗記大戦（`apps/anki-taisen/`、設計は同フォルダの `README.md`）と、夏の果てと共通のバックエンド（`shared-world-core/`）。夏の果ては `keisasaki3/summer-end-3pm`、NEWSPAPERのデータは `keisasaki3/life-quest-newspaper-data`（それぞれの `AGENTS.md` を読む）。
 
 ## 1. 読む順
 

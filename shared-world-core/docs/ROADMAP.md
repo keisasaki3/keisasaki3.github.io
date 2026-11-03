@@ -22,7 +22,7 @@
 
 ### 激突！暗記大戦（2026-11-02 Keita決定）
 
-友人・家族と遊ぶ暗記対戦ゲーム。なつめポータルに統合していく前提で、当面はこのリポジトリの `apps/anki-taisen/` に置き、GitHub Pagesで公開する。対戦の同期は `shared-world-core` の Realtime presence を使い、DBの表は使わない。
+友人・家族と遊ぶ暗記対戦ゲーム。なつめポータルに統合していく前提で、当面はこのリポジトリの `apps/anki-taisen/` に置き、GitHub Pagesで公開する。対戦の同期は `shared-world-core` の Realtime presence を使う。2026-11-03から学習記録を人生クエストと共有し（`quest_card_progress`、誤り報告は `quest_card_reports`）、あらゆる分野の学びを集める場所にする。設計は `apps/anki-taisen/README.md`。
 
 ### 人生クエスト / 午後三時、夏の果て のrepo統合
 
