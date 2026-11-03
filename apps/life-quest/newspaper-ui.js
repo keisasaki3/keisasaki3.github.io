@@ -32,7 +32,7 @@ const REGION_FLAGS = { japan: 'jp', us: 'us', usa: 'us', 'united states': 'us', 
 
 function regionIcon(region) {
   const key = region.trim().toLowerCase();
-  if (REGION_FLAGS[key]) return `<img class="newspaper-flag" src="./icons/flags/${REGION_FLAGS[key]}.svg" alt="" width="21" height="14">`;
+  if (REGION_FLAGS[key]) return `<img class="newspaper-flag" src="../../shared/icons/flags/${REGION_FLAGS[key]}.svg" alt="" width="21" height="14">`;
   return REGION_ICONS[key] || '🌐';
 }
 

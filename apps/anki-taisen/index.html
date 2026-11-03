@@ -164,6 +164,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .dx{line-height:1.7;margin:0 0 8px}
 .dr{font-size:14px;margin:0}
 .ensent{font-weight:600;line-height:1.7}.ensent .fill{color:var(--acc-ink);text-decoration:underline;text-underline-offset:3px}
+.gic{width:22px;height:22px;padding:3px;box-sizing:content-box;border-radius:7px;background:#2b2530;image-rendering:pixelated;vertical-align:middle;margin-right:7px}
 .gtree{display:flex;flex-direction:column;gap:14px}
 .crumb{all:unset;cursor:pointer;font-size:14px;color:var(--muted);padding:4px 6px;border-radius:8px}
 .crumb.on{color:var(--ink);font-weight:800;background:var(--surf2)}
@@ -1170,8 +1171,10 @@ function inSeason(c,m){ if(c.mon){ const [a,b]=c.mon; return a<=b? (m>=a&&m<=b) 
 const GENRES=[{id:"H",name:"歴史",cat:"K"},...SUBJ.map(x=>({id:x.id,name:x.name,cat:"K"})),{id:"B",name:"関東の鳥",cat:"Z"},{id:"D",name:"北海道の鳥",cat:"Z"},{id:"T",name:"関東の木",cat:"Z"}];
 // ジャンルの木（葉は id を持つ。中身のない葉・枝は表示しない）
 const GTREE={name:"すべて",kids:[
-  {name:"学問",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"F"},{name:"化学",kids:[{id:"C"}]},{id:"N"},{name:"英語",kids:[{id:"V"},{id:"I"}]}]},
-  {name:"教養",kids:[{name:"鳥",kids:[{id:"B"},{id:"D"}]},{name:"木",kids:[{id:"T"}]}]}]};
+  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"F"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"N"},{name:"英語",ic:"english",kids:[{id:"V"},{id:"I"}]}]},
+  {name:"教養",ic:"culture",kids:[{name:"鳥",ic:"bird",kids:[{id:"B"},{id:"D"}]},{name:"木",ic:"tree",kids:[{id:"T"}]}]}]};
+const GICON={H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",V:"business-english",I:"idioms",B:"bird",D:"bird",T:"tree"};
+const ICONS="../../shared/icons/";
 const gName=id=>(GENRES.find(g=>g.id===id)||{}).name||id;
 const gHas=n=>n.id? (n.id==="H"||(ALL[n.id]||[]).length>0) : n.kids.some(gHas);
 const gLeaves=n=>n.id?[n.id]:n.kids.filter(gHas).flatMap(gLeaves);
@@ -1383,7 +1386,9 @@ function renderGenreTree(){
     cur.kids.filter(gHas).forEach(n=>{
       const b=el("button","lv"); b.type="button";
       const on=n.id? n.id===S.genre : n===pick;
-      b.setAttribute("aria-pressed",String(on)); b.append(el("b",null,n.id?gName(n.id):n.name));
+      b.setAttribute("aria-pressed",String(on)); const icn=n.id?GICON[n.id]:n.ic; const nm=el("b",null,"");
+      if(icn){ const im=document.createElement("img"); im.className="gic"; im.src=ICONS+icn+".svg"; im.alt=""; im.width=16; im.height=16; nm.append(im); }
+      nm.append(n.id?gName(n.id):n.name); b.append(nm);
       if(n.id) b.append(el("span",null,n.id==="H"?"年号":(ALL[n.id]||[]).length+(isCon(n.id)?"語":"種")));
       b.onclick=()=>{ const lv=gLeaves(n); if(!lv.includes(S.genre)){ S.genre=lv[0]; store.set("nb-genre",S.genre); } renderPickers(); push(); };
       row.append(b); });

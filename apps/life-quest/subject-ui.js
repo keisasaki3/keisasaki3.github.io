@@ -6,7 +6,7 @@ const PIXEL_ICON_IDS = new Set(['math', 'physics', 'astronomy', 'earth-science',
 
 function presetIconMarkup(preset) {
   return PIXEL_ICON_IDS.has(preset.subject_id)
-    ? `<img class="pixicon" src="./icons/${esc(preset.subject_id)}.svg" alt="" width="16" height="16">`
+    ? `<img class="pixicon" src="../../shared/icons/${esc(preset.subject_id)}.svg" alt="" width="16" height="16">`
     : esc(preset.icon);
 }
 
