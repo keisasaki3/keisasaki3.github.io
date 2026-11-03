@@ -127,6 +127,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .flow{display:flex;flex-direction:column;gap:6px;margin-top:6px;border-top:1px solid var(--card-line);padding-top:10px}
 .fr{font-size:15px;line-height:1.7}
 .fr.arrow{padding-left:1.3em;text-indent:-1.3em}
+.fr .dlink{text-indent:0}
 .fr.ennote{padding-left:1.3em;font-size:.92em;opacity:.85}
 .fr.arrow.dot::before{content:"・";color:var(--card-acc);font-size:1em;font-weight:800}
 .fr.arrow.cz::before{content:"→";font-size:1em;font-weight:800;color:var(--card-acc)}
@@ -1314,7 +1315,7 @@ function preloadNext(){
 }
 function creditFor(c){ return creditLink(c.key); }
 function creditLink(key){ const b=el("button","clink reveal-x","写真・鳴き声の出典"); b.type="button"; b.onclick=()=>openCredits(key); return b; }
-const CRGENRES=[["B","関東の鳥"],["D","北海道の鳥"],["T","関東の木"],["J","歴史の資料画像（日本史）"],["W","歴史の資料画像（世界史）"],...SUBJ.filter(sj=>!sj.en).map(sj=>[sj.id,"教養の資料画像（"+sj.name+"）"])];
+const CRGENRES=[["B","関東の鳥"],["D","北海道の鳥"],["T","関東の木"],["J","歴史の資料画像（日本史）"],["W","歴史の資料画像（世界史）"],...SUBJ.filter(sj=>!sj.en).map(sj=>[sj.id,"学問の資料画像（"+sj.name+"）"])];
 function crLine(label,who,lic,url,extra){ const d=el("div"); d.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／"); const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="鳴き声"?"xeno-canto":"Wikimedia Commons"; d.append(a); return d; }
 let creditsBuilt=false;
 function buildCredits(){ if(creditsBuilt) return; creditsBuilt=true; const box=$("creditList");
@@ -1430,7 +1431,7 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?"教養・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?"学問・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
 function lvName(lv,g){ if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -1492,7 +1493,7 @@ function beginAsk(){
   const c=S.deck[S.qi];
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.cc){
-    $("cEra").textContent="教養・"+subjName(c.subj)+"・"+c.sg; $("cEv").textContent=""; $("cEn").textContent="";
+    $("cEra").textContent="学問・"+subjName(c.subj)+"・"+c.sg; $("cEv").textContent=""; $("cEn").textContent="";
     card.insertBefore(el("p","qtext q-x",c.def),$("cEv"));
     S.choices=choicesFor(S.deck,S.qi,S.gid);
   } else if(c.kind==="choice"){
