@@ -43,6 +43,11 @@ window.ANKI_SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishab
   --ok:#b6d4a4; --ng:#f0a0a0;
   --shadow:0 10px 28px #0006; --panel-shadow:none; --soft-acc:#a8c29a55;
 }
+/* 緑の選択（若草・常磐） */
+:root[data-green="wakakusa"]{--acc:#9cc08a;--onacc:#1c2918;--acc-ink:#4f7d3f;--card-acc:#4f7d3f;--soft-acc:#9cc08a33;--ok:#4f7d3f}
+:root[data-green="tokiwa"]{--acc:#4f7f63;--onacc:#ffffff;--acc-ink:#36614a;--card-acc:#36614a;--soft-acc:#4f7f6333;--ok:#36614a}
+:root[data-tone="chestnut"][data-green="wakakusa"]{--acc:#b2d0a2;--btn:#b2d0a2;--onacc:#1c2918;--onbtn:#1c2918;--acc-ink:#b9d6a9;--card-acc:#4f7d3f;--soft-acc:#b2d0a255;--ok:#b9d6a9}
+:root[data-tone="chestnut"][data-green="tokiwa"]{--acc:#85ad94;--btn:#85ad94;--onacc:#1c2918;--onbtn:#1c2918;--acc-ink:#9cc2aa;--card-acc:#36614a;--soft-acc:#85ad9455;--ok:#9cc2aa}
 html{background:var(--pg)}
 html,body{height:100%}
 body{background:var(--pg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7;margin:0;-webkit-tap-highlight-color:transparent}
@@ -259,11 +264,6 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
   <!-- ロビー -->
   <section id="lobby" style="display:flex;flex-direction:column;gap:14px">
     <h1>激<span class="tilt">突</span>！<span>暗記</span>大戦<small>年号も用語も鳥も木も、みんなで覚える</small></h1>
-    <ul class="rules">
-      <li>歴史は年号、教養は用語、鳥と木は名前を当てる</li>
-      <li>時間制限なし。全員答えたら答え合わせ</li>
-      <li>正解で1点。早押しの差はなし</li>
-    </ul>
 
     <div class="invite" id="invite" hidden>
       <span id="inviteText"></span>
@@ -307,6 +307,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
     <div class="panel">
       <span class="small muted">配色</span>
       <div class="levels genres" id="tones"></div>
+      <div class="levels genres" id="greens"></div>
     </div>
     <p class="small muted" style="text-align:center"><button class="clink" id="creditLink" type="button" style="align-self:center">写真・鳴き声・資料の出典（クレジット）</button></p>
   </section>
@@ -1339,6 +1340,7 @@ const S={
   name: store.get("nb-name")||"",
   lv: Number(store.get("nb-lv"))||1, from: store.get("nb-from")||"", cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
   mode: store.get("nb-mode")||"J",
+  green: store.get("nb-green")||"wakakusa",
   tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
   genre: store.get("nb-genre")||"H", bmode: store.get("nb-bm2")||"V", choices:[],
   view:"lobby",
@@ -1375,7 +1377,7 @@ function seg(boxId, items, cur, label, onPick){
     box.append(b);
   });
 }
-applyTone(S.tone);
+applyTone(S.tone); document.documentElement.dataset.green=S.green;
 const TONES=[{id:"mint",name:"朝の窓辺",sub:"明るい"},{id:"chestnut",name:"栗色の壁",sub:"落ち着いた暗さ"}];
 function applyTone(t){ document.documentElement.dataset.tone=t; }
 function renderGenreTree(){
@@ -1396,6 +1398,7 @@ function renderGenreTree(){
   }
 }
 function renderPickers(){
+  seg("greens", [{key:"wakakusa",name:"若草",sub:"明るい黄緑"},{key:"tokiwa",name:"常磐",sub:"深い緑"}], S.green, it=>it.sub, k=>{S.green=k; store.set("nb-green",k); document.documentElement.dataset.green=k; renderPickers();});
   seg("tones", TONES.map(t=>({key:t.id,name:t.name,sub:t.sub})), S.tone, it=>it.sub, k=>{S.tone=k; store.set("nb-tone",k); applyTone(k); renderPickers();});
   renderGenreTree();
   const isB=isPick(S.genre);
