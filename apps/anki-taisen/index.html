@@ -262,6 +262,10 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <div class="levels" id="levels"></div>
         <p class="small muted" id="rangeNote"></p>
       </div>
+      <div id="fromBox" style="display:none;flex-direction:column;gap:6px">
+        <span class="small muted">どこから始める？</span>
+        <div class="levels" id="froms" style="grid-template-columns:repeat(4,1fr)"></div>
+      </div>
       <div id="cntBox" style="display:none;flex-direction:column;gap:6px">
         <span class="small muted">出題数（ランダムに選ばれます）</span>
         <div class="levels" id="counts"></div>
@@ -1146,6 +1150,15 @@ function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
 }
+// 歴史の「どこから始める？」: 日本史は時代ごと、世界史・ミックスは年代ごと
+const FROM_W=[[-99999,"はじめ"],[500,"500年〜"],[1000,"1000年〜"],[1500,"1500年〜"],[1700,"1700年〜"],[1800,"1800年〜"],[1900,"1900年〜"],[1945,"1945年〜"]];
+function fromList(mode,lv){
+  const d=deckFor(mode,lv); const out=[];
+  if(mode==="J"){ d.forEach((c,i)=>{ if(!out.length||out[out.length-1].era!==c.era) out.push({key:"e:"+c.era,name:i===0?"はじめ":c.era,era:c.era,qi:i}); }); }
+  else FROM_W.forEach(([y,n])=>{ const i=d.findIndex(c=>c.y>=y); if(i>=0 && !out.some(o=>o.qi===i)) out.push({key:"y:"+y,name:n,qi:i}); });
+  return out;
+}
+function fromQi(mode,lv,key){ const f=fromList(mode,lv).find(x=>x.key===key); return f?f.qi:0; }
 const yearText=y=>(y<0?"紀元前":"")+Math.abs(y);
 const tagOf=c=>c.src==="J"?`日本・${c.era}時代`:`世界・${c.era}`;
 let AC=null, muted=(()=>{try{return localStorage.getItem("nb-mute")==="1"}catch(e){return false}})();
@@ -1265,7 +1278,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 
 const S={
   name: store.get("nb-name")||"",
-  lv: Number(store.get("nb-lv"))||1, cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
+  lv: Number(store.get("nb-lv"))||1, from: store.get("nb-from")||"", cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
   mode: store.get("nb-mode")||"J",
   tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
   genre: store.get("nb-genre")||"H", bmode: store.get("nb-bm2")||"V", choices:[],
@@ -1319,14 +1332,18 @@ function renderPickers(){
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
-  $("cntBox").style.display=isB?"flex":"none";
+  $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
-  const d=deckFor(S.mode,S.lv);
-  $("rangeNote").textContent=`「${d[0].name}」から「${d[d.length-1].name}」まで`;
+  const d=deckFor(S.mode,S.lv); const fl=fromList(S.mode,S.lv);
+  const cur=fl.some(f=>f.key===S.from)?S.from:fl[0].key;
+  $("fromBox").style.display="flex";
+  seg("froms", fl, cur, it=>(d.length-it.qi)+"問", k=>{S.from=k; store.set("nb-from",k); renderPickers(); push();});
+  const q0=fromQi(S.mode,S.lv,S.from);
+  $("rangeNote").textContent=`「${d[q0].name}」から「${d[d.length-1].name}」まで`;
 }
 function chip(name, opts={}){
   const c=document.createElement("span"); c.className="chip"+(opts.me?" me":"");
@@ -1354,7 +1371,7 @@ function renderLobby(){
   } else if(!S.wait && hostWait() && S.view==="lobby"){
     const w=hostWait(); const who=lobbyPeers().find(pr=>validWait(pr.wait)&&pr.wait.gid===w.gid);
     inv.hidden=false;
-    $("inviteText").textContent=`${safeName(who)}さんが「${genreLabel(w.genre,w.mode,w.bmode)}・${lvName(w.lv,w.genre)}」で待っています`;
+    $("inviteText").textContent=`${safeName(who)}さんが「${genreLabel(w.genre,w.mode,w.bmode)}・${lvName(w.lv,w.genre)}」で待っています`+(w.qi>0&&!isPick(w.genre)?(()=>{const c=deckFor(w.mode,w.lv)[w.qi];return c?`（「${c.name}」から）`:"";})():"");
   } else inv.hidden=true;
 }
 function findOpenGame(){
@@ -1372,7 +1389,8 @@ function okLine(id, me, rows){
 }
 function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&[1,2,3,4].includes(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
 function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="lobby"); }
-function startFromWait(w){ const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,0,bm,null,w.cnt); }
+function startQi(){ return isPick(S.genre)?0:fromQi(S.mode,S.lv,S.from); }
+function startFromWait(w){ const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
 function lobbyCheck(){
   const lp=lobbyPeers(); if(!S.wait){ okLine("waitStart",false,[]); return; }
   const h=hostWait(); if(h && h.gid>S.wait.gid){ S.wait={...h}; push(); }
@@ -1383,14 +1401,14 @@ function hostWait(){ return lobbyPeers().map(pr=>validWait(pr.wait)).filter(Bool
 function againPeers(){ return gamePeers().filter(pr=>pr.view==="game"||pr.view==="result"); }
 function againCheck(){
   const ps=againPeers(); if(S.again!==S.gid){ okLine("waitAgain",false,ps.length&&ps.some(pr=>pr.again===S.gid)?ps.map(pr=>[safeName(pr),pr.again===S.gid]):[]); return; }
-  if(ps.every(pr=>pr.again===S.gid)){ const g=(S.gid+"r").slice(-30); S.again=null; $("againBtn").disabled=false; $("waitAgain").textContent=""; startGame(g,S.genre,S.mode,S.lv,0); return; }
+  if(ps.every(pr=>pr.again===S.gid)){ const g=(S.gid+"r").slice(-30); S.again=null; $("againBtn").disabled=false; $("waitAgain").textContent=""; startGame(g,S.genre,S.mode,S.lv,S.q0||0); return; }
   okLine("waitAgain", true, ps.map(pr=>[safeName(pr),pr.again===S.gid]));
 }
 
 // ---- game ----
 function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
   S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; S.cnt=(cnt===undefined?S.cnt:cnt); if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
-  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi); S.wait=null; S.again=null; $("againBtn").disabled=false; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; $("waitAgain").textContent="";
+  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); S.q0=S.custom?0:S.qi; S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi); S.wait=null; S.again=null; $("againBtn").disabled=false; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; $("waitAgain").textContent="";
   S.view="game"; show("game"); beginAsk();
 }
 function beginAsk(){
@@ -1561,7 +1579,7 @@ function renderResult(){
   const box=$("banzuke"); box.textContent="";
   rows.forEach((r,i)=>{
     const d=el("div","rank");
-    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"点 / "+(S.deck.length+Math.min(3,S.deck.length>=6?3:0))+"点満点"));
+    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"点 / "+((n=>n+(n>=6?3:0))(S.deck.length-(S.q0||0)))+"点満点"));
     box.append(d);
   });
   const ml=$("missList"); ml.textContent="";
@@ -1626,9 +1644,9 @@ renderMute();
 { const NICKS=["本能寺の火元","関ヶ原の寝返り役","鳴かぬなら様子見","いい国つくろう係","黒船の見張り番","年号の亡者","ハシブトの親分","カワセミ界のエース","ヒヨドリ通訳","モズの早にえ係"]; $("nick").placeholder="例："+NICKS[Math.floor(Math.random()*NICKS.length)]; }
 $("startBtn").onclick=()=>{
   if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; push(); check(); return; }
-  if(!lobbyPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,0); return; }
+  if(!lobbyPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,startQi()); return; }
   const h=hostWait();
-  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode};
+  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,qi:startQi()};
   $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
 $("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
@@ -1640,7 +1658,7 @@ $("creditLink").onclick=()=>openCredits(null);
 $("creditBack").onclick=()=>show(creditFrom);
 $("nextBtn").onclick=next;
 $("againBtn").onclick=()=>{
-  if(!againPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,0); return; }
+  if(!againPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,S.custom?0:(S.q0||0)); return; }
   S.again=S.gid; $("againBtn").disabled=true; push(); check(); };
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
 function toLobby(){ stopVoice(); S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
