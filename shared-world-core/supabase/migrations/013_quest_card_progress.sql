@@ -35,3 +35,29 @@ create policy quest_card_progress_own on public.quest_card_progress for all to a
 using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 commit;
+
+-- 暗記大戦の「資料がおかしい」報告。ログインしていなくても送れる（書き込みだけ。読むのは管理側 service_role だけ）。2026-11-03 Keita依頼。
+begin;
+
+create table public.quest_card_reports (
+  report_id bigint generated always as identity primary key,
+  card_key text not null check (length(card_key) between 1 and 200),
+  comment text not null check (length(btrim(comment)) between 1 and 300),
+  app text not null default 'anki-taisen' check (length(app) <= 40),
+  user_id uuid default auth.uid() references public.profiles(user_id) on delete set null,
+  resolved boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index quest_card_reports_open_idx on public.quest_card_reports(resolved, created_at);
+create index quest_card_reports_user_idx on public.quest_card_reports(user_id);
+
+grant insert on public.quest_card_reports to anon, authenticated;
+grant all on public.quest_card_reports to service_role;
+
+alter table public.quest_card_reports enable row level security;
+
+create policy quest_card_reports_insert on public.quest_card_reports for insert to anon, authenticated
+with check (resolved = false and (user_id is null or user_id = (select auth.uid())));
+
+commit;
