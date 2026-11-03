@@ -127,6 +127,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .flow{display:flex;flex-direction:column;gap:6px;margin-top:6px;border-top:1px solid var(--card-line);padding-top:10px}
 .fr{font-size:15px;line-height:1.7}
 .fr.arrow{padding-left:1.3em;text-indent:-1.3em}
+.fr.ennote{padding-left:1.3em;font-size:.92em;opacity:.85}
 .fr.arrow.dot::before{content:"・";color:var(--card-acc);font-size:1em;font-weight:800}
 .fr.arrow.cz::before{content:"→";font-size:1em;font-weight:800;color:var(--card-acc)}
 .fr.arrow::before{content:"▶";color:var(--card-acc);font-size:.8em;display:inline-block;width:1.6em;text-indent:0}
@@ -1584,9 +1585,10 @@ function openDict(t,fresh){ const e=DICT[t]; if(!e) return; if(fresh) dstack=[];
   const box=$("dictBody"); box.textContent="";
   box.append(el("p","dsub",e.s), el("h3",null,e.t)); if(e.en) box.append(el("p","dsub",e.en));
   const d=el("p","dd"+(e.l?" ensent":"")); fillLinked(d,e.l?e.d:e.d.replace(/。$/,"")+"。",e.t); box.append(d);
-  if(e.x){ const x=el("p","dx"); fillLinked(x,e.x.replace(/。$/,"")+"。",e.t); box.append(x); }
+  if(e.x) (e.l?splitNote(e.x):[e.x]).forEach(v=>{ const x=el("p","dx"); fillLinked(x,/[。〕]$/.test(v)?v:v.replace(/。$/,"")+"。",e.t); box.append(x); });
   if(e.r&&e.r.length){ const g=el("p","dr"); g.append(el("b",null,"関連 ")); e.r.forEach((r,i)=>{ if(i) g.append("・"); const k=dkey(r); g.append(k?dlink(r,k):document.createTextNode(r)); }); box.append(g); }
   $("dictBack").hidden=dstack.length<2; $("dict").hidden=false; }
+function splitNote(t){ const i=t.indexOf("〔"); return i>0?[t.slice(0,i).trim(),t.slice(i).trim()]:[t]; }
 function el(tag, cls, text){const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e;}
 function reveal(){
   if(S.phase==="reveal") return;
@@ -1601,7 +1603,8 @@ function reveal(){
     if(c.en) card.insertBefore(el("p","bsub reveal-x",c.en),$("cEv"));
     const flow=el("div","flow reveal-x");
     if(c.def.includes("____")){ const q=el("div","fr ensent"); const [a,b2]=c.def.split("____"); const sa=el("span"), sb=el("span"); fillLinked(sa,a,c.name); fillLinked(sb,b2,c.name); q.append(sa, el("b","fill",c.name), sb); flow.append(q); }
-    [c.def.includes("____")?"":c.def,c.ex].filter(Boolean).forEach((v,i)=>{ const r=el("div","fr"+(i?" arrow cz":"")); fillLinked(r,v.replace(/。$/,"")+"。",c.name); flow.append(r); });
+    const exs=c.ex&&c.def.includes("____")?splitNote(c.ex):[c.ex];
+    [c.def.includes("____")?"":c.def,...exs].filter(Boolean).forEach((v,i)=>{ const r=el("div",/^〔/.test(v)?"fr ennote":"fr"+(i?" arrow cz":"")); fillLinked(r,/[。〕]$/.test(v)?v:v+"。",c.name); flow.append(r); });
     card.append(flow);
     if(c.doc){ const f=docFor(c); if(f) card.append(f); }
     if(c.rel&&c.rel.length){ const g=el("p","goro reveal-x"); g.append(el("b",null,"関連 ")); c.rel.forEach((t,i)=>{ if(i) g.append("・"); const k=dkey(t); g.append(k?dlink(t,k):document.createTextNode(t)); }); card.append(g); }
