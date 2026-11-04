@@ -39,6 +39,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .app{max-width:520px;margin:0 auto;min-height:100%;box-sizing:border-box;padding-block:16px 28px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
 h1{font-family:var(--pop);font-weight:900;font-size:clamp(28px,8.6vw,46px);margin:0;letter-spacing:0;white-space:nowrap;line-height:1.15;background:var(--head);color:var(--onhead);border-radius:26px;padding:22px 14px 20px;text-align:center;text-shadow:0 4px 0 #0003;box-shadow:0 6px 0 #0002}
 h1 span{color:var(--acc)}
+/* ロゴは配色（明るい／暗い・若草／常磐）で変えない決定版（2026-11-04 Keita決定）: こげ茶の地に生成りの字、「突」と「暗記」は若草 */
+h1:not(.plain){background:#4b392e;color:#f4f5ef}h1:not(.plain) span,h1:not(.plain) .tilt{color:#9cc08a}h1:not(.plain) small{color:#f4f5ef}
 h1 .tilt{display:inline-block;font-size:1.55em;line-height:.8;color:var(--acc);transform:rotate(14deg) translateY(-.02em);margin:0 .08em;text-shadow:0 5px 0 #0003}
 h1 small{-webkit-text-stroke:0;font-family:var(--pop);display:block;font-size:.36em;font-weight:700;letter-spacing:.3em;color:var(--onhead);opacity:.75;text-shadow:none;margin-top:6px}
 p{margin:0}
@@ -48,6 +50,7 @@ button{font:inherit;color:inherit;border:0;cursor:pointer}
 button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc-ink);outline-offset:2px}
 .btn{background:var(--btn);color:var(--onbtn);font-weight:800;padding:13px 18px;border-radius:12px;font-size:16px}
 .btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+#passBtn{background:var(--surf);border:2px solid var(--muted);box-shadow:0 3px 0 var(--line);font-weight:800}#passBtn:active{transform:translateY(2px);box-shadow:0 1px 0 var(--line)}
 .btn:disabled{opacity:.45;cursor:default}
 .panel{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--panel-shadow)}
 label{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
@@ -1025,6 +1028,7 @@ const gLeaves=n=>n.id?[n.id]:n.kids.filter(gHas).flatMap(gLeaves);
 function gPathTo(id,n=GTREE,acc=[]){ if(!n.kids) return null; for(const k of n.kids){ if(k.id===id) return acc; if(k.kids){ const r=gPathTo(id,k,acc.concat([k])); if(r) return r; } } return null; }
 let gNav=null;
 const isCon=g=>SUBJ.some(x=>x.id===g);
+const subjTop=g=>(SUBJ.find(x=>x.id===g)||{}).k?"教養":"学問";
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
 const isPick=g=>g==="B"||g==="T"||g==="D"||isCon(g); const hasVoice=g=>g==="B"||g==="D";
 function rng(seedStr){let h=1779033703^seedStr.length;for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
@@ -1283,7 +1287,7 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?"学問・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
 function lvName(lv,g){ if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -1403,7 +1407,7 @@ function beginAsk(){
   const c=S.deck[S.qi];
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.cc){
-    $("cEra").textContent="学問・"+subjName(c.subj)+"・"+c.sg; $("cEv").textContent=""; $("cEn").textContent="";
+    $("cEra").textContent=subjTop(c.subj)+"・"+subjName(c.subj)+"・"+c.sg; $("cEv").textContent=""; $("cEn").textContent="";
     card.insertBefore(el("p","qtext q-x",c.def),$("cEv"));
     S.choices=choicesFor(S.deck,S.qi,S.gid);
   } else if(c.kind==="choice"){
