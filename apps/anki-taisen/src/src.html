@@ -1004,7 +1004,7 @@ const CIMG = {/*CIMG*/};
 const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
 SUBJ.forEach(sj=>{ ALL[sj.id]=[]; });
 const subjByF=f=>SUBJ.find(x=>x.f===f);
-function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,tp:c.tp||"",key:sj.id+":"+c.t}));
+function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,tp:c.tp||"",vis:!!c.v,key:sj.id+":"+c.t}));
   ALL[sj.id].forEach(c=>{ BYKEY[c.key]=c; if(DICT[c.name]) return; DICT[c.name]= sj.en ? {t:c.name,en:c.en,d:c.def.replace("____",c.name),x:c.ex,r:c.rel,s:"英語・"+c.sg,l:1} : {t:c.name,en:c.en,d:c.def,x:c.ex,r:c.rel,s:sj.name+"・"+c.sg}; }); }
 function addDictX(arr){ arr.forEach(e=>{ if(e&&e.t&&!DICT[e.t]) DICT[e.t]={t:e.t,en:e.en||"",d:e.d,x:e.x,r:e.r||[],s:e.s||(e.l?"英語・"+(e.g||""):""),l:e.l?1:0}; }); }
 // f: 科目ファイル名（econ など）か辞書ファイル（dx-history など）。読み込み済みなら即座に解決
@@ -1048,6 +1048,10 @@ function choicesFor(deck,qi,gid){
   return out;
 }
 const MODES=[{id:"J",name:"日本史"},{id:"W",name:"世界史"},{id:"M",name:"ミックス"}];
+// 学問・教養の出題のしかた（歴史の出題範囲と同じ mode 欄を使う）: J=画像で、W=説明で、M=まぜる（印のある札は画像）
+const CMODES=[{id:"M",name:"まぜる"},{id:"J",name:"画像で"},{id:"W",name:"説明で"}];
+const canImgQ=c=>!!(c.cc&&c.vis&&c.doc);
+const hasImgQ=g=>(ALL[g]||[]).some(canImgQ);
 const BMODES=[{id:"V",name:"写真＋鳴き声"},{id:"S",name:"鳴き声のみ"}];
 const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"むずかしい"},{lv:4,name:"今月の鳥"}];
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
@@ -1057,7 +1061,7 @@ const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.le
 function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
   if(genre==="R"){ const d=(Array.isArray(custom)&&custom.length?custom:(S.rkeys||[])).map(k=>BYKEY[k]).filter(Boolean); return birdDeck(d,gid||"r","V"); }
   if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
-  if(isCon(genre)){ const dk=birdDeck((ALL[genre]||[]).filter(c=>lv===3||c.lv===lv),gid,"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
+  if(isCon(genre)){ if(!hasImgQ(genre)) mode="W"; const dk=birdDeck((ALL[genre]||[]).filter(c=>(lv===3||c.lv===lv)&&(mode!=="J"||canImgQ(c))),gid,"P").map(c=>({...c,q:mode!=="W"&&canImgQ(c)?"I":"T"})); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   if(isPick(genre)){ const m=new Date().getMonth()+1; const dk=birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img && !(bmode==="S"&&hasVoice(genre)&&!c.m.snd)),gid,hasVoice(genre)?bmode:"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
@@ -1262,6 +1266,7 @@ function renderPickers(){
   $("modesBox").style.display=(!isB||hasVoice(S.genre))?"flex":"none";
   const isK=isCon(S.genre);
   if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bm2",k); renderPickers(); push();});
+  else if(isK){ if(hasImgQ(S.genre)){ $("modesBox").style.display="flex"; $("modesLabel").textContent="出題のしかた"; seg("modes", CMODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();}); } else $("modesBox").style.display="none"; }
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
   const lvs=isK?[{lv:1},{lv:2},{lv:3}]:isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
@@ -1270,7 +1275,7 @@ function renderPickers(){
   $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
-  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。説明文を読んで、あてはまる用語を入力します"; return; }
+  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?"画像を見て、あてはまる用語を入力します（画像のある札だけ）":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
@@ -1419,7 +1424,8 @@ function beginAsk(){
   const card=$("card"); card.querySelectorAll(".reveal-x,.q-x").forEach(n=>n.remove());
   if(c.cc){
     $("cEra").textContent=subjTop(c.subj)+"・"+subjName(c.subj)+"・"+c.sg; $("cEv").textContent=""; $("cEn").textContent="";
-    card.insertBefore(el("p","qtext q-x",c.def),$("cEv"));
+    if(c.q==="I"){ const f=el("figure","docimg q-x"); const im=document.createElement("img"); im.src=c.doc[0]; im.alt="この画像は何？"; f.append(im); card.insertBefore(f,$("cEv")); card.insertBefore(el("p","qtext q-x","この画像は何？"),$("cEv")); }
+    else card.insertBefore(el("p","qtext q-x",c.def),$("cEv"));
     S.choices=choicesFor(S.deck,S.qi,S.gid);
   } else if(c.kind==="choice"){
     $("cEra").textContent=c.hk? "北海道の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる") : c.tree? "関東の木・"+(c.season==="一年中"?"一年中みどり":"見ごろは"+c.season) : "関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
@@ -1528,7 +1534,7 @@ function reveal(){
   const c=S.deck[S.qi], prev=S.qi>0?S.deck[S.qi-1]:null;
   const card=$("card");
   if(c.cc){
-    card.querySelectorAll(".qtext").forEach(n=>n.remove());
+    card.querySelectorAll(".qtext,figure.q-x").forEach(n=>n.remove());
     card.insertBefore(el("div","bname reveal-x",c.name),$("cEv"));
     if(c.en) card.insertBefore(el("p","bsub reveal-x",c.en),$("cEv"));
     const flow=el("div","flow reveal-x");
@@ -1557,7 +1563,7 @@ function reveal(){
       c.m.imgs.forEach((g,k)=>{ const f=el("button","galitem"+(k===(c.pi||0)?" on":"")); f.type="button"; const im=document.createElement("img"); im.src=g[0]; im.alt=g[4]||""; im.loading="lazy"; f.append(im, el("span",null,g[4]||""));
         f.onclick=()=>{ if(main) main.src=g[0]; gal.querySelectorAll(".galitem").forEach(n=>n.classList.toggle("on",n===f)); }; gal.append(f); });
       card.insertBefore(gal,$("cEv")); }
-    card.querySelectorAll(".qtext").forEach(n=>n.remove());
+    card.querySelectorAll(".qtext,figure.q-x").forEach(n=>n.remove());
     const flow=el("div","flow reveal-x");
     [c.f1,c.f2,c.f3].forEach((v,i)=>{const r=el("div","fr arrow dot"); fillLinked(r,v+"。",c.name); flow.append(r);});
     card.append(flow); card.append(habitatFor(c)); card.append(creditFor(c));
@@ -1715,6 +1721,8 @@ $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(host
   const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V";
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
   startGame(g.gid,genre,mode,lv,qi,bm,cu,cnt); };
+// PC（マウス操作の端末）では人生クエストを新しいタブで開く
+try{ if(matchMedia("(hover:hover) and (pointer:fine)").matches){ $("lqOpen").target="_blank"; $("lqOpen").rel="noopener"; } }catch(e){}
 $("creditLink").onclick=()=>openCredits(null);
 $("creditBack").onclick=()=>show(creditFrom);
 $("nextBtn").onclick=next;
