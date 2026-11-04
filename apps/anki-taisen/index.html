@@ -304,6 +304,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <div class="levels" id="answers" style="grid-template-columns:repeat(2,1fr)"></div>
       </div>
       <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
+      <button class="btn sub" id="soloBtn" type="button" hidden>ひとりで遊ぶ</button>
       <button class="btn sub" id="reviewBtn" type="button" hidden>今日の復習</button>
       <div class="waiting" id="waitStart"></div>
     </div>
@@ -1480,6 +1481,7 @@ function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm=
 function lvName(lv,g){ if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
+  $("soloBtn").hidden=!others().length;
   { const n=dueKeys().length, rb=$("reviewBtn"); rb.hidden=!n; rb.textContent="今日の復習（"+n+"枚）"; }
   const box=$("lobbyPlayers"); box.textContent="";
   box.append(chip(S.name||"名無し",{me:true}));
@@ -1498,7 +1500,7 @@ function renderLobby(){
   } else inv.hidden=true;
 }
 function findOpenGame(){
-  const gs=others().map(p=>p.presence).filter(pr=>typeof pr.gid==="string" && pr.view==="game");
+  const gs=others().map(p=>p.presence).filter(pr=>typeof pr.gid==="string" && pr.view==="game" && !pr.gid.startsWith("solo"));
   if(!gs.length) return null;
   gs.sort((a,b)=>String(b.gid).localeCompare(String(a.gid)));
   return gs[0];
@@ -1556,7 +1558,7 @@ $("reportSend").onclick=async()=>{ const c=S.deck&&S.deck[S.qi], t=$("reportText
   m.textContent=error?"送れませんでした。時間をおいてもう一度":"ありがとうございます。届きました"; if(!error) $("reportText").value=""; };
 function showLearnLine(c){ resetReport(); const box=$("learnLine"); if(!box||!c) return; const r=LEARN[c.key]; if(!r){ box.textContent=""; return; }
   const e=effStage(r); box.textContent="定着度 "+"●".repeat(e)+"○".repeat(3-e)+"　正解 "+(r.n||0)+"日"; }
-function startReview(){ const keys=dueKeys(); if(!keys.length) return; S.prevGenre=S.genre; startGame(newGid(),"R",S.mode,S.lv,0,"V",keys,0); }
+function startReview(){ const keys=dueKeys(); if(!keys.length) return; S.prevGenre=S.genre; S.solo=true; if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } startGame(newGid(),"R",S.mode,S.lv,0,"V",keys,0); }
 // 人生クエストと同じサイト・同じSupabaseなので、人生クエストのログインをそのまま使う（ログインしなくても遊べる）
 const LQ={sb:null,user:null};
 const lqOff=()=>store.get("nb-lq-off")==="1";
@@ -1859,7 +1861,7 @@ function buildKeypad(){
     b.textContent=k==="del"?"消す":k; b.onclick=()=>press(k); box.append(b);
   });
 }
-const newGid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const newGid=()=>(S.solo?"solo":"")+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 document.addEventListener("keydown",e=>{
   if(S.view!=="game"||document.activeElement===$("nick")) return;
   if(/^[0-9]$/.test(e.key)) press(e.key);
@@ -1874,11 +1876,13 @@ renderMute();
 { const NICKS=["本能寺の火元","関ヶ原の寝返り役","鳴かぬなら様子見","いい国つくろう係","黒船の見張り番","年号の亡者","ハシブトの親分","カワセミ界のエース","ヒヨドリ通訳","モズの早にえ係"]; $("nick").placeholder="例："+NICKS[Math.floor(Math.random()*NICKS.length)]; }
 $("startBtn").onclick=()=>{
   if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; push(); check(); return; }
+  S.solo=false;
   if(!lobbyPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,startQi()); return; }
   const h=hostWait();
   S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,qi:startQi()};
   $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
-$("joinBtn").onclick=()=>{ const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
+$("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
+$("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
   const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V";
@@ -1898,7 +1902,7 @@ $("lqLogin").onclick=async()=>{ if(!LQ.sb) return; try{ sessionStorage.setItem("
 $("lqToggle").onclick=()=>{ store.set("nb-lq-off",lqOff()?"0":"1"); renderLink(); lqPull(); };
 lqInit();
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
-function toLobby(){ stopVoice(); if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
+function toLobby(){ stopVoice(); S.solo=false; if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
 $("lobbyBtn").onclick=toLobby;
 { let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="やめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="やめる";},3000); }; }
 
