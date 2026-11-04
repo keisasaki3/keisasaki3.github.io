@@ -299,6 +299,8 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <div id="fromBox" style="display:none;flex-direction:column;gap:6px">
         <span class="small muted">どこから始める？</span>
         <div class="levels" id="froms" style="grid-template-columns:repeat(4,1fr)"></div>
+        <span class="small muted">どこまで？</span>
+        <div class="levels" id="htos" style="grid-template-columns:repeat(2,1fr)"></div>
       </div>
       <div id="cntBox" style="display:none;flex-direction:column;gap:6px">
         <span class="small muted">出題数（ランダムに選ばれます）</span>
@@ -1265,6 +1267,8 @@ function fromList(mode,lv){
   else FROM_W.forEach(([y,n])=>{ const i=d.findIndex(c=>c.y>=y); if(i>=0 && !out.some(o=>o.qi===i)) out.push({key:"y:"+y,name:n,qi:i}); });
   return out;
 }
+// 「この区分だけ」のときの終わり（次の区分の始まり）。最後の区分なら null
+function fromEnd(mode,lv,qi){ const f=fromList(mode,lv).map(x=>x.qi).filter(q=>q>qi); return f.length?Math.min(...f):null; }
 function fromQi(mode,lv,key){ const f=fromList(mode,lv).find(x=>x.key===key); return f?f.qi:0; }
 const yearText=y=>(y<0?"紀元前":"")+Math.abs(y);
 const tagOf=c=>c.src==="J"?`日本・${c.era}時代`:`世界・${c.era}`;
@@ -1387,7 +1391,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 
 const S={
   name: store.get("nb-name")||"",
-  lv: Number(store.get("nb-lv"))||1, from: store.get("nb-from")||"", cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
+  lv: Number(store.get("nb-lv"))||1, from: store.get("nb-from")||"", ht: store.get("nb-ht")!=="0", cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
   mode: store.get("nb-mode")||"J",
   green: store.get("nb-green")||"wakakusa",
   tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
@@ -1402,7 +1406,7 @@ if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="V";
 let room=null;
 
 function myPresence(){
-  return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, cnt:S.cnt, mode:S.mode, genre:S.genre, bmode:S.bmode, qi:S.qi, phase:S.phase,
+  return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, cnt:S.cnt, mode:S.mode, genre:S.genre, bmode:S.bmode, ht:S.ht, qi:S.qi, phase:S.phase,
     ans:S.ans, skip:S.skip, ready:S.ready, wait:S.wait, again:S.again, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
 }
 function push(){ if(room){ room.presence(myPresence()).catch(()=>{}); } }
@@ -1473,9 +1477,10 @@ function renderPickers(){
   const d=deckFor(S.mode,S.lv); const fl=fromList(S.mode,S.lv);
   const cur=fl.some(f=>f.key===S.from)?S.from:fl[0].key;
   $("fromBox").style.display="flex";
-  seg("froms", fl, cur, it=>(d.length-it.qi)+"問", k=>{S.from=k; store.set("nb-from",k); renderPickers(); push();});
-  const q0=fromQi(S.mode,S.lv,S.from);
-  $("rangeNote").textContent=`「${d[q0].name}」から「${d[d.length-1].name}」まで`;
+  seg("froms", fl, cur, it=>((S.ht&&fromEnd(S.mode,S.lv,it.qi))||d.length)-it.qi+"問", k=>{S.from=k; store.set("nb-from",k); renderPickers(); push();});
+  seg("htos", [{key:"1",name:"この区分だけ"},{key:"0",name:"最後まで"}], S.ht?"1":"0", null, k=>{S.ht=k==="1"; store.set("nb-ht",k); renderPickers(); push();});
+  const q0=fromQi(S.mode,S.lv,S.from), q1=(S.ht&&fromEnd(S.mode,S.lv,q0))||d.length;
+  $("rangeNote").textContent=`「${d[q0].name}」から「${d[q1-1].name}」まで（${q1-q0}問）`;
 }
 function chip(name, opts={}){
   const c=document.createElement("span"); c.className="chip"+(opts.me?" me":"");
@@ -1524,7 +1529,7 @@ function okLine(id, me, rows){
 function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&[1,2,3,4].includes(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
 function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="lobby"); }
 function startQi(){ return isPick(S.genre)?0:fromQi(S.mode,S.lv,S.from); }
-function startFromWait(w){ const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
+function startFromWait(w){ if(typeof w.ht==="boolean") S.ht=w.ht; const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
 function lobbyCheck(){
   const lp=lobbyPeers(); if(!S.wait){ okLine("waitStart",false,[]); return; }
   const h=hostWait(); if(h && h.gid>S.wait.gid){ S.wait={...h}; push(); }
@@ -1606,7 +1611,7 @@ function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
   if(genre==="R"&&Array.isArray(custom)) S.rkeys=custom;
   if(!genreReady(genre)){ const a=arguments; ensureGenre(genre).then(()=>startGame.apply(null,a)).catch(()=>setTimeout(()=>startGame.apply(null,a),2000)); return; }
   S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; S.cnt=(cnt===undefined?S.cnt:cnt); if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
-  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); S.q0=S.custom?0:S.qi; S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi); S.wait=null; S.again=null; $("againBtn").disabled=false; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; $("waitAgain").textContent="";
+  S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } S.qi=Math.min(qi||0,S.deck.length-1); if(!S.custom&&!isPick(genre)&&!isCon(genre)&&genre!=="R"&&S.ht){ const e=fromEnd(mode,lv,S.qi); if(e) S.deck=S.deck.slice(0,e); } S.q0=S.custom?0:S.qi; S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi); S.wait=null; S.again=null; $("againBtn").disabled=false; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; $("waitAgain").textContent="";
   S.view="game"; show("game"); beginAsk();
 }
 function beginAsk(){
@@ -1903,13 +1908,13 @@ $("startBtn").onclick=()=>{
   S.solo=false;
   if(!lobbyPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,startQi()); return; }
   const h=hostWait();
-  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,qi:startQi()};
+  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,ht:S.ht,qi:startQi()};
   $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
 $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
-  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V";
+  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V"; if(typeof g.ht==="boolean") S.ht=g.ht;
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
   startGame(g.gid,genre,mode,lv,qi,bm,cu,cnt); };
 // PC（マウス操作の端末）では人生クエストを新しいタブで開く
