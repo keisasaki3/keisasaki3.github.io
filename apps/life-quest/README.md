@@ -34,7 +34,7 @@
 
 ## Current deployment
 
-- Public URL: https://natsume-lq.onrender.com
+- Public URL: https://natsume-portal.onrender.com/life-quest/ （なつめポータル、2026-11-04〜。旧 https://natsume-lq.onrender.com は開くと新しいアドレスへ転送）
 - 旧URL https://life-quest-keita.onrender.com は使用しない
 - Current source: `apps/life-quest/index.html`
 

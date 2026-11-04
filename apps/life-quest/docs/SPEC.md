@@ -520,3 +520,4 @@ ChatGPT Library内の旧仕様書は履歴資料であり、GitHub版と矛盾�
 - 暗記大戦の札には人生クエストの `topic_id` が付いている。遊んだ結果は `quest_card_progress` に札ごとに保存する。
 - プリセットのトピックに暗記大戦の札があり、記録があるとき、トピックの右に「習得 ○%」を出す（MASTERとは別。MASTERは今まで通り手動）。
 - 他のアプリから `?back=アプリ名` 付きで開かれたときは、ログインできたらそのアプリへ戻る（暗記大戦の「人生クエストでログイン」用）。
+- 2026-11-04 Keita決定: 公開アドレスはなつめポータル `https://natsume-portal.onrender.com/life-quest/`。旧アドレス（natsume-lq.onrender.com、keisasaki3.github.io/apps/life-quest/）は開くと新しいアドレスへ転送する（端末ごとの設定はアドレスが変わると引き継がれない）。
