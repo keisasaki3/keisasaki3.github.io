@@ -141,6 +141,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .fv{min-width:0}
 .bce{align-self:flex-end;font-size:14px;color:var(--muted);padding-bottom:6px}
 .genres{grid-template-columns:repeat(2,1fr)}
+.typebox{display:flex;gap:8px}.typebox input{flex:1;min-width:0;font-size:17px;padding:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--surf);color:var(--ink)}.typebox .btn{width:auto;padding:0 18px}
 .choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .choice{background:var(--surf);border:1.5px solid var(--line);border-radius:14px;min-height:56px;padding:8px;font-size:16px;font-weight:800;line-height:1.35;color:var(--ink)}
 .choice.pass{grid-column:1/-1;min-height:44px;color:var(--muted);font-weight:500;background:transparent}
@@ -298,6 +299,10 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <span class="small muted">出題数（ランダムに選ばれます）</span>
         <div class="levels" id="counts"></div>
       </div>
+      <div id="ansBox" style="display:none;flex-direction:column;gap:6px">
+        <span class="small muted">答え方</span>
+        <div class="levels" id="answers" style="grid-template-columns:repeat(2,1fr)"></div>
+      </div>
       <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
       <button class="btn sub" id="reviewBtn" type="button" hidden>今日の復習</button>
       <div class="waiting" id="waitStart"></div>
@@ -316,7 +321,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
     <div class="panel" id="lqPanel">
       <span class="small muted">人生クエストと連携</span>
       <p class="small" id="lqText" style="margin:0"></p>
-      <div style="display:flex;gap:14px;flex-wrap:wrap"><button class="clink" id="lqLogin" type="button">人生クエストでログイン</button><button class="clink" id="lqToggle" type="button" hidden></button></div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap"><button class="clink" id="lqLogin" type="button">人生クエストでログイン</button><a class="clink" id="lqOpen" href="../life-quest/" hidden>人生クエストを開く</a><button class="clink" id="lqToggle" type="button" hidden></button></div>
     </div>
     <p class="small muted" style="text-align:center"><button class="clink" id="creditLink" type="button" style="align-self:center">写真・鳴き声・資料の出典（クレジット）</button></p>
   </section>
@@ -337,6 +342,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <button class="btn ghost" id="skipBtn" type="button" hidden>待たずに答え合わせ</button>
       <div class="keypad" id="keypad"></div>
       <div class="choices" id="choices" hidden></div>
+      <form class="typebox" id="typeBox" hidden><input id="typeIn" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="答えを入力"><button class="btn" type="submit">決定</button></form>
       <button class="btn ghost" id="passBtn" type="button">パス</button>
     </div>
 
@@ -1217,7 +1223,8 @@ function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const 
 function choicesFor(deck,qi,gid){
   const c=deck[qi], r=rng(gid+":"+qi), pool=c.cc? ALL[c.subj].filter(x=>x.name!==c.name) : S.genre==="R"? (ALL[c.key[0]]||[]).filter(x=>x.key!==c.key) : deck.filter(x=>x!==c);
   const same=shuffle(pool.filter(x=>x.grp===c.grp),r), other=shuffle(pool.filter(x=>x.grp!==c.grp),r);
-  const picks=same.slice(0,2).concat(other).slice(0,3);
+  const rel=c.rel&&c.rel.length? shuffle(pool.filter(x=>c.rel.includes(x.name)),r) : [];
+  const picks=[...new Set(rel.concat(same,other))].slice(0,3);
   const out=shuffle([c].concat(picks),r).map(x=>x.name);
   // 英語: 文頭の空欄なら全部大文字始まり、文中なら小文字始まりにそろえる（大文字で答えがばれないように）
   if(c.def&&c.def.includes("____")){ const head=c.def.trim().startsWith("____"); return out.map(t=>head? t.charAt(0).toUpperCase()+t.slice(1) : (/^I\b/.test(t)?t:t.charAt(0).toLowerCase()+t.slice(1))); }
@@ -1380,6 +1387,7 @@ const S={
 if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
 if(!GENRES.some(g=>g.id===S.genre)) S.genre="H";
 if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="V";
+S.amode=store.get("nb-am")==="I"?"I":"C";
 let room=null;
 
 function myPresence(){
@@ -1444,9 +1452,11 @@ function renderPickers(){
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
   $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
+  $("ansBox").style.display=isB?"flex":"none";
+  if(isB) seg("answers",[{key:"C",name:"4択"},{key:"I",name:"入力"}],S.amode,null,k=>{S.amode=k; store.set("nb-am",k); renderPickers();});
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
-  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。説明文を読んで、あてはまる用語を4択で選びます"; return; }
+  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+(S.amode==="I"?"。説明文を読んで、あてはまる用語を入力します":"。説明文を読んで、あてはまる用語を4択で選びます"); return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
@@ -1563,8 +1573,8 @@ async function lqPull(){ if(!LQ.user||lqOff()) return;
   if(S.view==="lobby"){ renderPickers(); renderLobby(); } }
 function renderLink(){ const t=$("lqText"), lg=$("lqLogin"), tg=$("lqToggle"); if(!t) return;
   if(LQ.user){ t.textContent=lqOff()?"連携を止めています。記録はこの端末だけに残ります。":"連携中（"+(LQ.user.email||"ログイン中")+"）。正解の記録が人生クエストのトピックの習得度に反映されます。";
-    lg.hidden=true; tg.hidden=false; tg.textContent=lqOff()?"連携を再開する":"連携を止める"; }
-  else { t.textContent="ログインしなくても遊べます（記録はこの端末だけ）。人生クエストにログインすると、記録が人生クエストにも保存され、どの端末でも続きから学べます。"; lg.hidden=false; tg.hidden=true; } }
+    lg.hidden=true; tg.hidden=false; $("lqOpen").hidden=false; tg.textContent=lqOff()?"連携を再開する":"連携を止める"; }
+  else { t.textContent="ログインしなくても遊べます（記録はこの端末だけ）。人生クエストにログインすると、記録が人生クエストにも保存され、どの端末でも続きから学べます。"; lg.hidden=false; tg.hidden=true; $("lqOpen").hidden=true; } }
 function lqInit(){ const cfg=window.ANKI_SB; if(!cfg||!window.supabase) { renderLink(); return; }
   try{ LQ.sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}); }catch(e){ renderLink(); return; }
   LQ.sb.auth.getSession().then(({data})=>{ LQ.user=(data&&data.session&&data.session.user)||null; renderLink(); lqPull(); }).catch(()=>renderLink());
@@ -1615,8 +1625,8 @@ function beginAsk(){
   card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
   $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
   $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
-  const isC=c.kind==="choice"; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC;
-  if(isC) renderChoices();
+  const isC=c.kind==="choice", typing=isC&&S.amode==="I"; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
+  if(typing){ const ti=$("typeIn"); ti.value=""; ti.disabled=!!S.ans; } else if(isC) renderChoices();
   $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
   renderSlots(); renderGamePlayers(); push();
 }
@@ -1643,11 +1653,14 @@ function press(k){
   S.input+=k; renderSlots();
   if(S.input.length===len) setTimeout(()=>answer(S.input),180);
 }
+// 入力でも4択でも同じ判定: 全角半角・大文字小文字・ひらがなカタカナ・空白や中黒・かっこ書きの違いは無視する
+function normAns(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/[（(][^）)]*[）)]/g,"").replace(/[\u3041-\u3096]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+96)).replace(/[\s・･,，、。.'’"“”「」『』~〜-]/g,""); }
+function typedOk(v,c){ const a=normAns(v); if(!a) return false; return a===normAns(c.name) || (!!c.en && !!c.cc && !c.def.includes("____") && a===normAns(c.en)); }
 function isBig(){ return S.deck.length>=6 && S.qi>=S.deck.length-3; }
 function answer(v){
   if(S.ans) return;
   const c=S.deck[S.qi];
-  const ok = v!=null && (c.kind==="choice" ? (c.cc&&c.def.includes("____") ? String(v).toLowerCase()===c.name.toLowerCase() : v===c.name) : Number(v)===Math.abs(c.y));
+  const ok = v!=null && (c.kind==="choice" ? typedOk(v,c) : Number(v)===Math.abs(c.y));
   const near = !ok && v!=null && c.kind==="year" && Math.abs(Number(v)-Math.abs(c.y))<=3;
   const pt=(ok?1:near?0.5:0)*(isBig()?2:1);
   S.ans={q:S.qi, v:v==null?"":String(v), ok, pt};
@@ -1834,6 +1847,7 @@ function check(){
   }
   renderGamePlayers();
 }
+$("typeBox").onsubmit=e=>{ e.preventDefault(); const v=$("typeIn").value.trim(); if(!v) return; if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(v); $("typeIn").disabled=true; $("typeIn").blur(); } };
 $("passBtn").onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(null); if(S.deck[S.qi].kind==="choice") renderChoices(); } };
 $("skipBtn").onclick=()=>{ S.skip=S.qi; push(); check(); };
 function show(v){ ["lobby","game","result","credits"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
