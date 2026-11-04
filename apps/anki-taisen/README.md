@@ -2,7 +2,7 @@
 
 なつめポータルのアプリのひとつ。友人や家族とオンラインで当て合う対戦型の暗記ゲームで、あらゆる分野の学びをここに集めていく（2026-11-02 Keita依頼、2026-11-03「ここにあらゆる学びを集積」）。
 
-- 公開URL: なつめポータルの `/anki-taisen/`（移行前は https://keisasaki3.github.io/apps/anki-taisen/） （`?room=あいことば` で部屋を分けられる。省略時は `main`）
+- 公開URL: https://natsume-portal.onrender.com/anki-taisen/ （旧 https://keisasaki3.github.io/apps/anki-taisen/ は開くと転送） （`?room=あいことば` で部屋を分けられる。省略時は `main`）
 - 更新するのはこの公開版だけ。claude.ai の Artifact 版（https://claude.ai/artifact/PWihQRKdReNW4YjamVfDeZ）は更新しない（2026-11-03 Keita決定、トークン節約）。
 
 ## 1. 構成
