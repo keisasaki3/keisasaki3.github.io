@@ -23,7 +23,7 @@
 ### 置き場所（2026-11-04 Keita決定）
 
 独自ドメインは取らない（セキュリティが不安なため）。Render に静的サイト `natsume-portal` を1つ作り、アプリを同じアドレスの下に並べる: `natsume-portal.onrender.com/life-quest/`、`/anki-taisen/`、共用の `/shared/`。同じアドレスなのでログインは共通。設定はリポジトリ直下の `render.yaml`（Blueprint）と `scripts/build-portal.sh`（`dist/` にまとめる）。アプリ同士・共用素材は相対パスで参照し、特定のアドレスを書き込まない。
-移行: ①RenderでBlueprintから natsume-portal を作る ②SupabaseのSite URLを新しい人生クエストに、Redirect URLsに `https://natsume-portal.onrender.com/**` を追加 ③旧 natsume-lq.onrender.com と GitHub Pages の暗記大戦は新アドレスへ転送。端末ごとの設定（localStorage）はアドレスが変わると引き継がれない。
+移行: ①RenderでBlueprintから natsume-portal を作る ②SupabaseのSite URLをポータルのトップ `https://natsume-portal.onrender.com/` に（2026-11-04 Keita決定。トップページは作るまで /life-quest/ へ転送）、Redirect URLsに `https://natsume-portal.onrender.com/**` を追加 ③旧 natsume-lq.onrender.com と GitHub Pages の暗記大戦は新アドレスへ転送。端末ごとの設定（localStorage）はアドレスが変わると引き継がれない。
 
 ### 激突！暗記大戦（2026-11-02 Keita決定）
 
