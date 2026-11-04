@@ -37,6 +37,7 @@ _subj=re.findall(r'\{id:"(\w)",f:"(\w+)",name:"[^"]*"(,en:1)?(?:,k:1)?\}',s[s.in
 _cman={}; _didx={}; _tps={}
 def _wd(name,arr):
     open(W+"site/data/"+name+".json","w").write(json.dumps(arr,ensure_ascii=False,separators=(",",":")))
+_VIS=json.load(open(_cdir+"visual.json")) if _o.path.exists(_cdir+"visual.json") else {}
 for _id,_f,_en in _subj:
     if not _o.path.exists(_cdir+_f+".json"): continue
     _a=json.load(open(_cdir+_f+".json"))
@@ -45,6 +46,9 @@ for _id,_f,_en in _subj:
         _al=json.load(open(_ap))
         for _c in _a:
             if _al.get(_c["t"]): _c["a"]=_al[_c["t"]]
+    _vis=set(_VIS.get(_f,[]))   # 見た目で覚える札（画像で出題できる）
+    for _c in _a:
+        if _c["t"] in _vis: _c["v"]=1
     _wd(_f,_a); _cman[_f]=len(_a)
     for _c in _a: _didx.setdefault(_c["t"],[_f,1 if _en else 0])
     for _c in _a:
