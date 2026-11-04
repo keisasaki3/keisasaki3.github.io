@@ -33,7 +33,7 @@ dm=json.load(open(W+"hk/dmedia.json")) if os.path.exists(W+"hk/dmedia.json") els
 import glob as _g, os as _o
 _cdir="/mnt/project-files/mekuri-battle/concepts/"
 _o.makedirs(W+"site/data",exist_ok=True)
-_subj=re.findall(r'\{id:"(\w)",f:"(\w+)",name:"[^"]*"(,en:1)?\}',s[s.index("const SUBJ=["):s.index("const SUBJ=[")+3000])
+_subj=re.findall(r'\{id:"(\w)",f:"(\w+)",name:"[^"]*"(,en:1)?(?:,k:1)?\}',s[s.index("const SUBJ=["):s.index("];",s.index("const SUBJ=["))])
 _cman={}; _didx={}; _tps={}
 def _wd(name,arr):
     open(W+"site/data/"+name+".json","w").write(json.dumps(arr,ensure_ascii=False,separators=(",",":")))
