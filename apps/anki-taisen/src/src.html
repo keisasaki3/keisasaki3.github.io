@@ -1229,7 +1229,9 @@ function nodeFor(k,me){
   return n;
 }
 function linksFor(c){
-  const ca=(CAUSES[c.key]||[]).slice(-2), ef=(EFFECTS[c.key]||[]).slice(0,2);
+  // 原因は近い順に2つ、結果は早い順に2つ。表示は年の古い順（2026-11-04 報告「つながりの順番おかしい」）
+  const yr=k=>(BYKEY[k]||{}).y??0;
+  const ca=(CAUSES[c.key]||[]).slice().sort((a,b)=>yr(a[0])-yr(b[0])).slice(-2), ef=(EFFECTS[c.key]||[]).slice().sort((a,b)=>yr(a[0])-yr(b[0])).slice(0,2);
   if(!ca.length&&!ef.length) return null;
   const box=el("div","links reveal-x"); box.append(el("span","lh","つながり"));
   const ch=el("div","chain");
@@ -1591,7 +1593,7 @@ function press(k){
   if(S.input.length===len) setTimeout(()=>answer(S.input),180);
 }
 // 入力でも4択でも同じ判定: 全角半角・大文字小文字・ひらがなカタカナ・空白や中黒・かっこ書きの違いは無視する
-function normAns(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/[（(][^）)]*[）)]/g,"").replace(/[\u3041-\u3096]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+96)).replace(/[\s・･,，、。.'’"“”「」『』~〜-]/g,""); }
+function normAns(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/\^/g,"").replace(/[（(][^）)]*[）)]/g,"").replace(/[\u3041-\u3096]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+96)).replace(/[\s・･,，、。.'’"“”「」『』~〜-]/g,"").replace(/ー+$/,""); }   // ^（べき乗）と語末の長音（コンデンサ／コンデンサー）は無視
 function typedOk(v,c){ const a=normAns(v); if(!a) return false; return a===normAns(c.name) || (c.alias||[]).some(x=>a===normAns(x)) || (!!c.en && !!c.cc && !c.def.includes("____") && a===normAns(c.en)); }
 // 年まで覚えるのは「やさしい」（lv1）の札だけ。ほかは同じ世紀か±10年で正解（2026-11-04 Keita決定）
 const roughCard=c=>c.kind==="year"&&c.lv>1;
@@ -1626,8 +1628,11 @@ const DTERMS=Object.keys(DIDX).filter(t=>t.length>=2&&!DIDX[t][1]).sort((a,b)=>b
 const ETERMS=Object.keys(DIDX).filter(t=>DIDX[t][1]).sort((a,b)=>b.length-a.length);
 const DRE=(DTERMS.length||ETERMS.length)? new RegExp([...(ETERMS.length?["\\b(?:"+ETERMS.map(rxq).join("|")+")\\b"]:[]),...DTERMS.map(rxq)].join("|"),"gi") : null;
 function dlink(label,t){ const b=el("button","dlink",label); b.type="button"; b.onclick=e=>{ e.stopPropagation(); openDict(t,$("dict").hidden); }; return b; }
+const KATA=/[\u30A1-\u30FA\u30FC]/;
 function fillLinked(node,text,self){ node.textContent=""; if(!DRE){ node.textContent=text; return; }
-  const used=new Set([self]); let last=0; text.replace(DRE,(m,off)=>{ const k=dkey(m); if(!k||used.has(k)) return m; used.add(k); if(off>last) node.append(text.slice(last,off)); node.append(dlink(m,k)); last=off+m.length; return m; });
+  const used=new Set([self]); let last=0; text.replace(DRE,(m,off)=>{ const k=dkey(m); if(!k||used.has(k)) return m;
+    // カタカナ語の途中（イスラムの「ラム」、テムジンの「ジン」）はリンクしない
+    if(KATA.test(m[0])&&KATA.test(text[off-1]||"")) return m; if(KATA.test(m[m.length-1])&&KATA.test(text[off+m.length]||"")) return m; used.add(k); if(off>last) node.append(text.slice(last,off)); node.append(dlink(m,k)); last=off+m.length; return m; });
   if(last<text.length) node.append(text.slice(last)); }
 let dstack=[];
 function openDict(t,fresh){ const e=DICT[t];
