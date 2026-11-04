@@ -89,3 +89,15 @@ print("b2",sum("img2" in v for v in _b2.values()),sum("snd2" in v for v in _b2.v
 s=s.replace("const MEDIA = {/*MEDIA*/};","const MEDIA = "+json.dumps(media,ensure_ascii=False,separators=(",",":")).replace('},"','},\n"')+";")
 open(W+"site/index.html","w",encoding="utf8").write(s)
 print("missing photos:",missing,"sounds:",sum(1 for v in media.values() if "snd" in v))
+# 音で出題する札の音源（concepts/snd/index.json → CSND と site/cs/）
+_sd="/mnt/project-files/mekuri-battle/concepts/snd/"
+_snd=json.load(open(_sd+"index.json")) if os.path.exists(_sd+"index.json") else {}
+os.makedirs(W+"site/cs",exist_ok=True)
+for _sf,_m in _snd.items():
+    for _t,_v in list(_m.items()):
+        _fn=os.path.basename(_v[0])
+        if os.path.exists(_sd+_fn): shutil.copy(_sd+_fn,W+"site/cs/"+_fn)
+        else: del _m[_t]
+_h=open(W+"site/index.html",encoding="utf8").read().replace("const CSND = {/*CSND*/};","const CSND = "+json.dumps(_snd,ensure_ascii=False,separators=(",",":"))+";")
+open(W+"site/index.html","w",encoding="utf8").write(_h)
+print("csnd",sum(len(m) for m in _snd.values()))
