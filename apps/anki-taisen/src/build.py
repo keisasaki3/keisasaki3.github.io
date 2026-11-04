@@ -39,7 +39,13 @@ def _wd(name,arr):
     open(W+"site/data/"+name+".json","w").write(json.dumps(arr,ensure_ascii=False,separators=(",",":")))
 for _id,_f,_en in _subj:
     if not _o.path.exists(_cdir+_f+".json"): continue
-    _a=json.load(open(_cdir+_f+".json")); _wd(_f,_a); _cman[_f]=len(_a)
+    _a=json.load(open(_cdir+_f+".json"))
+    _ap=_cdir+"alias/"+_f+".json"   # 入力で答えるときの別解（読みがな・別名）
+    if _o.path.exists(_ap):
+        _al=json.load(open(_ap))
+        for _c in _a:
+            if _al.get(_c["t"]): _c["a"]=_al[_c["t"]]
+    _wd(_f,_a); _cman[_f]=len(_a)
     for _c in _a: _didx.setdefault(_c["t"],[_f,1 if _en else 0])
     for _c in _a:
         if _c.get("tp"): _tps[_c["tp"]]=_tps.get(_c["tp"],0)+1

@@ -299,10 +299,6 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <span class="small muted">出題数（ランダムに選ばれます）</span>
         <div class="levels" id="counts"></div>
       </div>
-      <div id="ansBox" style="display:none;flex-direction:column;gap:6px">
-        <span class="small muted">答え方</span>
-        <div class="levels" id="answers" style="grid-template-columns:repeat(2,1fr)"></div>
-      </div>
       <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
       <button class="btn sub" id="soloBtn" type="button" hidden>ひとりで遊ぶ</button>
       <button class="btn sub" id="reviewBtn" type="button" hidden>今日の復習</button>
@@ -354,6 +350,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <div style="display:flex;gap:8px;align-items:center"><button class="btn ghost" id="reportSend" type="button" style="padding:6px 14px;width:auto">送る</button><span class="small muted" id="reportMsg"></span></div></div></div>
       <div class="answers" id="answers"></div>
       <div class="stamps" id="stamps"></div>
+      <button class="btn sub" id="selfOkBtn" type="button" hidden>表記ちがいなので正解にする</button>
       <button class="btn" id="nextBtn" type="button">次へ</button>
       <div class="waiting" id="waitNext"></div>
     </div>
@@ -1189,7 +1186,7 @@ const CIMG = {"geo":{"扇状地":["ci/geo-1.jpg","MaedaAkihiko","CC BY-SA 4.0","
 const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1}];
 SUBJ.forEach(sj=>{ ALL[sj.id]=[]; });
 const subjByF=f=>SUBJ.find(x=>x.f===f);
-function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,tp:c.tp||"",key:sj.id+":"+c.t}));
+function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,tp:c.tp||"",key:sj.id+":"+c.t}));
   ALL[sj.id].forEach(c=>{ BYKEY[c.key]=c; if(DICT[c.name]) return; DICT[c.name]= sj.en ? {t:c.name,en:c.en,d:c.def.replace("____",c.name),x:c.ex,r:c.rel,s:"英語・"+c.sg,l:1} : {t:c.name,en:c.en,d:c.def,x:c.ex,r:c.rel,s:sj.name+"・"+c.sg}; }); }
 function addDictX(arr){ arr.forEach(e=>{ if(e&&e.t&&!DICT[e.t]) DICT[e.t]={t:e.t,en:e.en||"",d:e.d,x:e.x,r:e.r||[],s:e.s||(e.l?"英語・"+(e.g||""):""),l:e.l?1:0}; }); }
 // f: 科目ファイル名（econ など）か辞書ファイル（dx-history など）。読み込み済みなら即座に解決
@@ -1388,7 +1385,6 @@ const S={
 if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
 if(!GENRES.some(g=>g.id===S.genre)) S.genre="H";
 if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="V";
-S.amode=store.get("nb-am")==="I"?"I":"C";
 let room=null;
 
 function myPresence(){
@@ -1453,11 +1449,9 @@ function renderPickers(){
   $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
   seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
   $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
-  $("ansBox").style.display=isB?"flex":"none";
-  if(isB) seg("answers",[{key:"C",name:"4択"},{key:"I",name:"入力"}],S.amode,null,k=>{S.amode=k; store.set("nb-am",k); renderPickers();});
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
-  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+(S.amode==="I"?"。説明文を読んで、あてはまる用語を入力します":"。説明文を読んで、あてはまる用語を4択で選びます"); return; }
+  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。説明文を読んで、あてはまる用語を入力します"; return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
@@ -1627,7 +1621,7 @@ function beginAsk(){
   card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
   $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
   $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
-  const isC=c.kind==="choice", typing=isC&&S.amode==="I"; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
+  const isC=c.kind==="choice", typing=isC; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
   if(typing){ const ti=$("typeIn"); ti.value=""; ti.disabled=!!S.ans; } else if(isC) renderChoices();
   $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
   renderSlots(); renderGamePlayers(); push();
@@ -1657,7 +1651,7 @@ function press(k){
 }
 // 入力でも4択でも同じ判定: 全角半角・大文字小文字・ひらがなカタカナ・空白や中黒・かっこ書きの違いは無視する
 function normAns(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/[（(][^）)]*[）)]/g,"").replace(/[\u3041-\u3096]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+96)).replace(/[\s・･,，、。.'’"“”「」『』~〜-]/g,""); }
-function typedOk(v,c){ const a=normAns(v); if(!a) return false; return a===normAns(c.name) || (!!c.en && !!c.cc && !c.def.includes("____") && a===normAns(c.en)); }
+function typedOk(v,c){ const a=normAns(v); if(!a) return false; return a===normAns(c.name) || (c.alias||[]).some(x=>a===normAns(x)) || (!!c.en && !!c.cc && !c.def.includes("____") && a===normAns(c.en)); }
 function isBig(){ return S.deck.length>=6 && S.qi>=S.deck.length-3; }
 function answer(v){
   if(S.ans) return;
@@ -1667,6 +1661,7 @@ function answer(v){
   const pt=(ok?1:near?0.5:0)*(isBig()?2:1);
   S.ans={q:S.qi, v:v==null?"":String(v), ok, pt};
   S.score+=pt; S.hist+=ok?"1":near?"h":"0";
+  S.prevLearn=LEARN[c.key]?{...LEARN[c.key]}:null;
   S.log.push({c, ok, pt}); learnRecord(c, ok);
   $("waitAsk").textContent="ほかの人の回答を待っています…";
   push(); check();
@@ -1762,7 +1757,7 @@ function reveal(){
 }
 function markFor(a, y){
   if(!a || a.v==="") return ["パス","ng"];
-  if(a.ok) return ["正解","ok"];
+  if(a.ok) return [a.self?"正解（自己判定）":"正解","ok"];
   if(typeof y!=="number") return ["はずれ","ng"];
   if(Math.abs(Number(a.v)-Math.abs(y))<=3) return ["惜しい","near"];
   return ["はずれ","ng"];
@@ -1771,6 +1766,7 @@ let ansSig="", flipQ=-1; const seenStamp={};
 function stampOf(st){ return st&&st.q===S.qi&&typeof st.e==="string"&&STAMPS.includes(st.e)?st:null; }
 function renderAnswers(){
   const cc=S.deck[S.qi]; const y=cc.kind==="year"?cc.y:null; const box=$("answers");
+  $("selfOkBtn").hidden=!(S.ans&&!S.ans.ok&&S.ans.v!==""&&cc.kind==="choice");
   const rows=[{name:(S.name||"名無し")+"（あなた）", ans:S.ans, st:stampOf(S.stamp)}];
   gamePeers().forEach(pr=>{const has=pr.ans&&pr.ans.q===S.qi; rows.push({name:safeName(pr), ans:has?pr.ans:null, wait:!has&&!(pr.qi>S.qi), st:stampOf(pr.stamp)});});
   const sig=S.qi+JSON.stringify(rows); if(sig===ansSig) return; ansSig=sig;
@@ -1850,6 +1846,11 @@ function check(){
   renderGamePlayers();
 }
 $("typeBox").onsubmit=e=>{ e.preventDefault(); const v=$("typeIn").value.trim(); if(!v) return; if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(v); $("typeIn").disabled=true; $("typeIn").blur(); } };
+$("selfOkBtn").onclick=()=>{ const c=S.deck[S.qi], a=S.ans; if(!a||a.ok||a.v===""||S.phase!=="reveal") return;
+  const pt=isBig()?2:1; a.ok=true; a.pt=pt; a.self=true; S.score+=pt; S.hist=S.hist.slice(0,-1)+"1";
+  const l=S.log[S.log.length-1]; if(l&&l.c===c){ l.ok=true; l.pt=pt; }
+  if(S.prevLearn) LEARN[c.key]=S.prevLearn; else delete LEARN[c.key]; learnRecord(c,true);
+  $("selfOkBtn").hidden=true; ansSig=""; showLearnLine(c); renderAnswers(); renderGamePlayers(); push(); };
 $("passBtn").onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(null); if(S.deck[S.qi].kind==="choice") renderChoices(); } };
 $("skipBtn").onclick=()=>{ S.skip=S.qi; push(); check(); };
 function show(v){ ["lobby","game","result","credits"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
