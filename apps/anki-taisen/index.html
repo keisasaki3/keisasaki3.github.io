@@ -164,6 +164,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .dlink{all:unset;cursor:pointer;color:inherit;text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--acc);text-underline-offset:3px;text-decoration-thickness:2px}
 #dict{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center}
 #dict[hidden]{display:none}
+@media (min-width:700px) and (hover:hover){#dict{align-items:center}.dsheet{border-radius:18px;max-height:80vh;padding-bottom:18px;box-shadow:0 10px 40px rgba(0,0,0,.25)}}
 .dsheet{background:var(--surf);color:var(--ink);width:100%;max-width:560px;max-height:70vh;overflow:auto;border-radius:18px 18px 0 0;padding:14px 18px calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(0,0,0,.18)}
 .dsheet h3{margin:2px 0 0;font-size:22px}
 .dbar{display:flex;justify-content:space-between;align-items:center}
