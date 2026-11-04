@@ -1571,6 +1571,9 @@ const LQ={sb:null,user:null};
 const lqOff=()=>store.get("nb-lq-off")==="1";
 const lqRow=(k,l)=>({user_id:LQ.user.id,card_key:k,topic_id:l.tp||null,correct_days:l.n||0,stage:l.s||0,last_correct_on:l.d||null,last_wrong_on:l.w||null,last_seen_at:new Date(l.at||Date.now()).toISOString()});
 function lqSave(k,r){ if(!LQ.user||lqOff()) return; LQ.sb.from("quest_card_progress").upsert(lqRow(k,r)).then(({error})=>{ if(error) console.warn("lq save",error.message); }); }
+async function lqName(){ if(!LQ.user) return; try{ const {data}=await LQ.sb.from("profiles").select("display_name").eq("user_id",LQ.user.id).maybeSingle();
+  const n=((data&&data.display_name)||"").trim().slice(0,12); if(!n||n==="名無し"||n===S.name) return;
+  S.name=n; store.set("nb-name",n); const el=$("nick"); if(el) el.value=n; push(); renderLobby(); }catch(e){} }
 async function lqPull(){ if(!LQ.user||lqOff()) return;
   const {data,error}=await LQ.sb.from("quest_card_progress").select("card_key,topic_id,correct_days,stage,last_correct_on,last_wrong_on,last_seen_at").eq("user_id",LQ.user.id);
   if(error){ console.warn("lq pull",error.message); return; }
@@ -1586,8 +1589,8 @@ function renderLink(){ const t=$("lqText"), lg=$("lqLogin"), tg=$("lqToggle"); i
   else { t.textContent="ログインしなくても遊べます（記録はこの端末だけ）。人生クエストにログインすると、記録が人生クエストにも保存され、どの端末でも続きから学べます。"; lg.hidden=false; tg.hidden=true; $("lqOpen").hidden=true; } }
 function lqInit(){ const cfg=window.ANKI_SB; if(!cfg||!window.supabase) { renderLink(); return; }
   try{ LQ.sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}); }catch(e){ renderLink(); return; }
-  LQ.sb.auth.getSession().then(({data})=>{ LQ.user=(data&&data.session&&data.session.user)||null; renderLink(); lqPull(); }).catch(()=>renderLink());
-  LQ.sb.auth.onAuthStateChange((ev,ss)=>{ const u=(ss&&ss.user)||null; const changed=(u&&u.id)!==(LQ.user&&LQ.user.id); LQ.user=u; renderLink(); if(changed) lqPull(); }); }
+  LQ.sb.auth.getSession().then(({data})=>{ LQ.user=(data&&data.session&&data.session.user)||null; renderLink(); lqPull(); lqName(); }).catch(()=>renderLink());
+  LQ.sb.auth.onAuthStateChange((ev,ss)=>{ const u=(ss&&ss.user)||null; const changed=(u&&u.id)!==(LQ.user&&LQ.user.id); LQ.user=u; renderLink(); if(changed){ lqPull(); lqName(); } }); }
 
 // ---- game ----
 function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
