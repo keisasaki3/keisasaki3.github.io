@@ -1,0 +1,12 @@
+# なつめポータル（2026-11-04 Keita決定）。人生クエスト・暗記大戦などを1つのアドレスの下に並べる静的サイト。
+# データ・ログイン・対戦の同期は Supabase（shared-world-core）なので、ここはファイルを配るだけ。
+services:
+  - type: web
+    name: natsume-portal
+    runtime: static
+    buildCommand: sh scripts/build-portal.sh
+    staticPublishPath: ./dist
+    routes:
+      - type: redirect
+        source: /
+        destination: /life-quest/
