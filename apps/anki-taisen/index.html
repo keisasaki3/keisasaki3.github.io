@@ -176,7 +176,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .ensent{font-weight:600;line-height:1.7}.ensent .fill{color:var(--acc-ink);text-decoration:underline;text-underline-offset:3px}
 .gic{width:22px;height:22px;padding:3px;box-sizing:content-box;border-radius:7px;background:#2b2530;image-rendering:pixelated;vertical-align:middle;margin-right:7px}
 .btn.sub{background:transparent;color:var(--ink);border:2px solid var(--acc)}
-.report{text-align:center}.report textarea{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--ink);width:100%;box-sizing:border-box}
+.report{text-align:center}.rk{display:flex;gap:8px;align-items:center;font-size:14px}.rk input{width:18px;height:18px}.report textarea{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--ink);width:100%;box-sizing:border-box}
 .learnline{margin:0;text-align:center;letter-spacing:.05em}
 .gtree{display:flex;flex-direction:column;gap:14px}
 .crumb{all:unset;cursor:pointer;font-size:14px;color:var(--muted);padding:4px 6px;border-radius:8px}
@@ -349,12 +349,15 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 
     <div id="revealArea" hidden style="display:flex;flex-direction:column;gap:12px">
       <p class="learnline small muted" id="learnLine"></p>
-      <div class="report" id="reportBox"><button class="clink" id="reportOpen" type="button">資料がおかしい？報告する</button>
-        <div id="reportForm" hidden style="display:flex;flex-direction:column;gap:6px"><textarea id="reportText" maxlength="300" rows="2" placeholder="どこがおかしいか一言（例：年号が違う、写真が別の鳥）"></textarea>
-        <div style="display:flex;gap:8px;align-items:center"><button class="btn ghost" id="reportSend" type="button" style="padding:6px 14px;width:auto">送る</button><span class="small muted" id="reportMsg"></span></div></div></div>
+      <div class="report" id="reportBox"><button class="clink" id="reportOpen" type="button">間違いを報告する</button>
+        <div id="reportForm" hidden style="display:flex;flex-direction:column;gap:6px;text-align:left">
+          <label class="rk" id="rkWrongRow" hidden><input type="checkbox" id="rkWrong"> 正解なのに誤答になった（表記ちがい・別の言い方）</label>
+          <label class="rk"><input type="checkbox" id="rkData"> 資料が間違っている（説明・年号・写真・音声など）</label>
+          <label class="rk"><input type="checkbox" id="rkOther"> その他</label>
+          <textarea id="reportText" maxlength="300" rows="2" placeholder="くわしく（任意。例：年号が違う、写真が別の鳥）"></textarea>
+        <div style="display:flex;gap:8px;align-items:center"><button class="btn ghost" id="reportSend" type="button" style="padding:6px 14px;width:auto">送る</button></div></div><span class="small muted" id="reportMsg"></span></div>
       <div class="answers" id="answers"></div>
       <div class="stamps" id="stamps"></div>
-      <button class="btn sub" id="selfOkBtn" type="button" hidden>表記ちがいなので正解にする</button>
       <button class="btn" id="nextBtn" type="button">次へ</button>
       <div class="waiting" id="waitNext"></div>
     </div>
@@ -1549,12 +1552,17 @@ const genrePrefixes=id=>id==="H"?["J","W"]:isCon(id)?[id+":"]:[id];
 function mastery(id){ const n=id==="H"?(ALL.J.length+ALL.W.length):gCount(id); if(!n) return 0; const px=genrePrefixes(id); let sum=0;
   for(const k in LEARN){ if(px.some(p=>k.startsWith(p)&&(p.length>1||!/^[A-Z]:/.test(k)))) sum+=effStage(LEARN[k]); }
   return Math.round(sum/(3*n)*100); }
-function resetReport(){ $("reportForm").hidden=true; $("reportOpen").hidden=false; $("reportText").value=""; $("reportMsg").textContent=""; }
-$("reportOpen").onclick=()=>{ $("reportForm").hidden=false; $("reportOpen").hidden=true; $("reportText").focus(); };
-$("reportSend").onclick=async()=>{ const c=S.deck&&S.deck[S.qi], t=$("reportText").value.trim(), m=$("reportMsg"); if(!c||!t){ m.textContent="一言書いてください"; return; }
-  if(!LQ.sb){ m.textContent="送れませんでした（通信）"; return; }
-  m.textContent="送っています…"; const {error}=await LQ.sb.from("quest_card_reports").insert({card_key:c.key,comment:(c.name+"｜"+t).slice(0,300)});
-  m.textContent=error?"送れませんでした。時間をおいてもう一度":"ありがとうございます。届きました"; if(!error) $("reportText").value=""; };
+function resetReport(){ $("reportForm").hidden=true; $("reportOpen").hidden=false; $("reportText").value=""; $("reportMsg").textContent=""; ["rkWrong","rkData","rkOther"].forEach(k=>$(k).checked=false); }
+const canSelfOk=()=>{ const c=S.deck&&S.deck[S.qi]; return !!(c&&S.ans&&!S.ans.ok&&S.ans.v!==""&&c.kind==="choice"&&S.phase==="reveal"); };
+$("reportOpen").onclick=()=>{ $("rkWrongRow").hidden=!canSelfOk(); $("reportForm").hidden=false; $("reportOpen").hidden=true; $("reportMsg").textContent=""; };
+$("reportSend").onclick=async()=>{ const c=S.deck&&S.deck[S.qi], t=$("reportText").value.trim(), m=$("reportMsg");
+  const wrong=$("rkWrong").checked&&canSelfOk(), kinds=[wrong&&"誤答判定",$("rkData").checked&&"資料",$("rkOther").checked&&"その他"].filter(Boolean);
+  if(!c||(!kinds.length&&!t)){ m.textContent="あてはまるものにチェックしてください"; return; }
+  const v=S.ans&&S.ans.v||""; let ok=false;
+  if(LQ.sb){ m.textContent="送っています…"; try{ const {error}=await LQ.sb.from("quest_card_reports").insert({card_key:c.key,comment:(c.name+"｜["+(kinds.join("・")||"その他")+"]"+(wrong?"入力:"+v+"｜":"")+t).slice(0,300)}); ok=!error; }catch(e){} }
+  if(wrong) selfOk();
+  resetReport(); $("reportOpen").hidden=true;
+  m.textContent=(wrong?"正解にしました。":"")+(ok?"ご報告ありがとうございます。届きました":"報告は送れませんでした。時間をおいてもう一度"); if(!ok) $("reportOpen").hidden=false; };
 function showLearnLine(c){ resetReport(); const box=$("learnLine"); if(!box||!c) return; const r=LEARN[c.key]; if(!r){ box.textContent=""; return; }
   const e=effStage(r); box.textContent="定着度 "+"●".repeat(e)+"○".repeat(3-e)+"　正解 "+(r.n||0)+"日"; }
 function startReview(){ const keys=dueKeys(); if(!keys.length) return; S.prevGenre=S.genre; S.solo=true; if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } startGame(newGid(),"R",S.mode,S.lv,0,"V",keys,0); }
@@ -1771,7 +1779,6 @@ let ansSig="", flipQ=-1; const seenStamp={};
 function stampOf(st){ return st&&st.q===S.qi&&typeof st.e==="string"&&STAMPS.includes(st.e)?st:null; }
 function renderAnswers(){
   const cc=S.deck[S.qi]; const y=cc.kind==="year"?cc.y:null; const box=$("answers");
-  $("selfOkBtn").hidden=!(S.ans&&!S.ans.ok&&S.ans.v!==""&&cc.kind==="choice");
   const rows=[{name:(S.name||"名無し")+"（あなた）", ans:S.ans, st:stampOf(S.stamp)}];
   gamePeers().forEach(pr=>{const has=pr.ans&&pr.ans.q===S.qi; rows.push({name:safeName(pr), ans:has?pr.ans:null, wait:!has&&!(pr.qi>S.qi), st:stampOf(pr.stamp)});});
   const sig=S.qi+JSON.stringify(rows); if(sig===ansSig) return; ansSig=sig;
@@ -1851,11 +1858,11 @@ function check(){
   renderGamePlayers();
 }
 $("typeBox").onsubmit=e=>{ e.preventDefault(); const v=$("typeIn").value.trim(); if(!v) return; if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(v); $("typeIn").disabled=true; $("typeIn").blur(); } };
-$("selfOkBtn").onclick=()=>{ const c=S.deck[S.qi], a=S.ans; if(!a||a.ok||a.v===""||S.phase!=="reveal") return;
+function selfOk(){ const c=S.deck[S.qi], a=S.ans; if(!a||a.ok||a.v===""||S.phase!=="reveal") return;
   const pt=isBig()?2:1; a.ok=true; a.pt=pt; a.self=true; S.score+=pt; S.hist=S.hist.slice(0,-1)+"1";
   const l=S.log[S.log.length-1]; if(l&&l.c===c){ l.ok=true; l.pt=pt; }
   if(S.prevLearn) LEARN[c.key]=S.prevLearn; else delete LEARN[c.key]; learnRecord(c,true);
-  $("selfOkBtn").hidden=true; ansSig=""; showLearnLine(c); renderAnswers(); renderGamePlayers(); push(); };
+  ansSig=""; showLearnLine(c); renderAnswers(); renderGamePlayers(); push(); }
 $("passBtn").onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(null); if(S.deck[S.qi].kind==="choice") renderChoices(); } };
 $("skipBtn").onclick=()=>{ S.skip=S.qi; push(); check(); };
 function show(v){ ["lobby","game","result","credits"].forEach(id=>$(id).hidden=(id!==v)); window.scrollTo(0,0); }
