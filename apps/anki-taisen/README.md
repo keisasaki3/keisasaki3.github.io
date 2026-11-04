@@ -2,7 +2,7 @@
 
 なつめポータルのアプリのひとつ。友人や家族とオンラインで当て合う対戦型の暗記ゲームで、あらゆる分野の学びをここに集めていく（2026-11-02 Keita依頼、2026-11-03「ここにあらゆる学びを集積」）。
 
-- 公開URL: https://keisasaki3.github.io/apps/anki-taisen/ （`?room=あいことば` で部屋を分けられる。省略時は `main`）
+- 公開URL: なつめポータルの `/anki-taisen/`（移行前は https://keisasaki3.github.io/apps/anki-taisen/） （`?room=あいことば` で部屋を分けられる。省略時は `main`）
 - 更新するのはこの公開版だけ。claude.ai の Artifact 版（https://claude.ai/artifact/PWihQRKdReNW4YjamVfDeZ）は更新しない（2026-11-03 Keita決定、トークン節約）。
 
 ## 1. 構成
@@ -30,7 +30,7 @@
 
 - 札ごとに「正解した日数」（1日1回まで）と「定着度」0〜3（別の日に正解で+1、不正解で-1、最後に見てから30日ごとに1下がる）を記録する。
 - 「今日の復習」: 定着度に応じた間隔（0/1/3/7日）が来た札を、ジャンルをまたいで最大20枚出す。
-- ログインしなくても遊べる（記録は端末の `localStorage` `nb-learn`）。ロビーの一番下の「人生クエストと連携」から人生クエストにログインすると、記録を `quest_card_progress`（migration 013）にも保存し、端末の記録と新しいほうでまとめる。人生クエストの本番は Render（https://natsume-lq.onrender.com）で別のサイトなので、ログインは暗記大戦で別に行う（同じSupabaseのGoogleログイン、同じアカウント）。ログインは連携欄の「人生クエストでログイン」1つだけで、押すとそのままGoogleでログインし暗記大戦に戻る（2026-11-03 Keita指定）。戻り先として Supabase の Redirect URLs に `https://keisasaki3.github.io/apps/anki-taisen/**` が要る（管理画面の設定はKeita）。
+- ログインしなくても遊べる（記録は端末の `localStorage` `nb-learn`）。ロビーの一番下の「人生クエストと連携」から人生クエストにログインすると、記録を `quest_card_progress`（migration 013）にも保存し、端末の記録と新しいほうでまとめる。なつめポータル（`natsume-portal.onrender.com`、ROADMAP「置き場所」）では人生クエストと同じアドレスの下に並ぶので、ログインは共通。連携欄のログインは「人生クエストでログイン」1つだけで、押すとそのままGoogleでログインし暗記大戦に戻る（2026-11-03 Keita指定）。
 - 人生クエストでは、トピックの右に「習得 ○%」（定着度の合計 ÷ (3 × 札の枚数)）を出す（人生クエストの SPEC §20）。
 
 ## 5. 資料の誤り報告（2026-11-03 Keita依頼）

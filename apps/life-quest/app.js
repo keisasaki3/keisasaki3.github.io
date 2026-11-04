@@ -604,7 +604,7 @@ const BACK_APP = (() => {
 })();
 
 async function handleSession(nextSession) {
-  if (nextSession && BACK_APP) { try { sessionStorage.removeItem('lq-back'); } catch {} location.replace(`https://keisasaki3.github.io/apps/${BACK_APP}/`); return; }
+  if (nextSession && BACK_APP) { try { sessionStorage.removeItem('lq-back'); } catch {} location.replace(`../${BACK_APP}/`); return; }
   session = nextSession;
   activeUserId = session?.user?.id || null;
   if (!session) {
@@ -671,7 +671,7 @@ document.addEventListener('DOMContentLoaded', async function boot() {
 async function loadQuizMastery(user) {
   const [rowsRes, cntRes] = await Promise.all([
     fetchAllRows(opts => sb.from('quest_card_progress').select('topic_id,stage,last_seen_at', opts).eq('user_id', user.id).not('topic_id', 'is', null).order('card_key')),
-    fetch('https://keisasaki3.github.io/apps/anki-taisen/data/topics.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
+    fetch('../anki-taisen/data/topics.json').then(r => r.ok ? r.json() : {}).catch(() => ({}))
   ]);
   const sum = new Map();
   const now = Date.now();

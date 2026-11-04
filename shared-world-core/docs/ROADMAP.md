@@ -20,6 +20,11 @@
 - repository slug / ルートフォルダ / 技術上の識別名: `natsume-portal`
 - 今後このプロジェクトで新しく付けるフォルダ名・repository名・技術識別名は、特段の理由がない限り `natsume-portal` を基準名として採用する。
 
+### 置き場所（2026-11-04 Keita決定）
+
+独自ドメインは取らない（セキュリティが不安なため）。Render に静的サイト `natsume-portal` を1つ作り、アプリを同じアドレスの下に並べる: `natsume-portal.onrender.com/life-quest/`、`/anki-taisen/`、共用の `/shared/`。同じアドレスなのでログインは共通。設定はリポジトリ直下の `render.yaml`（Blueprint）と `scripts/build-portal.sh`（`dist/` にまとめる）。アプリ同士・共用素材は相対パスで参照し、特定のアドレスを書き込まない。
+移行: ①RenderでBlueprintから natsume-portal を作る ②SupabaseのSite URLを新しい人生クエストに、Redirect URLsに `https://natsume-portal.onrender.com/**` を追加 ③旧 natsume-lq.onrender.com と GitHub Pages の暗記大戦は新アドレスへ転送。端末ごとの設定（localStorage）はアドレスが変わると引き継がれない。
+
 ### 激突！暗記大戦（2026-11-02 Keita決定）
 
 友人・家族と遊ぶ暗記対戦ゲーム。なつめポータルに統合していく前提で、当面はこのリポジトリの `apps/anki-taisen/` に置き、GitHub Pagesで公開する。対戦の同期は `shared-world-core` の Realtime presence を使う。2026-11-03から学習記録を人生クエストと共有し（`quest_card_progress`、誤り報告は `quest_card_reports`）、あらゆる分野の学びを集める場所にする。設計は `apps/anki-taisen/README.md`。

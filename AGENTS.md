@@ -61,7 +61,7 @@ Keitaの最新指示 ＞ `IDEAS.md` で採用が明示された内容 ＞ `SPEC.
 - 作業ブランチ → PR → 検証が通ったら自分でマージする（merge commit。Keita指示 2026-09-27）。
 - 他の作業中のPRと同じファイルを触るときは、後からマージする側が合わせる。
 - **本番サイトの表示確認はKeitaがやる。** マージ後に本番を見に行かず、「本番で見てほしいところ」を一言伝える。
-- 公開: `main` にマージするとRenderが自動で公開する（https://natsume-lq.onrender.com。旧URL life-quest-keita.onrender.com は使わない）。Render・Google Cloud・Supabaseの管理画面の設定はリポジトリ外で、Keitaが管理する。
+- 公開: `main` にマージするとRenderが自動で公開する（なつめポータル `natsume-portal.onrender.com/life-quest/` へ移行中。設定は `render.yaml`、shared-world-core/docs/ROADMAP.md「置き場所」。移行前は https://natsume-lq.onrender.com。旧URL life-quest-keita.onrender.com は使わない）。Render・Google Cloud・Supabaseの管理画面の設定はリポジトリ外で、Keitaが管理する。
 
 ## 8. NEWSPAPER
 
