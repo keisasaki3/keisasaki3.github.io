@@ -995,7 +995,7 @@ const CMAN = {/*CMAN*/};   // 科目ファイル名 → 枚数
 const DIDX = {/*DIDX*/};   // 辞書の用語 → [ファイル名, 英語なら1]
 const LOADED={}, LOADING={};
 const CIMG = {/*CIMG*/};
-const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1}];
+const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"S",f:"astro",name:"天文学"},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1}];
 SUBJ.forEach(sj=>{ ALL[sj.id]=[]; });
 const subjByF=f=>SUBJ.find(x=>x.f===f);
 function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,tp:c.tp||"",key:sj.id+":"+c.t}));
@@ -1014,9 +1014,9 @@ function inSeason(c,m){ if(c.mon){ const [a,b]=c.mon; return a<=b? (m>=a&&m<=b) 
 const GENRES=[{id:"H",name:"歴史",cat:"K"},...SUBJ.map(x=>({id:x.id,name:x.name,cat:"K"})),{id:"B",name:"関東の鳥",cat:"Z"},{id:"D",name:"北海道の鳥",cat:"Z"},{id:"T",name:"関東の木",cat:"Z"}];
 // ジャンルの木（葉は id を持つ。中身のない葉・枝は表示しない）
 const GTREE={name:"すべて",kids:[
-  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"A"},{id:"F"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"N"},{name:"英語",ic:"english",kids:[{id:"V"},{id:"I"}]}]},
+  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"A"},{id:"F"},{id:"Y"},{id:"O"},{id:"Z"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"X"},{id:"U"},{id:"S"},{id:"N"},{name:"英語",ic:"english",kids:[{id:"V"},{id:"I"}]}]},
   {name:"教養",ic:"culture",kids:[{name:"鳥",ic:"bird",kids:[{id:"B"},{id:"D"}]},{name:"木",ic:"tree",kids:[{id:"T"}]}]}]};
-const GICON={H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",V:"business-english",I:"idioms",B:"bird",D:"bird",T:"tree"};
+const GICON={H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",V:"business-english",I:"idioms",B:"bird",D:"bird",T:"tree"};
 const ICONS="../../shared/icons/";
 const gName=id=>(GENRES.find(g=>g.id===id)||{}).name||id;
 const gCount=id=>{ const sj=SUBJ.find(x=>x.id===id); return sj?(CMAN[sj.f]||0):(ALL[id]||[]).length; };
