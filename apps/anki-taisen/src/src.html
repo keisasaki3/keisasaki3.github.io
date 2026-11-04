@@ -195,7 +195,11 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .mapbox{position:relative;border-radius:12px;overflow:hidden;background:var(--sea);border:1px solid var(--card-line)}
 .mapbox svg{display:block;width:100%;height:auto}
 .mapbox .land{fill:var(--land);stroke:var(--landline);stroke-width:.8;vector-effect:non-scaling-stroke}
-.mapbox .pin{fill:var(--pin);stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}
+.mapbox .route{fill:none;stroke:var(--pin);stroke-width:2.5;stroke-dasharray:6 4;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.rhead{fill:var(--pin)}
+.rdot{fill:var(--pin);stroke:#fff;stroke-width:1.5;vector-effect:non-scaling-stroke}
+.rlab{fill:var(--card-ink,#3a2e25);paint-order:stroke;stroke:var(--card,#fff);stroke-width:3px;stroke-linejoin:round;font-weight:700;vector-effect:non-scaling-stroke}
+.pin{fill:var(--pin);stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}
 .mapbox .ring{fill:none;stroke:var(--pin);stroke-width:2;vector-effect:non-scaling-stroke;transform-box:fill-box;transform-origin:center;animation:ring 1.6s ease-out infinite}
 @keyframes ring{from{transform:scale(.4);opacity:1}to{transform:scale(2.2);opacity:0}}
 @media (prefers-reduced-motion:reduce){.mapbox .ring{animation:none}}
@@ -1203,9 +1207,23 @@ const ASK_MS=10000, NEXT_MAX_MS=90000;
 // ---- 地図・つながり・分布 ----
 const SVGNS="http://www.w3.org/2000/svg";
 function svgEl(t,a){ const e=document.createElementNS(SVGNS,t); for(const k in a) e.setAttribute(k,a[k]); return e; }
+// 道のりで見せる札（2026-11-05 報告「十字軍は地図を道のりで」→Keita「やって」）。[緯度, 経度, 地名]を順に
+const ROUTES={
+"W-334":[[40.76,22.52,"ペラ"],[36.84,36.2,"イッソス"],[31.2,29.92,"アレクサンドリア"],[36.36,43.25,"ガウガメラ"],[29.93,52.89,"ペルセポリス"],[32.9,73.7,"インダス川"],[32.54,44.42,"バビロン"]],
+"W375":[[45.2,28.5,"ドナウ川"],[41.68,26.56,"アドリアノープル"],[41.9,12.5,"ローマ"],[43.6,1.44,"トゥールーズ"],[39.86,-4.02,"トレド"]],
+"W622":[[21.42,39.83,"メッカ"],[24.47,39.61,"メディナ"]],
+"W1066":[[49.29,-0.1,"ノルマンディー"],[50.91,0.49,"ヘースティングズ"],[51.5,-0.12,"ロンドン"]],
+"W1096":[[45.78,3.08,"クレルモン"],[41.01,28.98,"コンスタンティノープル"],[36.2,36.16,"アンティオキア"],[31.78,35.23,"イェルサレム"]],
+"W1492":[[37.23,-6.9,"パロス"],[28.1,-15.4,"カナリア諸島"],[24.05,-74.5,"サンサルバドル島"]],
+"W1498":[[38.72,-9.14,"リスボン"],[14.9,-23.5,""],[-18,4,""],[-34.36,18.47,"喜望峰"],[-3.22,40.12,"マリンディ"],[11.26,75.78,"カリカット"]],
+"J538":[[36.28,126.91,"百済"],[34.47,135.82,"飛鳥"]],
+"J1274":[[35.2,128.57,"合浦"],[34.4,129.3,"対馬"],[33.8,129.7,"壱岐"],[33.59,130.4,"博多"]],
+"J1281":[[35.2,128.57,"合浦"],[34.4,129.3,"対馬"],[33.8,129.7,"壱岐"],[33.43,129.75,"鷹島"]],
+"J1592":[[33.53,129.87,"名護屋"],[35.1,129.04,"釜山"],[37.57,126.98,"漢城"],[39.03,125.75,"平壌"]],
+"J1853":[[26.2,127.68,"那覇"],[35.23,139.72,"浦賀"]]};
 function mapFor(c){
-  if(!c.place||typeof GEO==="undefined") return null;
-  const [lat,lon,label,view,wdeg]=c.place; let path,x,y,vb;
+  if((!c.place&&!ROUTES[c.key])||typeof GEO==="undefined") return null;
+  const [lat,lon,label,view,wdeg]=c.place||[...ROUTES[c.key].slice(-1)[0]]; let path,x,y,vb;
   if(view==="w"||c.src==="W"){
     const K=GEO.K, w=(wdeg||55)*K, h=w*0.6; x=lon*K; y=-lat*K;
     let x0=x-w/2, y0=Math.max(-75*K, Math.min(y-h/2, 60*K-h)); vb=[x0,y0,w,h]; path=GEO.world;
@@ -1213,10 +1231,20 @@ function mapFor(c){
     const J=GEO.J, w=13*J*GEO.c, h=w*0.62; x=(lon-122)*GEO.c*J; y=(46-lat)*J;
     let x0=Math.max(0,Math.min(x-w/2,GEO.jw-w)), y0=Math.max(0,Math.min(y-h/2,GEO.jh-h)); vb=[x0,y0,w,h]; path=GEO.japan;
   }
+  const rt=ROUTES[c.key], world=(view==="w"||c.src==="W");
+  const prj=(la,lo)=>world?[lo*GEO.K,-la*GEO.K]:[(lo-122)*GEO.c*GEO.J,(46-la)*GEO.J];
+  let pts=null;
+  if(rt){ pts=rt.map(q=>prj(q[0],q[1])); const xs=pts.map(q=>q[0]), ys=pts.map(q=>q[1]); const span=Math.max(Math.max(...xs)-Math.min(...xs),Math.max(...ys)-Math.min(...ys)), pad=Math.max(span*0.12,(world?1.5*GEO.K:0.5*GEO.J));
+    let x0=Math.min(...xs)-pad, x1=Math.max(...xs)+pad, y0=Math.min(...ys)-pad, y1=Math.max(...ys)+pad; x1+=(x1-x0)*0.22; y1+=(y1-y0)*0.4; let w=x1-x0, h=y1-y0;   // 右は地名、下は説明の帯の分をあける
+    if(h<w*0.6){ const d=w*0.6-h; y0-=d/2; h=w*0.6; } else { const d=h/0.6-w; x0-=d/2; w=h/0.6; } vb=[x0,y0,w,h]; }
   const r=vb[2]/70;
   const svg=svgEl("svg",{viewBox:vb.join(" "),role:"img","aria-label":"地図："+label});
-  svg.append(svgEl("path",{d:path,class:"land"}), svgEl("circle",{cx:x,cy:y,r:r*1.6,class:"ring"}), svgEl("circle",{cx:x,cy:y,r:r,class:"pin"}));
-  const box=el("div","mapbox reveal-x"); box.append(svg, el("span","mapcap","📍 "+label)); return box;
+  svg.append(svgEl("path",{d:path,class:"land"}));
+  if(pts){ const mk=svgEl("marker",{id:"ah"+c.key,viewBox:"0 0 10 10",refX:"8",refY:"5",markerWidth:"5",markerHeight:"5",orient:"auto-start-reverse"}); mk.append(svgEl("path",{d:"M0,0L10,5L0,10z",class:"rhead"})); const df=svgEl("defs",{}); df.append(mk); svg.append(df);
+    svg.append(svgEl("polyline",{points:pts.map(q=>q.join(",")).join(" "),class:"route","marker-end":"url(#ah"+c.key+")"}));
+    pts.forEach((q,i)=>{ if(!rt[i][2]) return; svg.append(svgEl("circle",{cx:q[0],cy:q[1],r:r*0.55,class:"rdot"})); const t=svgEl("text",{x:q[0]+r*0.9,y:q[1]-r*0.6,class:"rlab","font-size":r*2.2}); t.textContent=rt[i][2]; svg.append(t); }); }
+  else svg.append(svgEl("circle",{cx:x,cy:y,r:r*1.6,class:"ring"}), svgEl("circle",{cx:x,cy:y,r:r,class:"pin"}));
+  const box=el("div","mapbox reveal-x"); box.append(svg, el("span","mapcap",rt?"🧭 "+rt.map(q=>q[2]).filter(Boolean).join(" → "):"📍 "+label)); return box;
 }
 function docFor(c){
   if(!c.doc) return null; const f=el("figure","docimg reveal-x"); const im=document.createElement("img"); im.src=c.doc[0]; im.alt=c.doc[4]; im.loading="lazy";
