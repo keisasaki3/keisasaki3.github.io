@@ -229,6 +229,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .edge::before{content:"";position:absolute;left:12px;top:0;bottom:0;border-left:2px solid var(--card-line2)}
 .edge::after{content:"▼";position:absolute;left:7.5px;bottom:-4px;font-size:9px;color:var(--card-line2)}
 .terrain{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:4px}
+.yhint{text-align:center;font-size:11.5px;color:var(--card-muted);margin-top:2px}
 .terrain div{display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10.5px;color:var(--card-muted);opacity:.55;border-radius:8px;padding:4px 0 3px}
 .terrain svg{width:26px;height:20px}
 .terrain .on{background:var(--soft-acc);color:var(--card-acc);font-weight:800;opacity:1}
@@ -343,6 +344,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 
     <div id="askArea" style="display:flex;flex-direction:column;gap:12px">
       <div class="slots" id="slots"></div>
+      <div class="yhint" id="yhint"></div>
       <div class="waiting" id="waitAsk"></div>
       <button class="btn ghost" id="skipBtn" type="button" hidden>待たずに答え合わせ</button>
       <div class="keypad" id="keypad"></div>
@@ -1741,7 +1743,7 @@ function beginAsk(){
   card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
   $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
   $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
-  const isC=c.kind==="choice", typing=isC; $("slots").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
+  const isC=c.kind==="choice", typing=isC; $("slots").hidden=isC; $("yhint").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
   if(typing){ const ti=$("typeIn"); ti.value=""; ti.disabled=!!S.ans; } else if(isC) renderChoices();
   $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
   renderSlots(); renderGamePlayers(); push();
@@ -1758,6 +1760,7 @@ function renderSlots(){
   if(c.y<0){const b=document.createElement("span");b.className="bce";b.textContent="紀元前";box.append(b);}
   for(let i=0;i<len;i++){const d=document.createElement("div");d.className="slot"+(i===S.input.length?" cur":"");d.textContent=S.input[i]||"";box.append(d);}
   const y=document.createElement("span");y.className="bce";y.textContent="年";box.append(y);
+  $("yhint").textContent=roughCard(c)?"いつごろでOK（同じ世紀か±10年）":"年まで答える基本の札";
 }
 function press(k){
   if(S.view!=="game"||S.phase!=="ask"||S.ans) return;
@@ -1772,14 +1775,20 @@ function press(k){
 // 入力でも4択でも同じ判定: 全角半角・大文字小文字・ひらがなカタカナ・空白や中黒・かっこ書きの違いは無視する
 function normAns(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/[（(][^）)]*[）)]/g,"").replace(/[\u3041-\u3096]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+96)).replace(/[\s・･,，、。.'’"“”「」『』~〜-]/g,""); }
 function typedOk(v,c){ const a=normAns(v); if(!a) return false; return a===normAns(c.name) || (c.alias||[]).some(x=>a===normAns(x)) || (!!c.en && !!c.cc && !c.def.includes("____") && a===normAns(c.en)); }
+// 年まで覚えるのは「やさしい」（lv1）の札だけ。ほかは同じ世紀か±10年で正解（2026-11-04 Keita決定）
+const roughCard=c=>c.kind==="year"&&c.lv>1;
+const centOf=y=>y>0?Math.ceil(y/100):-Math.ceil(-y/100);
+function yearRough(v,c){ if(!roughCard(c)) return false; const t=(c.y<0?-1:1)*Number(v); return centOf(t)===centOf(c.y)||Math.abs(t-c.y)<=10; }
 function isBig(){ return S.deck.length>=6 && S.qi>=S.deck.length-3; }
 function answer(v){
   if(S.ans) return;
   const c=S.deck[S.qi];
-  const ok = v!=null && (c.kind==="choice" ? typedOk(v,c) : Number(v)===Math.abs(c.y));
+  const exact = v!=null && c.kind==="year" && Number(v)===Math.abs(c.y);
+  const ap = !exact && v!=null && yearRough(v,c);   // やさしい以外の札は「いつごろ」で正解
+  const ok = v!=null && (c.kind==="choice" ? typedOk(v,c) : exact||ap);
   const near = !ok && v!=null && c.kind==="year" && Math.abs(Number(v)-Math.abs(c.y))<=3;
   const pt=(ok?1:near?0.5:0)*(isBig()?2:1);
-  S.ans={q:S.qi, v:v==null?"":String(v), ok, pt};
+  S.ans={q:S.qi, v:v==null?"":String(v), ok, pt}; if(ap) S.ans.ap=1;
   S.score+=pt; S.hist+=ok?"1":near?"h":"0";
   S.prevLearn=LEARN[c.key]?{...LEARN[c.key]}:null;
   S.log.push({c, ok, pt}); learnRecord(c, ok);
@@ -1878,7 +1887,7 @@ function reveal(){
 }
 function markFor(a, y){
   if(!a || a.v==="") return ["パス","ng"];
-  if(a.ok) return [a.self?"正解（自己判定）":"正解","ok"];
+  if(a.ok) return [a.self?"正解（自己判定）":a.ap?"正解（いつごろ）":"正解","ok"];
   if(typeof y!=="number") return ["はずれ","ng"];
   if(Math.abs(Number(a.v)-Math.abs(y))<=3) return ["惜しい","near"];
   return ["はずれ","ng"];
