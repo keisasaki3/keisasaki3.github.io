@@ -17,7 +17,7 @@ window.ANKI_SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishab
     return r;})()};
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-share-room]");if(!b)return;
   var url=location.origin+location.pathname+"?room="+window.ANKI_SB.room;
-  if(navigator.share){navigator.share({title:"激突！暗記大戦",text:"部屋 "+window.ANKI_SB.room+" で対戦しよう",url:url}).catch(function(){});}
+  if(navigator.share){navigator.share({title:"激突！暗記大戦",text:"部屋No."+window.ANKI_SB.room+" で対戦しよう",url:url}).catch(function(){});}
   else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){b.textContent="コピーしました";setTimeout(function(){b.textContent="この部屋のURLをシェア";},2000);});}});
 document.addEventListener("DOMContentLoaded",function(){var n=document.getElementById("roomNo");if(n)n.textContent=window.ANKI_SB.room;});
 </script>
