@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="hn.css?v=96822351">
+<link rel="stylesheet" href="hn.css?v=cd96821e">
 
 <div class="app">
   <header>
@@ -34,6 +34,7 @@
     <div class="gayaLayer" id="gayaLayer"></div>
     <div class="card" id="card"></div>
     <div class="pics" id="pics"></div>
+    <button class="bhome" id="bHome" hidden aria-label="地図を元の位置に戻す">元の位置</button>
   </div>
   <div class="novel" id="novel">
     <div class="page" id="page"><div class="col">
@@ -268,4 +269,4 @@ const S=S0;
 const PIC={"ch_yoritomo": {"cap": "yoritomo", "cr": "Fujiwara no Takanobu／パブリックドメイン／Wikimedia Commons「Minamoto no Yoritomo.jpg」"}, "ch_kiyomori": {"cap": "kiyomori", "cr": "Fujiwara no Gōshin／パブリックドメイン／Wikimedia Commons「Taira no Kiyomori,TenshiSekkanMiei.jpg」"}, "ch_goshirakawa": {"cap": "goshirakawa", "cr": "ja:藤原為信／パブリックドメイン／Wikimedia Commons「Emperor Go-Shirakawa.jpg」"}, "ch_yoshitsune": {"cap": "yoshitsune", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Minamoto no Yoshitsune.jpg」"}, "ch_masako": {"cap": "masako", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Hojo Masako.jpg」"}, "ch_yasutoki": {"cap": "yasutoki", "cr": "栗原信充(Kurihara Nobumitsu)／パブリックドメイン／Wikimedia Commons「Hōjō Yasutoki.jpg」"}, "ch_gotoba": {"cap": "gotoba", "cr": "Fujiwara no Nobuzane／パブリックドメイン／Wikimedia Commons「Emperor Go-Toba.jpg」"}, "ch_hiromoto": {"cap": "hiromoto", "cr": "大庭学僊 / Ōba Gakusen, 1820 - 1899.／パブリックドメイン／Wikimedia Commons「Ōe no Hiromoto.jpg」"}, "ch_sanetomo": {"cap": "sanetomo", "cr": "Hannah／パブリックドメイン／Wikimedia Commons「Minamoto no Sanetomo.jpg」"}, "ch_mochihito": {"cap": "mochihito", "cr": "Published by 国史大図鑑編輯所(Kokushi Daizukan Henshujo)／パブリックドメイン／Wikimedia Commons「Prince Mochihito.jpg」"}, "p_hiru": {"cap": "蛭ヶ小島（静岡県伊豆の国市）", "d": "頼朝が流されていた地と伝わる", "cr": "立花左近／CC BY-SA 3.0／Wikimedia Commons「Hirugakojima.jpg」"}, "p_tsuru": {"cap": "鶴岡八幡宮（鎌倉）", "d": "頼朝が鎌倉の中心に据えた神社。1219年、実朝はここで暗殺された", "cr": "Syced／CC0／Wikimedia Commons「Tsurugaoka Hachimangu.jpg」"}, "p_yui": {"cap": "由比ヶ浜（鎌倉）", "d": "三方を山、一方を海に囲まれた鎌倉は、守りやすい土地だった", "cr": "Syced／CC0／Wikimedia Commons「Kamakura Yuigahama beach during winter with strong wind.jpg」"}, "p_fuji": {"cap": "富士川と富士山", "d": "1180年、平氏の大軍と頼朝方が向き合った川", "cr": "tomohisa suna／CC BY 2.0／Wikimedia Commons「Mount Fuji and Fujikawa Bridge from Fujikawa Service Area - Mar 27, 2016.jpg」"}, "p_hiyo": {"cap": "鵯越の逆落とし（歌川広重）", "d": "一ノ谷の戦いで、義経が崖を駆け下りたという伝説の場面。江戸時代の浮世絵", "cr": "Utagawa Hiroshige／パブリックドメイン／Wikimedia Commons「Flight of Yoshitsune at Hiyodorigoe pass-IMG 9286.JPG」"}, "p_yashima": {"cap": "屋島（香川県高松市）", "d": "平氏が拠点を置いた台地。当時は海に浮かぶ島だった", "cr": "No machine-readable author provided. Fg2 assumed (based on copyright claims).／パブリックドメイン／Wikimedia Commons「Takamatsu Yashima M3671.jpg」"}, "p_yashima2": {"cap": "屋島から見た高松の町", "d": "", "cr": "Photos of Japan／CC0／Wikimedia Commons「Takamatsu pano from Yashima 331.jpg」"}, "p_dan": {"cap": "安徳天皇縁起絵図「壇ノ浦合戦」", "d": "壇ノ浦で平氏が滅ぶ場面。幼い安徳天皇もこの海に沈んだ（赤間神宮）", "cr": "Tosa Mitsunobu／パブリックドメイン／Wikimedia Commons「AntokuTennou Engi.7&8 Dannoura Kassen.jpg」"}, "p_dan2": {"cap": "壇ノ浦古戦場址と関門橋", "d": "本州と九州の間、潮の流れが速い海峡", "cr": "Cheng-en Cheng／CC BY-SA 2.0／Wikimedia Commons「2014-09-01 stele of the site of Battle of Dan-no-ura in Mimosusogawa Park with Kanmon Bridge in background.jpg」"}, "p_oki": {"cap": "隠岐神社（島根県隠岐郡）", "d": "承久の乱のあと流された後鳥羽上皇は、この島で生涯を終えた", "cr": "Bakkai at Japanese Wikipedia／CC BY-SA 3.0／Wikimedia Commons「Oki shrine.jpg」"}, "d_shikimoku": {"cap": "御成敗式目", "d": "17世紀の写本（東洋文庫）", "cr": "Underbar dk／CC BY-SA 4.0／Wikimedia Commons「Goseibai Shikimoku Toyo Bunko.jpg」"}, "d_heiji": {"cap": "平治物語絵巻「三条殿夜討巻」", "d": "平治の乱で、御所が夜討ちにあう場面。13世紀（ボストン美術館）", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Heiji Monogatari Emaki - Sanjo scroll part 5 - v2.jpg」"}, "d_nokyo": {"cap": "平家納経", "d": "1164年、清盛が一門の繁栄を願って厳島神社に納めたお経。豪華な装飾が平氏の富を物語る", "cr": "平清盛／パブリックドメイン／Wikimedia Commons「Heikenoukyou.jpg」"}, "d_sosen": {"cap": "北宋銭", "d": "日宋貿易で大量に持ちこまれ、日本でもお金として使われた", "cr": "As6022014／CC BY 3.0／Wikimedia Commons「Hokuso-sen.jpg」"}};
 
 </script>
-<script src="hn-engine.js?v=b064a4e7"></script>
+<script src="hn-engine.js?v=fb43db98"></script>

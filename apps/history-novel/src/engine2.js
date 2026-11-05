@@ -43,13 +43,14 @@ const HOME=()=>({c:CFG.init.c,r:CFG.init.r,pins:[],blink:null,ar:[]});
 const pj=([lon,lat])=>[(lon-LON0)*CS*K,-(lat-LAT0)*K];
 const pt=k=>Array.isArray(k)?k:P[k];
 const svg=$("map"),landG=$("landG"),ovG=$("ovG");
-let rafOn=false;let W=1,H=1;const cam={x:0,y:0,s:1},from={x:0,y:0,s:1},to={x:0,y:0,s:1};let t0=0,DUR=1100,camInit=false;
+let rafOn=false;let userCam=false,dragMoved=false;/* 地図を指で動かしている間は true（下の「地図を指で動かす」） */let W=1,H=1;const cam={x:0,y:0,s:1},from={x:0,y:0,s:1},to={x:0,y:0,s:1};let t0=0,DUR=1100,camInit=false;
 let mstate=HOME(),els=[];
-function resize(){const r=svg.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);setTarget(true);}
+function resize(){const r=svg.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);if(!userCam)setTarget(true);}
 new ResizeObserver(resize).observe(svg);
 function setTarget(instant){
-  /* r=短い辺の半分に入れる距離。rw があれば横幅の半分に rw を入れる（世界全体を見せる場面用） */
-  const c=pj(pt(mstate.c)),s=mstate.rw?W/(2*mstate.rw):Math.min(W,H)/(2*mstate.r);
+  /* r=短い辺の半分に入れる距離。rw があれば横幅の半分に rw を入れる（世界全体を見せる場面用）。
+     fw=横幅の半分に最低限入れる距離（縦長のスマホで東西の端が切れないように。PCでは効かない） */
+  const c=pj(pt(mstate.c));let s=mstate.rw?W/(2*mstate.rw):Math.min(W,H)/(2*mstate.r);if(mstate.fw)s=Math.min(s,W/(2*mstate.fw));
   Object.assign(from,cam);Object.assign(to,{x:c[0],y:c[1],s});t0=performance.now();
   if(instant||!camInit||matchMedia("(prefers-reduced-motion:reduce)").matches){Object.assign(cam,to);Object.assign(from,to);camInit=true;}
   kick();
@@ -159,7 +160,7 @@ function frame(now){
 function kick(){if(!rafOn){rafOn=true;requestAnimationFrame(frame);}}
 kick();
 function mergeM(ms,m){if(!m)return;if(m.clear)ms.ar=[];
-  if(m.c)ms.c=m.c;if(m.r){ms.r=m.r;ms.rw=m.rw||null;}if(m.pins)ms.pins=[...new Set([...ms.pins,...m.pins])];if(m.blink!==undefined){ms.blink=m.blink;ms.fl=m.fl||null;}if(m.ar)ms.ar=[...ms.ar,...m.ar];}
+  if(m.c)ms.c=m.c;if(m.r){ms.r=m.r;ms.rw=m.rw||null;ms.fw=m.fw||null;}if(m.pins)ms.pins=[...new Set([...ms.pins,...m.pins])];if(m.blink!==undefined){ms.blink=m.blink;ms.fl=m.fl||null;}if(m.ar)ms.ar=[...ms.ar,...m.ar];}
 function choiceM(s,j,sub,ms){const o=s.o[j];if(o.h||sub>=o.ifr.length){ms.ar=ms.ar.filter(a=>a.s!=="if");mergeM(ms,s.hm);}else{mergeM(ms,o.im);}}
 function computeMap(){
   let a=st.i;while(a>0&&!S[a].scene)a--;
@@ -172,11 +173,37 @@ function computeMap(){
   return ms;
 }
 function updateMap(){
-  const ms=computeMap();const camChanged=JSON.stringify([ms.c,ms.r,ms.rw])!==JSON.stringify([mstate.c,mstate.r,mstate.rw]);
-  mstate=ms;buildOverlay();if(camChanged)setTarget(false);
-  drawPics();
+  const ms=computeMap();const camChanged=JSON.stringify([ms.c,ms.r,ms.rw,ms.fw])!==JSON.stringify([mstate.c,mstate.r,mstate.rw,mstate.fw]);
+  mstate=ms;buildOverlay();if(camChanged||userCam)setTarget(false);
+  userView(false);drawPics();
 }
-$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
+$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics,#bHome"))return;if(dragMoved){dragMoved=false;return;}const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
+
+/* ---------- 地図を指で動かす（2026-11-05 経太さん）。ドラッグで移動、ピンチ／ホイールで拡大縮小。自分の画面だけ。
+   次の文に進むと場面の位置に戻る。「元の位置」ボタンでもすぐ戻せる ---------- */
+const ptrs=new Map();let pinch0=null;
+function userView(on){userCam=on;$("bHome").hidden=!on;}
+function camSet(x,y,s){
+  const sMin=W/(420*K*CS),sMax=6;s=Math.max(sMin,Math.min(sMax,s));
+  Object.assign(cam,{x,y,s});Object.assign(from,cam);Object.assign(to,cam);t0=performance.now()-DUR;userView(true);kick();
+}
+/* 画面上の点(px,py)の下にある地図の点を動かさずに倍率を変える */
+function zoomAt(px,py,f){const wx=(px-W/2)/cam.s+cam.x,wy=(py-H/2)/cam.s+cam.y;const s=cam.s*f;
+  const sMin=W/(420*K*CS),ss=Math.max(sMin,Math.min(6,s));camSet(wx-(px-W/2)/ss,wy-(py-H/2)/ss,ss);}
+const mapXY=e=>{const r=svg.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top];};
+svg.style.touchAction="none";
+svg.addEventListener("pointerdown",e=>{if(st.v!=="play")return;ptrs.set(e.pointerId,mapXY(e));dragMoved=false;
+  if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch0={d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,s:cam.s};}});
+svg.addEventListener("pointermove",e=>{if(!ptrs.has(e.pointerId))return;const p=mapXY(e),q=ptrs.get(e.pointerId);
+  if(ptrs.size===1){const dx=p[0]-q[0],dy=p[1]-q[1];if(!dragMoved&&Math.hypot(dx,dy)<6)return;
+    if(!dragMoved){dragMoved=true;try{svg.setPointerCapture(e.pointerId);}catch(x){}}
+    camSet(cam.x-dx/cam.s,cam.y-dy/cam.s,cam.s);ptrs.set(e.pointerId,p);}
+  else if(ptrs.size===2&&pinch0){ptrs.set(e.pointerId,p);const [a,b]=[...ptrs.values()];const d=Math.hypot(a[0]-b[0],a[1]-b[1]);
+    dragMoved=true;zoomAt((a[0]+b[0])/2,(a[1]+b[1])/2,pinch0.s*d/pinch0.d/cam.s);}});
+const ptrEnd=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch0=null;};
+svg.addEventListener("pointerup",ptrEnd);svg.addEventListener("pointercancel",ptrEnd);
+svg.addEventListener("wheel",e=>{if(st.v!=="play")return;e.preventDefault();const [x,y]=mapXY(e);zoomAt(x,y,Math.exp(-e.deltaY*.0015));},{passive:false});
+$("bHome").addEventListener("click",e=>{e.stopPropagation();userView(false);setTarget(false);});
 
 /* ---------- 土地の資料（右上の小窓、タップで拡大。各自の画面だけ） ---------- */
 let picKeys=[],picI=0;
@@ -475,7 +502,7 @@ function erasHTML(){const sh=SHELF.find(x=>x.id===shelfOn);
    :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("");}
 function showTitle(){
   st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
-  st.i=0;mstate=Object.assign(HOME(),{c:CFG.home.c,r:CFG.home.r});buildOverlay();setTarget(false);
+  st.i=0;mstate=Object.assign(HOME(),{c:CFG.home.c,r:CFG.home.r});buildOverlay();setTarget(false);userView(false);
   $("ovRoot").innerHTML=`<div class="ov sel"><div class="sel-in">
    <h1 class="app-name"><b>SUPER</b>歴史ノベル</h1>
    <div class="shelf" role="tablist">${SHELF.map(x=>`<button role="tab" data-shelf="${x.id}" aria-selected="${x.id===shelfOn}">${x.name}</button>`).join("")}</div>

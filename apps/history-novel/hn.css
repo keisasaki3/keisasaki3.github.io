@@ -322,3 +322,8 @@ html.title-mode header,html.title-mode .novel{display:none}
 .gayaPal button:active{transform:translate(2px,2px);box-shadow:none}
 .txt.nar{white-space:pre-line}
 .txt.nar .note{white-space:normal}
+/* 地図を動かしたときの「元の位置」ボタン（左下。資料ボタンは右下） */
+.bhome{position:absolute;left:10px;bottom:8px;z-index:3;font-size:12.5px;font-weight:700;padding:6px 12px;border:2px solid var(--ink);border-radius:999px;background:var(--sheet);color:var(--ink);box-shadow:2px 2px 0 var(--shadow)}
+.bhome[hidden]{display:none}
+#map{cursor:grab}#map:active{cursor:grabbing}
+#map{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
