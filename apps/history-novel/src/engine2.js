@@ -493,12 +493,12 @@ document.addEventListener("keydown",e=>{
 function ov(html){$("ovRoot").innerHTML=`<div class="ov"><div class="ov-in">${html}</div></div>`;}
 /* タイトルの本棚。章ができたら page を足す（2026-11-05 世界史を追加） */
 const SHELF=[
- {id:"jp",name:"日本史",eras:[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の天下へ（平安～鎌倉）","index.html"],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]]},
- {id:"w",name:"世界史",eras:[["古代オリエント","前3000–前330"],["ギリシア・ローマ","前800–476"],["イスラーム世界","610–1258"],["中世ヨーロッパ","476–1453"],["モンゴル帝国","1206–1368"],["大航海時代","1405–1571","世界がつながる（大航海時代）","daikokai.html"],["宗教改革","1517–1648"],["市民革命","1640–1815"],["産業革命","1760–1850"],["帝国主義","1870–1914"],["二つの世界大戦","1914–1945"]]}];
+ {id:"jp",name:"日本史",eras:[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の天下へ","index.html","平安〜鎌倉"],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]]},
+ {id:"w",name:"世界史",eras:[["古代オリエント","前3000–前330"],["ギリシア・ローマ","前800–476"],["イスラーム世界","610–1258"],["中世ヨーロッパ","476–1453"],["モンゴル帝国","1206–1368"],["大航海時代","1405–1571","世界がつながる","daikokai.html","大航海時代"],["宗教改革","1517–1648"],["市民革命","1640–1815"],["産業革命","1760–1850"],["帝国主義","1870–1914"],["二つの世界大戦","1914–1945"]]}];
 let shelfOn=CFG.shelf;
 function erasHTML(){const sh=SHELF.find(x=>x.id===shelfOn);
-  return sh.eras.map((e,j)=>e[3]===CFG.page?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
-   :e[3]?`<li><button class="era on" data-page="${e[3]}"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
+  return sh.eras.map((e,j)=>e[3]===CFG.page?`<li><button class="era on ch" id="start"><span class="no">${j+1}</span><span class="en">${e[2]}</span><span class="et">${e[4]}</span></button></li>`
+   :e[3]?`<li><button class="era on ch" data-page="${e[3]}"><span class="no">${j+1}</span><span class="en">${e[2]}</span><span class="et">${e[4]}</span></button></li>`
    :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("");}
 function showTitle(){
   st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
