@@ -5,15 +5,28 @@ const st={v:"title",i:0,sub:0,wait:false,seen:[],dug:new Set(),rec:[0,0],pre:[0,
 const isFollower=()=>st.role==="follow";
 
 /* ---------- sound (synthesized, off by default until first gesture) ---------- */
-let snd=true,actx=null;
-try{snd=localStorage.getItem("snd")!=="0";}catch(e){}
-function tone(f,d,v,type){if(!snd)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+let snd=true,vol=70,actx=null;
+try{snd=localStorage.getItem("snd")!=="0";const v=parseInt(localStorage.getItem("vol"),10);if(v>=0&&v<=100)vol=v;}catch(e){}
+const VF=()=>vol/70;/* 70 が従来の音量 */
+function tone(f,d,v,type){if(!snd||!vol)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
   const o=actx.createOscillator(),g=actx.createGain();o.type=type||"sine";o.frequency.value=f;g.gain.value=0;
-  o.connect(g);g.connect(actx.destination);const t=actx.currentTime;g.gain.linearRampToValueAtTime(v||.06,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){}}
+  o.connect(g);g.connect(actx.destination);const t=actx.currentTime;g.gain.linearRampToValueAtTime(Math.max(.0002,(v||.06)*VF()),t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){}}
 const SE={page:()=>tone(520,.08,.03,"triangle"),scene:()=>{tone(392,.35,.05);setTimeout(()=>tone(523,.45,.05),120);},
   ok:()=>{tone(660,.15,.06);setTimeout(()=>tone(880,.25,.06),110);},ifr:()=>{tone(330,.3,.05,"triangle");setTimeout(()=>tone(311,.4,.05,"triangle"),160);},ng:()=>tone(220,.3,.05,"triangle")};
-function drawSnd(){$("bSnd").textContent=snd?"音 ON":"音 OFF";$("bSnd").classList.toggle("on",snd);}
-$("bSnd").onclick=e=>{e.stopPropagation();snd=!snd;try{localStorage.setItem("snd",snd?"1":"0");}catch(x){}drawSnd();if(snd)SE.page();bgm(bgmWant);};
+/* 音: スピーカーのアイコン一つ。押すと音量スライダーと「音を消す」が開く（暗記大戦と同じ形、2026-11-05 経太さん） */
+const ICO_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const ICO_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+const audible=()=>snd&&vol>0;
+function saveSnd(){try{localStorage.setItem("snd",snd?"1":"0");localStorage.setItem("vol",String(vol));}catch(x){}}
+function drawSnd(){const b=$("bSnd");b.innerHTML=audible()?ICO_ON:ICO_OFF;b.setAttribute("aria-label",audible()?"音（オン・音量"+vol+"）":"音（オフ）");b.classList.toggle("on",audible());
+  $("sndVol").value=vol;$("sndVolN").textContent=vol;$("sndMute").textContent=snd?"音を消す":"音を出す";}
+function sndPop(open){const p=$("sndPop");p.hidden=!open;$("bSnd").setAttribute("aria-expanded",String(open));}
+$("bSnd").onclick=e=>{e.stopPropagation();sndPop($("sndPop").hidden);};
+$("sndPop").addEventListener("click",e=>e.stopPropagation());
+document.addEventListener("click",()=>{if(!$("sndPop").hidden)sndPop(false);});
+$("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
+$("sndVol").onchange=()=>{if(audible())SE.page();};
+$("sndMute").onclick=()=>{snd=!snd;if(snd&&!vol)vol=70;saveSnd();drawSnd();if(audible())SE.page();bgm(bgmWant);};
 
 /* ---------- map ---------- */
 const LON0=136,LAT0=36,K=100,CS=Math.cos(LAT0*Math.PI/180);
@@ -103,7 +116,7 @@ function terrain(){
   const reff=Math.min(W,H)/(2*cam.s),o=Math.max(0,Math.min(1,(118-reff)/22));
   for(const t of terrEls){t.im.setAttribute("opacity",o.toFixed(3));if(o>0&&!t.loaded){t.loaded=true;t.im.setAttribute("href","terrain-"+t.n+(isDark()?"-d":"")+".jpg");}}
   $("landP").style.strokeOpacity=String(1-o*.85);
-  const on=o>0.05;if(on!==terrOn){terrOn=on;$("maptag").textContent=on?"地形：国土地理院（現代）／海岸線：Natural Earth":"海岸線：Natural Earth";}
+  const on=o>0.05;if(on!==terrOn){terrOn=on;}
 }
 const gratG=mk("g",{class:"grat"},null);svg.insertBefore(gratG,ovG);
 function grat(){
@@ -176,11 +189,11 @@ $("pics").addEventListener("click",e=>{e.stopPropagation();openLB();});
 /* ---------- BGM（曲は経太さんの選曲待ち。BGM に 鍵:URL を入れると場面ごとに流れる） ---------- */
 const BGM={};let bgmEl=null,bgmKey=null,bgmWant=null;
 function bgm(key){
-  bgmWant=key;const k=snd?key:null;
+  bgmWant=key;const k=audible()?key:null;
   if(k===bgmKey)return;bgmKey=k;
   if(bgmEl){const old=bgmEl;bgmEl=null;fadeA(old,0,()=>old.pause());}
   if(!k||!BGM[k])return;
-  try{const a=new Audio(BGM[k]);a.loop=true;a.volume=0;a.play().catch(()=>{});bgmEl=a;fadeA(a,.35);}catch(e){}
+  try{const a=new Audio(BGM[k]);a.loop=true;a.volume=0;a.play().catch(()=>{});bgmEl=a;fadeA(a,.35*vol/100);}catch(e){}
 }
 function fadeA(a,to,done){const from=a.volume,t0=performance.now();(function f(){const k=Math.min(1,(performance.now()-t0)/1200);a.volume=from+(to-from)*k;if(k<1)requestAnimationFrame(f);else done&&done();})();}
 function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").textContent=sc.w||"";$("hEra").textContent=sc.era;$("hEv").textContent=sc.e;
@@ -411,6 +424,7 @@ function showTitle(){
    <div id="titleRoom"></div>
    <ol class="eras">${ERAS.map((e,j)=>e[3]?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
      :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("")}</ol>
+   <p class="muted" style="margin:0;font-size:11px">地図の出典：国土地理院（陰影起伏図）・Natural Earth</p>
    </div></div>`;
   renderTitleRoom();push();
 }
@@ -422,7 +436,7 @@ function renderTitleRoom(){
     el.innerHTML=`<p class="muted">${esc(h?nameOf(h):"ホスト")}さんが始めるのを待っています　<button class="lnk" data-room="solo">ひとりで読む</button></p>`;
   }else{
     if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");startReading();};}
-    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}<p class="muted">部屋 <b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
+    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}<p class="muted">部屋No.<b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
   }
   el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomAction(b.dataset.room));
 }
@@ -505,12 +519,12 @@ function roomSheet(){
   else act=`${h?`<button class="go" data-room="follow">${esc(nameOf(h))}さんに合わせて読む</button>`:""}<button class="ghost" data-room="host">ホストになって一緒に読む</button>`;
   return `<div class="crumb"><span>参加者</span></div><div class="sh-body"><h2>いま開いている人 ${peers.filter(p=>p.kind==="viewer").length}</h2>
   <div class="glist">${list}</div><div style="display:grid;gap:8px;margin-top:14px">${act}</div>
-  ${SBR.code?`<p class="muted" style="margin-top:12px">同じ部屋番号のURLを開いた人と一緒に読めます。部屋番号 <b>${esc(SBR.code)}</b></p><div style="display:grid;gap:8px"><label class="muted" style="display:grid;gap:4px">あなたの名前<input data-myname maxlength="12" placeholder="ゲスト" value="${esc(SBR.me_&&SBR.me_.name!=="ゲスト"?SBR.me_.name:"")}" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"></label><input readonly value="${esc(SBR.link())}" onclick="this.select()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"><button class="go" data-share="1">この部屋のURLをシェア</button></div>`:`<p class="muted" style="margin-top:12px">招待は、このページの共有メニューからできます。</p>`}</div>`;
+  ${SBR.code?`<p class="muted" style="margin-top:12px">同じ部屋番号のURLを開いた人と一緒に読めます。部屋No.<b>${esc(SBR.code)}</b></p><div style="display:grid;gap:8px"><label class="muted" style="display:grid;gap:4px">あなたの名前<input data-myname maxlength="12" placeholder="ゲスト" value="${esc(SBR.me_&&SBR.me_.name!=="ゲスト"?SBR.me_.name:"")}" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"></label><input readonly value="${esc(SBR.link())}" onclick="this.select()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"><button class="go" data-share="1">この部屋のURLをシェア</button></div>`:`<p class="muted" style="margin-top:12px">招待は、このページの共有メニューからできます。</p>`}</div>`;
 }
 function updateRoomUI(){
   const b=$("bRoom");if(!room){b.hidden=true;return;}
   b.hidden=false;const n=peers.filter(p=>p.kind==="viewer").length||1;
-  b.textContent=SBR.on?`部屋 ${SBR.code}・${n}人${st.role==="host"?"・ホスト":st.role==="follow"?"・同期中":""}`:st.role==="host"?`参加者 ${n}・ホスト`:st.role==="follow"?`参加者 ${n}・同期中`:`参加者 ${n}`;
+  b.textContent=SBR.on?`部屋No.${SBR.code}・${n}人${st.role==="host"?"・ホスト":st.role==="follow"?"・同期中":""}`:st.role==="host"?`参加者 ${n}・ホスト`:st.role==="follow"?`参加者 ${n}・同期中`:`参加者 ${n}`;
   b.classList.toggle("on",st.role!=="solo");
 }
 async function resolveNames(){
@@ -566,7 +580,7 @@ const SBR={on:false,code:"",
 const SB_URL="https://rjydvhpqfhmlvpsykwzf.supabase.co",SB_KEY="sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx";
 document.addEventListener("change",e=>{const t=e.target;if(!t.matches||!t.matches("[data-myname]")||!SBR.me_)return;const v=t.value.trim().slice(0,12);SBR.me_.name=v||"ゲスト";try{localStorage.setItem("hn-name",v);}catch(x){}SBR.retrack();},true);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");if(!b)return;e.stopPropagation();const url=SBR.link();
-  if(navigator.share)navigator.share({title:"SUPER歴史ノベル",text:"部屋 "+SBR.code+" で一緒に読もう",url}).catch(()=>{});
+  if(navigator.share)navigator.share({title:"SUPER歴史ノベル",text:"部屋No."+SBR.code+" で一緒に読もう",url}).catch(()=>{});
   else navigator.clipboard&&navigator.clipboard.writeText(url).then(()=>{b.textContent="コピーしました";setTimeout(()=>{b.textContent="この部屋のURLをシェア";},2000);},()=>{});},true);
 (async()=>{
   if(window.claude&&window.claude.use){
