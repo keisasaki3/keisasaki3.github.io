@@ -129,7 +129,23 @@ header{position:relative;display:flex;align-items:center;gap:12px;border-bottom:
 .fb{font-size:15px;line-height:1.85;animation:in .3s ease}
 .note{display:block;font-size:12.5px;color:var(--muted);margin-top:4px}
 @keyframes in{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
-.term{color:inherit;border-bottom:1.5px dotted var(--ink);padding:0 1px;line-height:1.4}
+.term{color:inherit;border-bottom:1.5px dotted var(--ink);padding:0 1px;line-height:1.4;font:inherit;letter-spacing:inherit;display:inline;cursor:pointer;border-radius:0}
+.term.imp{font-weight:800}
+.kind{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.1em}
+.t-face .face{width:72px;height:88px;margin-top:6px}
+.tpics{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:12px}
+.tpics button{display:grid;gap:4px;text-align:left;font-size:12.5px;color:var(--muted)}
+.tpics img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.pin.tap{cursor:pointer}.pin .hit{fill:transparent;stroke:none}
+.look-note{margin:0 auto 6px;max-width:720px;text-align:center;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--sea);color:var(--ink)}
+#bCfg{display:inline-flex;align-items:center;justify-content:center;min-width:36px}#bCfg svg{width:18px;height:18px;display:block}
+.cfg-row{display:grid;gap:8px;font-size:13px;font-weight:700}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);border:2px solid var(--ink);border-radius:999px;overflow:hidden}
+.seg button{padding:7px 0;font-weight:700}.seg button[aria-checked="true"]{background:var(--ink);color:var(--bg)}
+html[data-fs="s"] .txt{font-size:15px}html[data-fs="s"] .txt.quote{font-size:16.5px}html[data-fs="s"] .tk-b .txt{font-size:14.5px}
+html[data-fs="l"] .txt{font-size:20.5px}html[data-fs="l"] .txt.quote{font-size:22.5px}html[data-fs="l"] .tk-b .txt{font-size:19.5px}
+.rep-ta{width:100%;box-sizing:border-box;min-height:110px;font:inherit;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)}
+.rep-q{border-left:3px solid var(--line);padding:4px 10px;color:var(--muted);font-size:14px;white-space:pre-line}
 .term.dug{border-bottom-style:solid;border-bottom-color:var(--muted)}
 .blank{display:inline-block;min-width:4.5em;text-align:center;border:1px solid var(--ink);border-radius:4px;padding:0 6px;line-height:1.5;margin:0 2px}
 .blank.ok{border-color:var(--ok);color:var(--ok)}.blank.ng{border-color:var(--accent);color:var(--accent)}
@@ -316,12 +332,16 @@ html.title-mode header,html.title-mode .novel{display:none}
       <button id="bGl" hidden>用語帳</button>
       <button id="bRoom" hidden>参加者</button>
       <button id="bSnd" aria-label="音" aria-haspopup="true" aria-expanded="false"></button>
+      <button id="bCfg" aria-label="設定" aria-haspopup="true" aria-expanded="false"></button>
       <button id="bEnd">終了</button>
     </nav>
     <div class="prog"><i id="prog"></i></div>
     <div id="sndPop" class="snd-pop" hidden>
       <label class="snd-row"><span>音量</span><input id="sndVol" type="range" min="0" max="100" step="5" aria-label="音量"><b id="sndVolN"></b></label>
       <button id="sndMute" type="button"></button>
+    </div>
+    <div id="cfgPop" class="snd-pop" hidden>
+      <div class="cfg-row"><span>文字の大きさ</span><div class="seg" role="radiogroup" aria-label="文字の大きさ"><button data-fs="s" role="radio">小</button><button data-fs="m" role="radio">中</button><button data-fs="l" role="radio">大</button></div></div>
     </div>
   </header>
   <div class="mapwrap" id="mapwrap">
@@ -337,7 +357,8 @@ html.title-mode header,html.title-mode .novel{display:none}
       <div id="cur"><div class="who" id="who" hidden></div><div id="content"></div><div class="choices" id="choices"></div><div id="fbx"></div></div>
     </div></div>
     <div class="gayaPal" id="gayaPal" hidden></div>
-    <div class="ctrl"><button class="back" id="bk" hidden>◀ 戻る</button><button class="gyb" id="bGaya" aria-label="ガヤを飛ばす">ガヤ</button><div class="next" id="nx" hidden>タップで次へ</div></div>
+    <div class="look-note" id="lookNote" hidden>資料を見てるプレイヤーがいるよ。ちょっと待ってね</div>
+    <div class="ctrl"><button class="back" id="bk" hidden>◀ 戻る</button><button class="gyb" id="bGaya" aria-label="ガヤを飛ばす">ガヤ</button><button class="gyb rep" id="bRep" hidden>報告する</button><div class="next" id="nx" hidden>タップで次へ</div></div>
   </div>
 </div>
 <div id="sheetRoot"></div>
