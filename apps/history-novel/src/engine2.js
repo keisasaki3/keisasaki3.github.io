@@ -116,7 +116,7 @@ function terrain(){
   const reff=Math.min(W,H)/(2*cam.s),o=Math.max(0,Math.min(1,(118-reff)/22));
   for(const t of terrEls){t.im.setAttribute("opacity",o.toFixed(3));if(o>0&&!t.loaded){t.loaded=true;t.im.setAttribute("href","terrain-"+t.n+(isDark()?"-d":"")+".jpg");}}
   $("landP").style.strokeOpacity=String(1-o*.85);
-  const on=o>0.05;if(on!==terrOn){terrOn=on;$("maptag").textContent=on?"地形：国土地理院（現代）／海岸線：Natural Earth":"海岸線：Natural Earth";}
+  const on=o>0.05;if(on!==terrOn){terrOn=on;}
 }
 const gratG=mk("g",{class:"grat"},null);svg.insertBefore(gratG,ovG);
 function grat(){
@@ -424,6 +424,7 @@ function showTitle(){
    <div id="titleRoom"></div>
    <ol class="eras">${ERAS.map((e,j)=>e[3]?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
      :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("")}</ol>
+   <p class="muted" style="margin:0;font-size:11px">地図の出典：国土地理院（陰影起伏図）・Natural Earth</p>
    </div></div>`;
   renderTitleRoom();push();
 }
@@ -435,7 +436,7 @@ function renderTitleRoom(){
     el.innerHTML=`<p class="muted">${esc(h?nameOf(h):"ホスト")}さんが始めるのを待っています　<button class="lnk" data-room="solo">ひとりで読む</button></p>`;
   }else{
     if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");startReading();};}
-    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}<p class="muted">部屋 <b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
+    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}<p class="muted">部屋No.<b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
   }
   el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomAction(b.dataset.room));
 }
@@ -518,12 +519,12 @@ function roomSheet(){
   else act=`${h?`<button class="go" data-room="follow">${esc(nameOf(h))}さんに合わせて読む</button>`:""}<button class="ghost" data-room="host">ホストになって一緒に読む</button>`;
   return `<div class="crumb"><span>参加者</span></div><div class="sh-body"><h2>いま開いている人 ${peers.filter(p=>p.kind==="viewer").length}</h2>
   <div class="glist">${list}</div><div style="display:grid;gap:8px;margin-top:14px">${act}</div>
-  ${SBR.code?`<p class="muted" style="margin-top:12px">同じ部屋番号のURLを開いた人と一緒に読めます。部屋番号 <b>${esc(SBR.code)}</b></p><div style="display:grid;gap:8px"><label class="muted" style="display:grid;gap:4px">あなたの名前<input data-myname maxlength="12" placeholder="ゲスト" value="${esc(SBR.me_&&SBR.me_.name!=="ゲスト"?SBR.me_.name:"")}" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"></label><input readonly value="${esc(SBR.link())}" onclick="this.select()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"><button class="go" data-share="1">この部屋のURLをシェア</button></div>`:`<p class="muted" style="margin-top:12px">招待は、このページの共有メニューからできます。</p>`}</div>`;
+  ${SBR.code?`<p class="muted" style="margin-top:12px">同じ部屋番号のURLを開いた人と一緒に読めます。部屋No.<b>${esc(SBR.code)}</b></p><div style="display:grid;gap:8px"><label class="muted" style="display:grid;gap:4px">あなたの名前<input data-myname maxlength="12" placeholder="ゲスト" value="${esc(SBR.me_&&SBR.me_.name!=="ゲスト"?SBR.me_.name:"")}" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"></label><input readonly value="${esc(SBR.link())}" onclick="this.select()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"><button class="go" data-share="1">この部屋のURLをシェア</button></div>`:`<p class="muted" style="margin-top:12px">招待は、このページの共有メニューからできます。</p>`}</div>`;
 }
 function updateRoomUI(){
   const b=$("bRoom");if(!room){b.hidden=true;return;}
   b.hidden=false;const n=peers.filter(p=>p.kind==="viewer").length||1;
-  b.textContent=SBR.on?`部屋 ${SBR.code}・${n}人${st.role==="host"?"・ホスト":st.role==="follow"?"・同期中":""}`:st.role==="host"?`参加者 ${n}・ホスト`:st.role==="follow"?`参加者 ${n}・同期中`:`参加者 ${n}`;
+  b.textContent=SBR.on?`部屋No.${SBR.code}・${n}人${st.role==="host"?"・ホスト":st.role==="follow"?"・同期中":""}`:st.role==="host"?`参加者 ${n}・ホスト`:st.role==="follow"?`参加者 ${n}・同期中`:`参加者 ${n}`;
   b.classList.toggle("on",st.role!=="solo");
 }
 async function resolveNames(){
@@ -579,7 +580,7 @@ const SBR={on:false,code:"",
 const SB_URL="https://rjydvhpqfhmlvpsykwzf.supabase.co",SB_KEY="sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx";
 document.addEventListener("change",e=>{const t=e.target;if(!t.matches||!t.matches("[data-myname]")||!SBR.me_)return;const v=t.value.trim().slice(0,12);SBR.me_.name=v||"ゲスト";try{localStorage.setItem("hn-name",v);}catch(x){}SBR.retrack();},true);
 document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");if(!b)return;e.stopPropagation();const url=SBR.link();
-  if(navigator.share)navigator.share({title:"SUPER歴史ノベル",text:"部屋 "+SBR.code+" で一緒に読もう",url}).catch(()=>{});
+  if(navigator.share)navigator.share({title:"SUPER歴史ノベル",text:"部屋No."+SBR.code+" で一緒に読もう",url}).catch(()=>{});
   else navigator.clipboard&&navigator.clipboard.writeText(url).then(()=>{b.textContent="コピーしました";setTimeout(()=>{b.textContent="この部屋のURLをシェア";},2000);},()=>{});},true);
 (async()=>{
   if(window.claude&&window.claude.use){
