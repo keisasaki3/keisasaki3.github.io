@@ -23,7 +23,6 @@ function drawSnd(){const b=$("bSnd");b.innerHTML=audible()?ICO_ON:ICO_OFF;b.setA
 function sndPop(open){const p=$("sndPop");p.hidden=!open;$("bSnd").setAttribute("aria-expanded",String(open));}
 $("bSnd").onclick=e=>{e.stopPropagation();sndPop($("sndPop").hidden);};
 $("sndPop").addEventListener("click",e=>e.stopPropagation());
-document.addEventListener("click",()=>{if(!$("sndPop").hidden)sndPop(false);});
 $("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
 $("sndVol").onchange=()=>{if(audible())SE.page();};
 $("sndMute").onclick=()=>{snd=!snd;if(snd&&!vol)vol=70;saveSnd();drawSnd();if(audible())SE.page();bgm(bgmWant);};
@@ -400,7 +399,7 @@ $("sheetRoot").addEventListener("click",e=>{
 });
 $("bGl").onclick=e=>{e.stopPropagation();st.sheet="gloss";st.stack=[];renderSheet();};
 $("bRoom").onclick=e=>{e.stopPropagation();st.sheet="room";st.stack=[];renderSheet();};
-$("bEnd").onclick=e=>{e.stopPropagation();if(isFollower()){roomAction("solo");}st.dug=new Set();resetProgress();showTitle();};
+$("bEnd").onclick=e=>{e.stopPropagation();if(isFollower()){roomAction("solo");}else if(SBR.on&&st.role==="host")SBR.clear();st.dug=new Set();resetProgress();showTitle();};
 $("novel").addEventListener("click",e=>{
   const t=e.target.closest(".term");if(t){e.stopPropagation();return openTerm(t.dataset.k,true);}
   if(e.target.closest(".opt")||e.target.closest(".back"))return;advance();
@@ -435,8 +434,8 @@ function renderTitleRoom(){
     if(sb)sb.disabled=true;
     el.innerHTML=`<p class="muted">${esc(h?nameOf(h):"ホスト")}さんが始めるのを待っています　<button class="lnk" data-room="solo">ひとりで読む</button></p>`;
   }else{
-    if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");startReading();};}
-    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}<p class="muted">部屋No.<b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
+    if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");const sv=SBR.on&&SBR.saved;if(sv&&sv.v==="play"&&!(h&&!h.sameTab)){$("ovRoot").innerHTML="";resetProgress();goTo(sv.i,sv.ans||{},sv.sub||0);push();}else startReading();};}
+    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}${SBR.saved&&SBR.saved.v==="play"&&!(h&&!h.sameTab)?`<p class="muted">この部屋の続きから読みます（ホストが「終了」を押すと最初からに戻ります）</p>`:""}<p class="muted">部屋No.<b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
   }
   el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomAction(b.dataset.room));
 }
@@ -458,7 +457,7 @@ function showEnd(){
   <details class="cred"><summary>画像の出典</summary><ul>${Object.keys(C).filter(k=>C[k].img&&PIC["ch_"+C[k].img]).map(k=>`<li>${esc(C[k].n)}：${esc(PIC["ch_"+C[k].img].cr)}</li>`).join("")}${Object.keys(PIC).filter(k=>!k.startsWith("ch_")).map(k=>`<li>${esc(PIC[k].cap)}：${esc(PIC[k].cr)}</li>`).join("")}<li>地形：国土地理院 陰影起伏図／海岸線：Natural Earth</li></ul></details>
   ${isFollower()?"":'<button class="ghost" id="endBack">◀ 本文に戻る</button><button class="ghost" id="again">最初から読む</button>'}`);
   if($("endBack"))$("endBack").onclick=()=>{$("ovRoot").innerHTML="";back();};
-  if($("again"))$("again").onclick=()=>{resetProgress();showTitle();};
+  if($("again"))$("again").onclick=()=>{if(SBR.on&&st.role==="host")SBR.clear();resetProgress();showTitle();};
   push();
 }
 
@@ -480,6 +479,13 @@ function sendGaya(text){const now=Date.now();if(now-gayaLast<350)return;gayaLast
 $("bGaya").addEventListener("click",e=>{e.stopPropagation();const p=$("gayaPal");p.hidden=!p.hidden;$("bGaya").classList.toggle("on",!p.hidden);});
 $("gayaPal").innerHTML=GAYA.map(g=>`<button data-g="${esc(g)}">${esc(g)}</button>`).join("");
 $("gayaPal").addEventListener("click",e=>{e.stopPropagation();const b=e.target.closest("[data-g]");if(b)sendGaya(b.dataset.g);});
+/* ガヤ・音の枠が開いているときの外側クリックは「枠を閉じる」だけにして、本文を進めない（2026-11-05 経太さん） */
+document.addEventListener("click",e=>{
+  const g=$("gayaPal"),sp=$("sndPop");let closed=false;
+  if(!g.hidden&&!e.target.closest("#gayaPal,#bGaya")){g.hidden=true;$("bGaya").classList.remove("on");closed=true;}
+  if(!sp.hidden&&!e.target.closest("#sndPop,#bSnd")){sndPop(false);closed=true;}
+  if(closed){e.stopPropagation();e.preventDefault();}
+},true);
 /* ---------- reading together (room) ---------- */
 let room=null,user=null,peers=[],names={};let myPres={};
 function setPres(patch){Object.assign(myPres,patch);if(room)room.presence(Object.assign({},myPres)).catch(()=>{});}
@@ -493,7 +499,7 @@ function snapshot(){return {v:st.v,i:st.i,sub:st.sub||0,ans:st.ans,perm:st.perm,
 let pushT=null;
 function push(){
   if(!room||st.role!=="host")return;
-  clearTimeout(pushT);pushT=setTimeout(()=>{setPres({host:true,ep:st.ep,s:snapshot()});},60);
+  clearTimeout(pushT);pushT=setTimeout(()=>{const sn=snapshot();setPres({host:true,ep:st.ep,s:sn});if(SBR.on&&sn.v==="play")SBR.save(sn);},60);
 }
 function applyHost(s){
   const key=JSON.stringify(s);if(key===st.lastS)return;st.lastS=key;
@@ -549,6 +555,12 @@ function bindRoom(){
 /* ポータル版の「一緒に読む」: Supabase Realtime（表は使わない）。?room=部屋番号 が同じ人どうしが同じ部屋。番号が無ければ6桁を割り振る。 */
 const SBR={on:false,code:"",
   link(){return location.origin+location.pathname+"?room="+this.code;},
+  /* 部屋ごとの読み進めた位置（本番DB history_novel_rooms を関数 hn_room_* 経由で。ホストが「終了」を押したときだけ消す） */
+  saved:null,db:null,saveT:null,
+  dbc(){return this.db||(this.db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"hn-db"}}));},
+  async load(){try{const {data}=await this.dbc().rpc("hn_room_get",{p_room:this.code});this.saved=data||null;}catch(e){}},
+  save(sn){this.saved=sn;clearTimeout(this.saveT);this.saveT=setTimeout(()=>{this.dbc().rpc("hn_room_set",{p_room:this.code,p_state:sn}).then(()=>{},()=>{});},800);},
+  clear(){this.saved=null;clearTimeout(this.saveT);this.dbc().rpc("hn_room_clear",{p_room:this.code}).then(()=>{},()=>{});},
   async me(){
     let id=null,name="";
     try{name=(localStorage.getItem("hn-name")||localStorage.getItem("nb-name")||"").slice(0,12);}catch(e){}
@@ -594,6 +606,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");i
   const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,32);
   if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
   SBR.on=true;SBR.code=code;if(st.v==="title")renderTitleRoom();
+  await SBR.load();if(st.v==="title")renderTitleRoom();
   await SBR.join(code);if(st.v==="title")renderTitleRoom();
 })();
 drawSnd();setScene(S[0].scene);mstate=Object.assign({c:[137,36],r:700,pins:[],blink:null,ar:[]},S[0].scene.m);buildOverlay();resize();showTitle();
