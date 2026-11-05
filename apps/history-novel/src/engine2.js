@@ -406,6 +406,7 @@ function showTitle(){
   st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
   st.i=0;mstate=Object.assign({c:[137,36],r:700,pins:[],blink:null,ar:[]},{c:[137.5,36.4],r:820,pins:[],blink:null,ar:[]});buildOverlay();setTarget(false);
   $("ovRoot").innerHTML=`<div class="ov sel"><div class="sel-in">
+   <h1 class="app-name"><b>SUPER</b>歴史ノベル</h1>
    <div class="sub">日本史をめぐる</div>
    <ol class="eras">${ERAS.map((e,j)=>e[3]?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
      :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("")}</ol>
