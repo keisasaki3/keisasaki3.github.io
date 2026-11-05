@@ -41,6 +41,13 @@ header{position:relative;display:flex;align-items:center;gap:12px;border-bottom:
 .menu button{font-size:12.5px;padding:5px 9px;border:0;border-radius:4px;color:var(--muted);white-space:nowrap}
 .menu button:hover{color:var(--ink);background:var(--sea)}
 .menu button.on{color:var(--ink);font-weight:700}
+#bSnd{display:inline-flex;align-items:center;justify-content:center;min-width:36px}
+#bSnd svg{width:18px;height:18px;display:block}
+.snd-pop{position:absolute;right:max(16px,env(safe-area-inset-right,0px));top:calc(100% + 6px);z-index:40;background:var(--sheet);color:var(--ink);border:2px solid var(--ink);border-radius:12px;padding:12px 14px;display:grid;gap:10px;min-width:230px;box-shadow:0 6px 0 rgba(0,0,0,.12)}
+.snd-row{display:grid;grid-template-columns:auto 1fr 2.6em;align-items:center;gap:10px;font-size:13px;font-weight:700}
+.snd-row input{width:100%;accent-color:var(--ink)}
+.snd-row b{text-align:right;font-variant-numeric:tabular-nums}
+#sndMute{font:inherit;font-size:13px;font-weight:700;padding:8px 10px;border:2px solid var(--ink);border-radius:999px;background:transparent;color:var(--ink);cursor:pointer}
 /* map */
 .mapwrap{position:relative;flex:1;min-height:0;background:var(--sea);overflow:hidden;cursor:pointer}
 #map{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -308,10 +315,14 @@ html.title-mode header,html.title-mode .novel{display:none}
     <nav class="menu">
       <button id="bGl" hidden>用語帳</button>
       <button id="bRoom" hidden>参加者</button>
-      <button id="bSnd">音 ON</button>
+      <button id="bSnd" aria-label="音" aria-haspopup="true" aria-expanded="false"></button>
       <button id="bEnd">終了</button>
     </nav>
     <div class="prog"><i id="prog"></i></div>
+    <div id="sndPop" class="snd-pop" hidden>
+      <label class="snd-row"><span>音量</span><input id="sndVol" type="range" min="0" max="100" step="5" aria-label="音量"><b id="sndVolN"></b></label>
+      <button id="sndMute" type="button"></button>
+    </div>
   </header>
   <div class="mapwrap" id="mapwrap">
     <svg id="map" aria-label="出来事の場所を示す地図"><rect width="100%" height="100%" fill="var(--sea)"/><g id="landG"><clipPath id="landClip"><path id="landP" class="land" d="%%MAP%%"/></clipPath><use href="#landP"/><g id="terrG" clip-path="url(#landClip)"></g></g><g id="ovG"></g></svg>

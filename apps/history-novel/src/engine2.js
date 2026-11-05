@@ -5,15 +5,28 @@ const st={v:"title",i:0,sub:0,wait:false,seen:[],dug:new Set(),rec:[0,0],pre:[0,
 const isFollower=()=>st.role==="follow";
 
 /* ---------- sound (synthesized, off by default until first gesture) ---------- */
-let snd=true,actx=null;
-try{snd=localStorage.getItem("snd")!=="0";}catch(e){}
-function tone(f,d,v,type){if(!snd)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+let snd=true,vol=70,actx=null;
+try{snd=localStorage.getItem("snd")!=="0";const v=parseInt(localStorage.getItem("vol"),10);if(v>=0&&v<=100)vol=v;}catch(e){}
+const VF=()=>vol/70;/* 70 が従来の音量 */
+function tone(f,d,v,type){if(!snd||!vol)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();
   const o=actx.createOscillator(),g=actx.createGain();o.type=type||"sine";o.frequency.value=f;g.gain.value=0;
-  o.connect(g);g.connect(actx.destination);const t=actx.currentTime;g.gain.linearRampToValueAtTime(v||.06,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){}}
+  o.connect(g);g.connect(actx.destination);const t=actx.currentTime;g.gain.linearRampToValueAtTime(Math.max(.0002,(v||.06)*VF()),t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){}}
 const SE={page:()=>tone(520,.08,.03,"triangle"),scene:()=>{tone(392,.35,.05);setTimeout(()=>tone(523,.45,.05),120);},
   ok:()=>{tone(660,.15,.06);setTimeout(()=>tone(880,.25,.06),110);},ifr:()=>{tone(330,.3,.05,"triangle");setTimeout(()=>tone(311,.4,.05,"triangle"),160);},ng:()=>tone(220,.3,.05,"triangle")};
-function drawSnd(){$("bSnd").textContent=snd?"音 ON":"音 OFF";$("bSnd").classList.toggle("on",snd);}
-$("bSnd").onclick=e=>{e.stopPropagation();snd=!snd;try{localStorage.setItem("snd",snd?"1":"0");}catch(x){}drawSnd();if(snd)SE.page();bgm(bgmWant);};
+/* 音: スピーカーのアイコン一つ。押すと音量スライダーと「音を消す」が開く（暗記大戦と同じ形、2026-11-05 経太さん） */
+const ICO_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const ICO_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+const audible=()=>snd&&vol>0;
+function saveSnd(){try{localStorage.setItem("snd",snd?"1":"0");localStorage.setItem("vol",String(vol));}catch(x){}}
+function drawSnd(){const b=$("bSnd");b.innerHTML=audible()?ICO_ON:ICO_OFF;b.setAttribute("aria-label",audible()?"音（オン・音量"+vol+"）":"音（オフ）");b.classList.toggle("on",audible());
+  $("sndVol").value=vol;$("sndVolN").textContent=vol;$("sndMute").textContent=snd?"音を消す":"音を出す";}
+function sndPop(open){const p=$("sndPop");p.hidden=!open;$("bSnd").setAttribute("aria-expanded",String(open));}
+$("bSnd").onclick=e=>{e.stopPropagation();sndPop($("sndPop").hidden);};
+$("sndPop").addEventListener("click",e=>e.stopPropagation());
+document.addEventListener("click",()=>{if(!$("sndPop").hidden)sndPop(false);});
+$("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
+$("sndVol").onchange=()=>{if(audible())SE.page();};
+$("sndMute").onclick=()=>{snd=!snd;if(snd&&!vol)vol=70;saveSnd();drawSnd();if(audible())SE.page();bgm(bgmWant);};
 
 /* ---------- map ---------- */
 const LON0=136,LAT0=36,K=100,CS=Math.cos(LAT0*Math.PI/180);
@@ -176,11 +189,11 @@ $("pics").addEventListener("click",e=>{e.stopPropagation();openLB();});
 /* ---------- BGM（曲は経太さんの選曲待ち。BGM に 鍵:URL を入れると場面ごとに流れる） ---------- */
 const BGM={};let bgmEl=null,bgmKey=null,bgmWant=null;
 function bgm(key){
-  bgmWant=key;const k=snd?key:null;
+  bgmWant=key;const k=audible()?key:null;
   if(k===bgmKey)return;bgmKey=k;
   if(bgmEl){const old=bgmEl;bgmEl=null;fadeA(old,0,()=>old.pause());}
   if(!k||!BGM[k])return;
-  try{const a=new Audio(BGM[k]);a.loop=true;a.volume=0;a.play().catch(()=>{});bgmEl=a;fadeA(a,.35);}catch(e){}
+  try{const a=new Audio(BGM[k]);a.loop=true;a.volume=0;a.play().catch(()=>{});bgmEl=a;fadeA(a,.35*vol/100);}catch(e){}
 }
 function fadeA(a,to,done){const from=a.volume,t0=performance.now();(function f(){const k=Math.min(1,(performance.now()-t0)/1200);a.volume=from+(to-from)*k;if(k<1)requestAnimationFrame(f);else done&&done();})();}
 function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").textContent=sc.w||"";$("hEra").textContent=sc.era;$("hEv").textContent=sc.e;
