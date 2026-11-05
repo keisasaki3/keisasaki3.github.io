@@ -37,16 +37,19 @@ $("sndVol").onchange=()=>{if(audible())SE.page();};
 $("sndMute").onclick=()=>{snd=!snd;if(snd&&!vol)vol=70;saveSnd();drawSnd();if(audible())SE.page();bgm(bgmWant);};
 
 /* ---------- map ---------- */
-const LON0=136,LAT0=36,K=100,CS=Math.cos(LAT0*Math.PI/180);
+/* 地図の基準（章ごとに CFG で決める。章の設定は cfg.js） */
+const LON0=CFG.lon0,LAT0=CFG.lat0,K=100,CS=Math.cos(LAT0*Math.PI/180);
+const HOME=()=>({c:CFG.init.c,r:CFG.init.r,pins:[],blink:null,ar:[]});
 const pj=([lon,lat])=>[(lon-LON0)*CS*K,-(lat-LAT0)*K];
 const pt=k=>Array.isArray(k)?k:P[k];
 const svg=$("map"),landG=$("landG"),ovG=$("ovG");
 let rafOn=false;let W=1,H=1;const cam={x:0,y:0,s:1},from={x:0,y:0,s:1},to={x:0,y:0,s:1};let t0=0,DUR=1100,camInit=false;
-let mstate={c:[137,36],r:700,pins:[],blink:null,ar:[]},els=[];
+let mstate=HOME(),els=[];
 function resize(){const r=svg.getBoundingClientRect();W=Math.max(1,r.width);H=Math.max(1,r.height);setTarget(true);}
 new ResizeObserver(resize).observe(svg);
 function setTarget(instant){
-  const c=pj(pt(mstate.c)),s=Math.min(W,H)/(2*mstate.r);
+  /* r=短い辺の半分に入れる距離。rw があれば横幅の半分に rw を入れる（世界全体を見せる場面用） */
+  const c=pj(pt(mstate.c)),s=mstate.rw?W/(2*mstate.rw):Math.min(W,H)/(2*mstate.r);
   Object.assign(from,cam);Object.assign(to,{x:c[0],y:c[1],s});t0=performance.now();
   if(instant||!camInit||matchMedia("(prefers-reduced-motion:reduce)").matches){Object.assign(cam,to);Object.assign(from,to);camInit=true;}
   kick();
@@ -114,26 +117,34 @@ function declutter(){
     if(hit){tx.style.visibility="hidden";}else{tx.style.visibility="visible";boxes.push(bx);}
   }
 }
-const TERR={"kanto": [138.69140625, 35.6037187406973, 140.09765625, 34.885930940753155], "kyoto": [134.6484375, 35.4606699514953, 136.40625, 34.307143856288036]};
+/* 地形の画像。CFG.terr の各枚: n=ファイル名, b=[西,北,東,南], z=この半径より寄ったら出す（無ければ常に）, dx=経度をずらした写し（地図を一周させる章用） */
 const terrEls=[];
-for(const n in TERR){const [w,nl,e,sl]=TERR[n];const a=pj([w,nl]),b=pj([e,sl]);
-  const im=mk("image",{class:"terr",x:a[0],y:a[1],width:b[0]-a[0],height:b[1]-a[1],preserveAspectRatio:"none",opacity:"0"},$("terrG"));terrEls.push({n,im,loaded:false});}
-let terrOn=false;
+for(const t of CFG.terr){const [w,nl,e,sl]=t.b;const dx=t.dx||0;const a=pj([w+dx,nl]),b=pj([e+dx,sl]);
+  const im=mk("image",{class:"terr",x:a[0],y:a[1],width:b[0]-a[0],height:b[1]-a[1],preserveAspectRatio:"none",opacity:"0"},$("terrG"));terrEls.push({n:t.n,z:t.z||0,box:[a[0],a[1],b[0],b[1]],im,loaded:false});}
 const isDark=()=>document.documentElement.dataset.theme==="dark"||(document.documentElement.dataset.theme!=="light"&&matchMedia("(prefers-color-scheme:dark)").matches);
 function terrain(){
-  const reff=Math.min(W,H)/(2*cam.s),o=Math.max(0,Math.min(1,(118-reff)/22));
-  for(const t of terrEls){t.im.setAttribute("opacity",o.toFixed(3));if(o>0&&!t.loaded){t.loaded=true;t.im.setAttribute("href","terrain-"+t.n+(isDark()?"-d":"")+".jpg");}}
+  const reff=Math.min(W,H)/(2*cam.s);
+  const vx0=cam.x-W/2/cam.s,vx1=cam.x+W/2/cam.s,vy0=cam.y-H/2/cam.s,vy1=cam.y+H/2/cam.s;
+  let zo=0;
+  for(const t of terrEls){
+    /* z がある画像は寄ったときだけ（鎌倉編は 118 で関東・京都だけ） */
+    const o=t.z?Math.max(0,Math.min(1,(t.z-reff)/(t.z*.19))):1;
+    const vis=!(t.box[2]<vx0||t.box[0]>vx1||t.box[3]<vy0||t.box[1]>vy1);
+    t.im.setAttribute("opacity",(vis?o:0).toFixed(3));if(t.z)zo=Math.max(zo,vis?o:0);
+    if(vis&&o>0&&!t.loaded){t.loaded=true;t.im.setAttribute("href","terrain-"+t.n+(isDark()?"-d":"")+".jpg");}}
+  const o=CFG.terrAlways?1:zo;
   $("landP").style.strokeOpacity=String(1-o*.85);
-  const on=o>0.05;if(on!==terrOn){terrOn=on;}
 }
 const gratG=mk("g",{class:"grat"},null);svg.insertBefore(gratG,ovG);
+/* 経度の表示。一周させた写しの経度（-180 より西）も東経・西経に直す */
+function lonTxt(lo){let v=((lo%360)+540)%360-180;v=+v.toFixed(2);return v<0?(-v)+"°W":v===180||v===-180?"180°":v+"°E";}
 function grat(){
-  const upp=1/cam.s;const degPx=K*cam.s;const steps=[.25,.5,1,2,5];let st2=steps.find(d=>d*degPx*CS>=110)||5;
+  const degPx=K*cam.s;const steps=[.25,.5,1,2,5,10,15,30,45,60,90];let st2=steps.find(d=>d*degPx*CS>=110)||90;
   const lonA=LON0+((-W/2)/cam.s+cam.x)/(CS*K),lonB=LON0+((W/2)/cam.s+cam.x)/(CS*K);
   const latA=LAT0-((H/2)/cam.s+cam.y)/K,latB=LAT0-((-H/2)/cam.s+cam.y)/K;
   let h="";
-  for(let lo=Math.ceil(lonA/st2)*st2;lo<=lonB;lo+=st2){const x=scr([lo,0])[0];h+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/><text x="${x+3}" y="12">${+lo.toFixed(2)}°E</text>`;}
-  for(let la=Math.ceil(latA/st2)*st2;la<=latB;la+=st2){const y=scr([LON0,la])[1];h+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/><text x="4" y="${y-3}">${+la.toFixed(2)}°N</text>`;}
+  for(let lo=Math.ceil(lonA/st2)*st2;lo<=lonB;lo+=st2){const x=scr([lo,0])[0];h+=`<line x1="${x}" y1="0" x2="${x}" y2="${H}"/><text x="${x+3}" y="12">${lonTxt(lo)}</text>`;}
+  for(let la=Math.max(-80,Math.ceil(latA/st2)*st2);la<=Math.min(80,latB);la+=st2){const y=scr([LON0,la])[1];h+=`<line x1="0" y1="${y}" x2="${W}" y2="${y}"/><text x="4" y="${y-3}">${la<0?+(-la).toFixed(2)+"°S":+la.toFixed(2)+"°N"}</text>`;}
   gratG.innerHTML=h;
 }
 function frame(now){
@@ -148,11 +159,11 @@ function frame(now){
 function kick(){if(!rafOn){rafOn=true;requestAnimationFrame(frame);}}
 kick();
 function mergeM(ms,m){if(!m)return;if(m.clear)ms.ar=[];
-  if(m.c)ms.c=m.c;if(m.r)ms.r=m.r;if(m.pins)ms.pins=[...new Set([...ms.pins,...m.pins])];if(m.blink!==undefined){ms.blink=m.blink;ms.fl=m.fl||null;}if(m.ar)ms.ar=[...ms.ar,...m.ar];}
-function choiceM(s,j,sub,ms){const o=s.o[j];if(o.h||sub>=o.ifr.length){const save=ms.ar;ms.ar=ms.ar.filter(a=>a.s!=="if");mergeM(ms,s.hm);}else{mergeM(ms,o.im);}}
+  if(m.c)ms.c=m.c;if(m.r){ms.r=m.r;ms.rw=m.rw||null;}if(m.pins)ms.pins=[...new Set([...ms.pins,...m.pins])];if(m.blink!==undefined){ms.blink=m.blink;ms.fl=m.fl||null;}if(m.ar)ms.ar=[...ms.ar,...m.ar];}
+function choiceM(s,j,sub,ms){const o=s.o[j];if(o.h||sub>=o.ifr.length){ms.ar=ms.ar.filter(a=>a.s!=="if");mergeM(ms,s.hm);}else{mergeM(ms,o.im);}}
 function computeMap(){
   let a=st.i;while(a>0&&!S[a].scene)a--;
-  const ms={c:[137,36],r:700,pins:[],blink:null,fl:null,ar:[]};
+  const ms=Object.assign(HOME(),{fl:null});
   for(let k=a;k<=st.i&&k<S.length;k++){const s=S[k];
     if(s.scene){Object.assign(ms,{pins:[],ar:[],blink:null});mergeM(ms,s.scene.m);continue;}
     mergeM(ms,s.m);
@@ -161,7 +172,7 @@ function computeMap(){
   return ms;
 }
 function updateMap(){
-  const ms=computeMap();const camChanged=JSON.stringify([ms.c,ms.r])!==JSON.stringify([mstate.c,mstate.r]);
+  const ms=computeMap();const camChanged=JSON.stringify([ms.c,ms.r,ms.rw])!==JSON.stringify([mstate.c,mstate.r,mstate.rw]);
   mstate=ms;buildOverlay();if(camChanged)setTarget(false);
   drawPics();
 }
@@ -248,7 +259,6 @@ function hideTalk(){const el=$("talk");el.hidden=true;el.innerHTML="";}
 function sceneCard(){const sc=sceneAt(st.i);if(!sc)return;
   $("card").innerHTML=`<div class="card-in"><div class="cy">${sc.y}<small>年</small></div><div class="cw">${esc(sc.w||"")}</div><div class="ce">${esc(sc.e)}</div></div>`;
   clearTimeout(sceneCard.t);sceneCard.t=setTimeout(()=>{$("card").innerHTML="";},2500);}
-function hud(){}
 function setWho(w){const e=$("who");e.hidden=!w;e.textContent=w||"";}
 function nxText(){$("nx").textContent=isFollower()?"ホストが進めます":"タップで次へ";}
 function staticHTML(k){
@@ -284,14 +294,14 @@ function run(){
     if(isFollower())$("content").insertAdjacentHTML("beforeend",'<span class="note">ホストの答えを待っています。口に出して答えてみてください。</span>');
   }else{
     setWho(null);
-    if(s.sp){$("content").innerHTML="";showTalk(s);updateMap();if(sceneChange){SE.scene();sceneCard();}hud();push();toBottom();return;}
+    if(s.sp){$("content").innerHTML="";showTalk(s);updateMap();if(sceneChange){SE.scene();sceneCard();}push();toBottom();return;}
     hideTalk();
     $("content").innerHTML=lineHTML(s,true);
     const sr=$("content").querySelector(".src");if(sr)sr.style.visibility="hidden";
     typeIn($("content").querySelector(".txt"),()=>{if(sr)sr.style.visibility="";});
   }
   updateMap();if(sceneChange){SE.scene();sceneCard();}
-  hud();push();toBottom();
+  push();toBottom();
 }
 let typer=null;
 function typeIn(el,done){
@@ -332,7 +342,7 @@ function answerChoice(s,j,sub,quiet){
   if(!st.wait)return;lockOpts();st.ans[st.i]=j;st.sub=sub||0;
   st.pre[1]++;if(s.o[j].h)st.pre[0]++;
   st.wait=false;drawChoice(s);if(!quiet)(s.o[j].h?SE.ok:SE.ifr)();
-  hud();push();toBottom();
+  push();toBottom();
 }
 function answerRecall(s,j,quiet){
   if(!st.wait)return;lockOpts();st.ans[st.i]=j;const o=s.o[j];const bs=document.querySelectorAll("#choices .opt");
@@ -344,7 +354,7 @@ function answerRecall(s,j,quiet){
   const bl=$("blank");bl.className="blank "+(hit?"ok":"ng");bl.innerHTML=`<button class="term" data-k="${esc(s.recall)}">${esc(s.recall)}</button>`;
   const first=G[s.recall].d.split("。")[0]+"。";
   st.wait=false;const fbe=$("content").querySelector(".fb");fbe.innerHTML=`<span class="tag ${hit?"ok":"ng"}">${hit?"正解":"復習へ"}</span>${md(first,false)}${hit?"":"<span class=\"note\">章末の「次の扉」にもう一度並びます。</span>"}`;
-  typeIn(fbe);hud();push();toBottom();
+  typeIn(fbe);push();toBottom();
 }
 function advance(){if(typer&&!st.sheet){typer.finish();return;}
   if(isFollower()||st.wait||st.sheet||st.v!=="play")return;
@@ -363,7 +373,7 @@ function back(){
   const j=prevIndex();if(j<0)return;
   const ans={};for(const k in st.ans)if(+k<=j)ans[k]=st.ans[k];
   const pj2=S[j];const sub=(pj2.choice&&ans[j]!=null&&!pj2.o[ans[j]].h)?pj2.o[ans[j]].ifr.length:0;
-  $("ovRoot").innerHTML="";goTo(j,ans,sub);hud();
+  $("ovRoot").innerHTML="";goTo(j,ans,sub);
 }
 $("bk").addEventListener("click",e=>{e.stopPropagation();back();});
 function resetProgress(){Object.assign(st,{i:0,sub:0,seen:[],rec:[0,0],pre:[0,0],miss:[],ans:{},perm:null,nd:0,om:0});}
@@ -400,8 +410,7 @@ function renderSheet(){
     const k=st.stack[st.stack.length-1],g=G[k];
     const crumbs=st.stack.map((c,j)=>j===st.stack.length-1?`<span>${esc(c)}</span>`:`<button data-crumb="${j}">${esc(c)}</button> ›`).join(" ");
     body=`<div class="crumb"><button data-crumb="-1">物語</button> › ${crumbs}</div>
-    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2><div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div><p>${md(g.d,false,k)}</p>${termPics(k)}
-    <div class="hint">点線の言葉からさらに潜れます。深さ ${st.stack.length}。深掘りは自分の画面だけで開きます。</div></div>`;
+    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2><div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div><p>${md(g.d,false,k)}</p>${termPics(k)}</div>`;/* 「点線の言葉からさらに潜れます…」の案内は不要（2026-11-05 経太さん） */
   }
   root.innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true">${body}<button class="close" data-close="1">物語に戻る</button></div>`;
   lookPres();
@@ -414,7 +423,7 @@ function openRep(){const r=repTarget();st.sheet="rep";
   lookPres();
   $("repSend").onclick=async e=>{e.stopPropagation();const c=$("repTa").value.trim();if(!c){$("repMsg").textContent="内容を書いてください。";return;}
     $("repSend").disabled=true;
-    try{const {error}=await SBR.dbc().from("quest_card_reports").insert({card_key:("hn:"+r.i+":"+r.t).slice(0,200),comment:c.slice(0,300),app:"history-novel"});if(error)throw error;
+    try{const {error}=await SBR.dbc().from("quest_card_reports").insert({card_key:("hn:"+(CFG.room?CFG.room+":":"")+r.i+":"+r.t).slice(0,200),comment:c.slice(0,300),app:"history-novel"});if(error)throw error;
       $("repMsg").textContent="送りました。ありがとうございます。";$("repTa").value="";}
     catch(x){$("repMsg").textContent="送れませんでした。時間をおいてもう一度お試しください。";}
     $("repSend").disabled=false;};}
@@ -455,20 +464,31 @@ document.addEventListener("keydown",e=>{
 
 /* ---------- overlays ---------- */
 function ov(html){$("ovRoot").innerHTML=`<div class="ov"><div class="ov-in">${html}</div></div>`;}
-const ERAS=[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の天下へ（平安～鎌倉）",1],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]];
+/* タイトルの本棚。章ができたら page を足す（2026-11-05 世界史を追加） */
+const SHELF=[
+ {id:"jp",name:"日本史",eras:[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の天下へ（平安～鎌倉）","index.html"],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]]},
+ {id:"w",name:"世界史",eras:[["古代オリエント","前3000–前330"],["ギリシア・ローマ","前800–476"],["イスラーム世界","610–1258"],["中世ヨーロッパ","476–1453"],["モンゴル帝国","1206–1368"],["大航海時代","1405–1571","世界がつながる（大航海時代）","daikokai.html"],["宗教改革","1517–1648"],["市民革命","1640–1815"],["産業革命","1760–1850"],["帝国主義","1870–1914"],["二つの世界大戦","1914–1945"]]}];
+let shelfOn=CFG.shelf;
+function erasHTML(){const sh=SHELF.find(x=>x.id===shelfOn);
+  return sh.eras.map((e,j)=>e[3]===CFG.page?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
+   :e[3]?`<li><button class="era on" data-page="${e[3]}"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
+   :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("");}
 function showTitle(){
   st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
-  st.i=0;mstate=Object.assign({c:[137,36],r:700,pins:[],blink:null,ar:[]},{c:[137.5,36.4],r:820,pins:[],blink:null,ar:[]});buildOverlay();setTarget(false);
+  st.i=0;mstate=Object.assign(HOME(),{c:CFG.home.c,r:CFG.home.r});buildOverlay();setTarget(false);
   $("ovRoot").innerHTML=`<div class="ov sel"><div class="sel-in">
    <h1 class="app-name"><b>SUPER</b>歴史ノベル</h1>
-   <div class="sub">日本史をめぐる</div>
+   <div class="shelf" role="tablist">${SHELF.map(x=>`<button role="tab" data-shelf="${x.id}" aria-selected="${x.id===shelfOn}">${x.name}</button>`).join("")}</div>
    <div id="titleRoom"></div>
-   <ol class="eras">${ERAS.map((e,j)=>e[3]?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
-     :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("")}</ol>
-   <p class="muted" style="margin:0;font-size:11px">地図の出典：国土地理院（陰影起伏図）・Natural Earth</p>
+   <ol class="eras" id="eras">${erasHTML()}</ol>
+   <p class="muted" style="margin:0;font-size:11px">${esc(CFG.attrib)}</p>
    </div></div>`;
+  $("ovRoot").querySelector(".shelf").onclick=e=>{const b=e.target.closest("[data-shelf]");if(!b)return;shelfOn=b.dataset.shelf;
+    $("ovRoot").querySelectorAll("[data-shelf]").forEach(x=>x.setAttribute("aria-selected",String(x.dataset.shelf===shelfOn)));$("eras").innerHTML=erasHTML();renderTitleRoom();};
   renderTitleRoom();push();
 }
+/* 別の章（別のページ）へ。部屋番号はそのまま持っていく */
+function goPage(p){const q=new URLSearchParams(location.search);location.href=p+(q.toString()?"?"+q.toString():"");}
 function renderTitleRoom(){
   const el=$("titleRoom");if(!el)return;
   const h=hostPeer(),sb=$("start");
@@ -480,6 +500,7 @@ function renderTitleRoom(){
     el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}${SBR.saved&&SBR.saved.v==="play"&&!(h&&!h.sameTab)?`<p class="muted">この部屋の続きから読みます（ホストが「終了」を押すと最初からに戻ります）</p>`:""}<p class="muted">部屋No.<b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
   }
   el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomAction(b.dataset.room));
+  document.querySelectorAll("#eras [data-page]").forEach(b=>{b.disabled=isFollower();b.onclick=()=>{SE.scene();goPage(b.dataset.page);};});
 }
 function showOrder(){
   const perm=st.perm;
@@ -491,12 +512,12 @@ function showOrder(){
 }
 function showEnd(){
   st.v="end";$("nx").hidden=true;
-  ov(`<div class="sub">鎌倉編 読了</div><h1>武士の世が形になった</h1>
+  ov(`<div class="sub">${esc(CFG.endSub)}</div><h1>${esc(CFG.endTitle)}</h1>
   <h3>この章の流れ</h3>
   <ol class="flow">${ORDER.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
   <h3>次の章</h3>
-  <div class="door"><small>試作では未制作</small><b>元寇と、御恩のほころび</b><p>1274年と1281年、海の向こうからモンゴルの大軍が来る。勝ったのに、御家人に与える土地がない。御恩と奉公は、どうなる？</p></div>
-  <details class="cred"><summary>画像の出典</summary><ul>${Object.keys(C).filter(k=>C[k].img&&PIC["ch_"+C[k].img]).map(k=>`<li>${esc(C[k].n)}：${esc(PIC["ch_"+C[k].img].cr)}</li>`).join("")}${Object.keys(PIC).filter(k=>!k.startsWith("ch_")).map(k=>`<li>${esc(PIC[k].cap)}：${esc(PIC[k].cr)}</li>`).join("")}<li>地形：国土地理院 陰影起伏図／海岸線：Natural Earth</li></ul></details>
+  <div class="door"><small>試作では未制作</small><b>${esc(CFG.next.t)}</b><p>${esc(CFG.next.d)}</p></div>
+  <details class="cred"><summary>画像の出典</summary><ul>${Object.keys(C).filter(k=>C[k].img&&PIC["ch_"+C[k].img]).map(k=>`<li>${esc(C[k].n)}：${esc(PIC["ch_"+C[k].img].cr)}</li>`).join("")}${Object.keys(PIC).filter(k=>!k.startsWith("ch_")).map(k=>`<li>${esc(PIC[k].cap)}：${esc(PIC[k].cr)}</li>`).join("")}<li>${esc(CFG.credit)}</li></ul></details>
   ${isFollower()?"":'<button class="ghost" id="endBack">◀ 本文に戻る</button><button class="ghost" id="again">最初から読む</button>'}`);
   if($("endBack"))$("endBack").onclick=()=>{$("ovRoot").innerHTML="";back();};
   if($("again"))$("again").onclick=()=>{if(SBR.on&&st.role==="host")SBR.clear();resetProgress();showTitle();};
@@ -601,10 +622,12 @@ const SBR={on:false,code:"",
   link(){return location.origin+location.pathname+"?room="+this.code;},
   /* 部屋ごとの読み進めた位置（本番DB history_novel_rooms を関数 hn_room_* 経由で。ホストが「終了」を押したときだけ消す） */
   saved:null,db:null,saveT:null,
+  /* 読み進めた位置は章ごと（鎌倉編は部屋番号そのまま、ほかの章は「章ID-番号」） */
+  key(){return CFG.room?(CFG.room+"-"+this.code).slice(0,32):this.code;},
   dbc(){return this.db||(this.db=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"hn-db"}}));},
-  async load(){try{const {data}=await this.dbc().rpc("hn_room_get",{p_room:this.code});this.saved=data||null;}catch(e){}},
-  save(sn){this.saved=sn;clearTimeout(this.saveT);this.saveT=setTimeout(()=>{this.dbc().rpc("hn_room_set",{p_room:this.code,p_state:sn}).then(()=>{},()=>{});},800);},
-  clear(){this.saved=null;clearTimeout(this.saveT);this.dbc().rpc("hn_room_clear",{p_room:this.code}).then(()=>{},()=>{});},
+  async load(){try{const {data}=await this.dbc().rpc("hn_room_get",{p_room:this.key()});this.saved=data||null;}catch(e){}},
+  save(sn){this.saved=sn;clearTimeout(this.saveT);this.saveT=setTimeout(()=>{this.dbc().rpc("hn_room_set",{p_room:this.key(),p_state:sn}).then(()=>{},()=>{});},800);},
+  clear(){this.saved=null;clearTimeout(this.saveT);this.dbc().rpc("hn_room_clear",{p_room:this.key()}).then(()=>{},()=>{});},
   async me(){
     let id=null,name="";
     try{name=(localStorage.getItem("hn-name")||localStorage.getItem("nb-name")||"").slice(0,12);}catch(e){}
@@ -616,7 +639,7 @@ const SBR={on:false,code:"",
     this.code=code;const me=this.me_=await this.me();
     const sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false,autoRefreshToken:false,storageKey:"hn-rt"},realtime:{heartbeatIntervalMs:15000}});
     const key=Math.random().toString(36).slice(2,10);
-    const ch=sb.channel("history-novel:"+code,{config:{presence:{key},broadcast:{self:false}}});
+    const ch=sb.channel("history-novel:"+(CFG.room?CFG.room+":":"")+code,{config:{presence:{key},broadcast:{self:false}}});
     let cb=null,prev=new Set(),pres={},ready=false,seq=0;const over={};
     const emit=()=>{const s=ch.presenceState(),list=[];
       for(const k in s){const m=s[k][s[k].length-1]||{},o=over[k],pp=(o&&o.q>=(m.q||0))?o.p:(m.p||{});list.push({peer:k,kind:"viewer",sameTab:k===key,by:m.by||null,name:m.name||"",guest:!m.by&&m.name!=="ゲスト",presence:pp});}
@@ -647,10 +670,10 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");i
   }
   if(!window.supabase)return;
   /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。暗記大戦と同じ決まり */
-  const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,32);
+  const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,24);
   if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
   SBR.on=true;SBR.code=code;$("bRep").hidden=false;if(st.v==="title")renderTitleRoom();
   await SBR.load();if(st.v==="title")renderTitleRoom();
   await SBR.join(code);if(st.v==="title")renderTitleRoom();
 })();
-drawSnd();setScene(S[0].scene);mstate=Object.assign({c:[137,36],r:700,pins:[],blink:null,ar:[]},S[0].scene.m);buildOverlay();resize();showTitle();
+drawSnd();setScene(S[0].scene);mstate=Object.assign(HOME(),S[0].scene.m);buildOverlay();resize();showTitle();
