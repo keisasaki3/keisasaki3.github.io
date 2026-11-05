@@ -165,7 +165,7 @@ function updateMap(){
   mstate=ms;buildOverlay();if(camChanged)setTarget(false);
   drawPics();
 }
-$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}advance();});
+$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
 
 /* ---------- 土地の資料（右上の小窓、タップで拡大。各自の画面だけ） ---------- */
 let picKeys=[],picI=0;
