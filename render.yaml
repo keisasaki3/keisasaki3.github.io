@@ -6,7 +6,3 @@ services:
     runtime: static
     buildCommand: sh scripts/build-portal.sh
     staticPublishPath: ./dist
-    routes:
-      - type: redirect
-        source: /
-        destination: /life-quest/
