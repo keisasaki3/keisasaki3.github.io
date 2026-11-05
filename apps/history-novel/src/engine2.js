@@ -386,7 +386,7 @@ $("sheetRoot").addEventListener("click",e=>{
   const t=e.target.closest("[data-k]");if(t){st.sheet="term";openTerm(t.dataset.k,false);}
 });
 $("bGl").onclick=e=>{e.stopPropagation();st.sheet="gloss";st.stack=[];renderSheet();};
-$("bRoom").onclick=e=>{e.stopPropagation();if(!room&&SBR.on){SBR.invite();return;}st.sheet="room";st.stack=[];renderSheet();};
+$("bRoom").onclick=e=>{e.stopPropagation();st.sheet="room";st.stack=[];renderSheet();};
 $("bEnd").onclick=e=>{e.stopPropagation();if(isFollower()){roomAction("solo");}st.dug=new Set();resetProgress();showTitle();};
 $("novel").addEventListener("click",e=>{
   const t=e.target.closest(".term");if(t){e.stopPropagation();return openTerm(t.dataset.k,true);}
@@ -408,9 +408,10 @@ function showTitle(){
   $("ovRoot").innerHTML=`<div class="ov sel"><div class="sel-in">
    <h1 class="app-name"><b>SUPER</b>歴史ノベル</h1>
    <div class="sub">日本史をめぐる</div>
+   <div id="titleRoom"></div>
    <ol class="eras">${ERAS.map((e,j)=>e[3]?`<li><button class="era on" id="start"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">${e[2]}</span></button></li>`
      :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("")}</ol>
-   <div id="titleRoom"></div></div></div>`;
+   </div></div>`;
   renderTitleRoom();push();
 }
 function renderTitleRoom(){
@@ -420,10 +421,10 @@ function renderTitleRoom(){
     if(sb)sb.disabled=true;
     el.innerHTML=`<p class="muted">${esc(h?nameOf(h):"ホスト")}さんが始めるのを待っています　<button class="lnk" data-room="solo">ひとりで読む</button></p>`;
   }else{
-    if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();startReading();};}
-    el.innerHTML=(!room&&SBR.on)?`<p class="muted"><button class="lnk" data-room="invite">一緒に読む</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
+    if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");startReading();};}
+    el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}<p class="muted">部屋 <b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
   }
-  el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>b.dataset.room==="invite"?SBR.invite():roomAction(b.dataset.room));
+  el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomAction(b.dataset.room));
 }
 function showOrder(){
   const perm=st.perm;
@@ -504,12 +505,12 @@ function roomSheet(){
   else act=`${h?`<button class="go" data-room="follow">${esc(nameOf(h))}さんに合わせて読む</button>`:""}<button class="ghost" data-room="host">ホストになって一緒に読む</button>`;
   return `<div class="crumb"><span>参加者</span></div><div class="sh-body"><h2>いま開いている人 ${peers.filter(p=>p.kind==="viewer").length}</h2>
   <div class="glist">${list}</div><div style="display:grid;gap:8px;margin-top:14px">${act}</div>
-  ${SBR.code?`<p class="muted" style="margin-top:12px">招待は、このリンクを送るだけです。</p><div style="display:grid;gap:8px"><label class="muted" style="display:grid;gap:4px">あなたの名前<input data-myname maxlength="12" placeholder="ゲスト" value="${esc(SBR.me_&&SBR.me_.name!=="ゲスト"?SBR.me_.name:"")}" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"></label><input readonly value="${esc(SBR.link())}" onclick="this.select()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"><button class="go" data-invite="1">${navigator.share?"リンクを送る":"リンクをコピー"}</button></div>`:`<p class="muted" style="margin-top:12px">招待は、このページの共有メニューからできます。</p>`}</div>`;
+  ${SBR.code?`<p class="muted" style="margin-top:12px">同じ部屋番号のURLを開いた人と一緒に読めます。部屋番号 <b>${esc(SBR.code)}</b></p><div style="display:grid;gap:8px"><label class="muted" style="display:grid;gap:4px">あなたの名前<input data-myname maxlength="12" placeholder="ゲスト" value="${esc(SBR.me_&&SBR.me_.name!=="ゲスト"?SBR.me_.name:"")}" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"></label><input readonly value="${esc(SBR.link())}" onclick="this.select()" style="font:inherit;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink)"><button class="go" data-share="1">この部屋のURLをシェア</button></div>`:`<p class="muted" style="margin-top:12px">招待は、このページの共有メニューからできます。</p>`}</div>`;
 }
 function updateRoomUI(){
-  const b=$("bRoom");if(!room){b.hidden=!SBR.on;b.textContent="一緒に読む";b.classList.remove("on");return;}
+  const b=$("bRoom");if(!room){b.hidden=true;return;}
   b.hidden=false;const n=peers.filter(p=>p.kind==="viewer").length||1;
-  b.textContent=st.role==="host"?`参加者 ${n}・ホスト`:st.role==="follow"?`参加者 ${n}・同期中`:`参加者 ${n}`;
+  b.textContent=SBR.on?`部屋 ${SBR.code}・${n}人${st.role==="host"?"・ホスト":st.role==="follow"?"・同期中":""}`:st.role==="host"?`参加者 ${n}・ホスト`:st.role==="follow"?`参加者 ${n}・同期中`:`参加者 ${n}`;
   b.classList.toggle("on",st.role!=="solo");
 }
 async function resolveNames(){
@@ -524,16 +525,16 @@ function bindRoom(){
     if(ch.joined.length)await resolveNames();
     const h=hostPeer();
     if(st.role==="host"&&h&&!h.sameTab)roomAction("solo");
-    if(st.role==="solo"&&h&&!h.sameTab&&!st.autoAsked&&st.v==="title"){st.autoAsked=true;roomAction("follow");}
+    if(!SBR.on&&st.role==="solo"&&h&&!h.sameTab&&!st.autoAsked&&st.v==="title"){st.autoAsked=true;roomAction("follow");}
     if(st.role==="follow"&&h&&!h.sameTab)applyHost(h.presence.s);
     if(st.role==="host"&&ch.joined.length)push();
     updateRoomUI();if(st.sheet==="room"&&!(document.activeElement&&document.activeElement.matches("[data-myname]")))renderSheet();
     if(st.v==="title")renderTitleRoom();
   },()=>{room=null;updateRoomUI();});
 }
-/* ポータル版の「一緒に読む」: Supabase Realtime presence（表は使わない）。?yomu=あいことば で同じ部屋に入る。 */
+/* ポータル版の「一緒に読む」: Supabase Realtime（表は使わない）。?room=部屋番号 が同じ人どうしが同じ部屋。番号が無ければ6桁を割り振る。 */
 const SBR={on:false,code:"",
-  link(){return location.origin+location.pathname+"?yomu="+this.code;},
+  link(){return location.origin+location.pathname+"?room="+this.code;},
   async me(){
     let id=null,name="";
     try{name=(localStorage.getItem("hn-name")||localStorage.getItem("nb-name")||"").slice(0,12);}catch(e){}
@@ -560,20 +561,13 @@ const SBR={on:false,code:"",
     let tracked="";const slowTrack=()=>{clearTimeout(tT);const sig=JSON.stringify([pres.host||null,pres.ep||null]);if(sig===tracked)return;const w=1500-(Date.now()-lastT);if(w<=0){lastT=Date.now();tracked=sig;track().catch(()=>{tracked="";});}else tT=setTimeout(slowTrack,w);};
     room={presence(p){pres=p;seq=Date.now()*1000+(seq%1000+1);if(!ready)return Promise.resolve();ch.send({type:"broadcast",event:"p",payload:{k:key,q:seq,p}}).catch(()=>{});slowTrack();return Promise.resolve();},onPeers(f){cb=f;}};
     bindRoom();
-  },
-  async invite(){
-    if(room)return;
-    const code=Math.random().toString(36).slice(2,8);
-    try{history.replaceState(null,"",location.pathname+"?yomu="+code);}catch(e){}
-    await this.join(code);roomAction("host");
-    st.sheet="room";st.stack=[];renderSheet();
   }
 };
 const SB_URL="https://rjydvhpqfhmlvpsykwzf.supabase.co",SB_KEY="sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx";
 document.addEventListener("change",e=>{const t=e.target;if(!t.matches||!t.matches("[data-myname]")||!SBR.me_)return;const v=t.value.trim().slice(0,12);SBR.me_.name=v||"ゲスト";try{localStorage.setItem("hn-name",v);}catch(x){}SBR.retrack();},true);
-document.addEventListener("click",e=>{const b=e.target.closest("[data-invite]");if(!b)return;e.stopPropagation();const url=SBR.link();
-  if(navigator.share)navigator.share({title:"SUPER歴史ノベル",text:"一緒に読もう",url}).catch(()=>{});
-  else navigator.clipboard&&navigator.clipboard.writeText(url).then(()=>{b.textContent="コピーしました";},()=>{});},true);
+document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");if(!b)return;e.stopPropagation();const url=SBR.link();
+  if(navigator.share)navigator.share({title:"SUPER歴史ノベル",text:"部屋 "+SBR.code+" で一緒に読もう",url}).catch(()=>{});
+  else navigator.clipboard&&navigator.clipboard.writeText(url).then(()=>{b.textContent="コピーしました";setTimeout(()=>{b.textContent="この部屋のURLをシェア";},2000);},()=>{});},true);
 (async()=>{
   if(window.claude&&window.claude.use){
     try{user=await window.claude.use("user");}catch(e){}
@@ -582,8 +576,10 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-invite]");
     return;
   }
   if(!window.supabase)return;
-  SBR.on=true;updateRoomUI();if(st.v==="title")renderTitleRoom();
-  const code=(new URLSearchParams(location.search).get("yomu")||"").replace(/[^\w-]/g,"").slice(0,32);
-  if(code)await SBR.join(code);
+  /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。暗記大戦と同じ決まり */
+  const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,32);
+  if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
+  SBR.on=true;SBR.code=code;if(st.v==="title")renderTitleRoom();
+  await SBR.join(code);if(st.v==="title")renderTitleRoom();
 })();
 drawSnd();setScene(S[0].scene);mstate=Object.assign({c:[137,36],r:700,pins:[],blink:null,ar:[]},S[0].scene.m);buildOverlay();resize();showTitle();
