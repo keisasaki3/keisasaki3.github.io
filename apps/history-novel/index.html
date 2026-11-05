@@ -37,6 +37,7 @@ header{position:relative;display:flex;align-items:center;gap:12px;border-bottom:
 .prog{position:absolute;left:0;right:0;bottom:-1px;height:2px}
 .prog i{display:block;height:100%;width:0;background:var(--ink);transition:width .6s ease}
 @media (max-width:520px){.when .sep{display:none}.when .ev{flex-basis:100%}}
+header{flex-wrap:wrap;row-gap:6px}.when{min-width:13em}.menu{margin-left:auto}/* スマホで右のボタンが年号を押しつぶさないよう、狭いときはボタンを次の行へ（2026-11-05） */
 .menu{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .menu button{font-size:12.5px;padding:5px 9px;border:0;border-radius:4px;color:var(--muted);white-space:nowrap}
 .menu button:hover{color:var(--ink);background:var(--sea)}
@@ -260,6 +261,7 @@ header{padding-block:8px 12px}
 .when .era:not(:empty){background:var(--accent);color:#fff;border-radius:4px;padding:1px 8px;font-size:12.5px}
 .when .ev,.when .w{font-family:var(--u)}
 .menu button{font-family:var(--u);font-weight:700;border:2px solid var(--ink);border-radius:999px;color:var(--ink);padding:3px 11px;background:var(--paper)}
+@media (max-width:420px){.menu button{padding:3px 8px;font-size:12px}.menu{gap:3px}}
 .menu button:hover{background:var(--ink);color:var(--paper)}
 /* stage dots instead of a bar */
 .prog{left:16px;right:16px;bottom:5px;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
