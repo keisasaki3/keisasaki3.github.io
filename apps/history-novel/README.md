@@ -1,14 +1,14 @@
 # 歴史ノベル（地図×ノベル）設計メモ
 
 歴史の大きな流れを、地図の上で進むノベルとして読む試作。第一章「武士の世のはじまり」（1156 保元の乱〜1232 御成敗式目）。
-公開中の試作: https://claude.ai/artifact/Bhr6XrETWeC5qKs7brXnBf （なつめポータルにはまだ載せていない）
+公開: なつめポータル /history-novel/（2026-11-05〜）。Artifact版 https://claude.ai/artifact/Bhr6XrETWeC5qKs7brXnBf は「一緒に読む」が使える
 
 ## フォルダ
-- `bushi-no-yo.html` … ビルド済みの本体（1ファイル）。画像は `assets/` を相対参照
+- `index.html` … ビルド済みの本体（1ファイル）。なつめポータルの /history-novel/ で公開（src・faces・faces-src は公開しない）
 - `src/` … ビルド元。`build.py` が `tpl.html` に `G.js`（辞典）・`S.js`（台本）・`pic.js`（資料画像）・`engine2.js`・地図パスを差し込む
   - `crop.py` 肖像画から顔を切り抜く／`gen_pic.py` 資料画像と出典の生成／`rd.py` Retro Diffusion API 呼び出し
-  - スクリプト内のパスは作業環境のもの。使うときは書き換える
-- `assets/ch` 肖像画の顔切り抜き、`assets/pic` 土地の資料画像、`assets/terrain-*.jpg` 地形（`-d` は暗い画面用）
+  - `python3 src/build.py` で ../index.html を作る。crop.py・gen_pic.py・rd.py 内のパスは作業環境のもの
+- `ch/` 肖像画の顔切り抜き、`pic/` 土地の資料画像、`terrain-*.jpg` 地形（`-d` は暗い画面用）
 - `faces/<人物>/` … 経太さんが作った顔ドット絵を人物ごとに番号順で保管（採用前の試作も残す）
 - `faces-src/` … 顔ドット絵づくりの元画像とプロンプト（手順は同フォルダの README）
 - `TODO.md` … 検討中・作業中の項目
