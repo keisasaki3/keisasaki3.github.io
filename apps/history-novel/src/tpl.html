@@ -3,7 +3,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>SUPER歴史ノベル</title>
+<link rel="icon" type="image/png" sizes="32x32" href="app-icons/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="app-icons/favicon-16.png"><link rel="apple-touch-icon" href="app-icons/apple-touch-icon.png"><link rel="manifest" href="manifest.webmanifest"><meta name="apple-mobile-web-app-title" content="SUPER歴史">
 <meta name="claude:viewport-fit-sides" content="cover">
+<script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
 <style>
 /* Layout: three panes stacked. Header (year/era + menu), map stage (camera follows the script), novel pane (text + choices). */
@@ -193,7 +195,9 @@ header{position:relative;display:flex;align-items:center;gap:12px;border-bottom:
 .stats small{color:var(--muted);font-size:12px}
 .ov.sel{background:linear-gradient(90deg,var(--bg) 0,var(--bg) 34%,color-mix(in srgb,var(--bg) 70%,transparent) 60%,transparent 100%);display:flex;align-items:center}
 @media (max-width:640px){.ov.sel{background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 92%,transparent),color-mix(in srgb,var(--bg) 80%,transparent))}}
-.sel-in{width:100%;max-width:1100px;margin:0 auto;display:grid;gap:22px}
+.sel-in{width:100%;max-width:1100px;margin:auto;display:grid;gap:22px}
+.ov.sel{overflow-y:auto}
+#titleRoom p{margin:0}#titleRoom:empty{display:none}
 .sel .sub{font-size:12px;letter-spacing:.3em;color:var(--muted)}
 .eras{list-style:none;margin:0;padding:0;display:grid;gap:2px;max-width:420px;counter-reset:e}
 .eras .era{width:100%;display:grid;grid-template-columns:5.5em 7.5em 1fr;align-items:baseline;gap:10px;text-align:left;padding:9px 0;border-bottom:1px solid var(--line)}
