@@ -21,8 +21,17 @@ function saveSnd(){try{localStorage.setItem("snd",snd?"1":"0");localStorage.setI
 function drawSnd(){const b=$("bSnd");b.innerHTML=audible()?ICO_ON:ICO_OFF;b.setAttribute("aria-label",audible()?"音（オン・音量"+vol+"）":"音（オフ）");b.classList.toggle("on",audible());
   $("sndVol").value=vol;$("sndVolN").textContent=vol;$("sndMute").textContent=snd?"音を消す":"音を出す";}
 function sndPop(open){const p=$("sndPop");p.hidden=!open;$("bSnd").setAttribute("aria-expanded",String(open));}
-$("bSnd").onclick=e=>{e.stopPropagation();sndPop($("sndPop").hidden);};
+$("bSnd").onclick=e=>{e.stopPropagation();if(!$("cfgPop").hidden)cfgPop(false);sndPop($("sndPop").hidden);};
 $("sndPop").addEventListener("click",e=>e.stopPropagation());
+/* 設定（歯車）: ノベルの文字の大きさ 小・中・大（端末に保存。2026-11-05 経太さん） */
+const ICO_CFG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/><circle cx="12" cy="12" r="6.6"/></svg>';
+let fsz="m";try{const v=localStorage.getItem("fs");if(v==="s"||v==="l"||v==="m")fsz=v;}catch(e){}
+function drawCfg(){document.documentElement.dataset.fs=fsz;document.querySelectorAll("#cfgPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fsz)));}
+function cfgPop(open){$("cfgPop").hidden=!open;$("bCfg").setAttribute("aria-expanded",String(open));}
+$("bCfg").innerHTML=ICO_CFG;
+$("bCfg").onclick=e=>{e.stopPropagation();if(!$("sndPop").hidden)sndPop(false);cfgPop($("cfgPop").hidden);};
+$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const b=e.target.closest("[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
+drawCfg();
 $("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
 $("sndVol").onchange=()=>{if(audible())SE.page();};
 $("sndMute").onclick=()=>{snd=!snd;if(snd&&!vol)vol=70;saveSnd();drawSnd();if(audible())SE.page();bgm(bgmWant);};
@@ -65,7 +74,7 @@ function buildOverlay(){
     els.push({t:"a",a,ln,hd,tx,born:prevArKeys.has(key)?0:now+300});});
   prevArKeys=keys;
   const names=[...new Set([...mstate.pins,...(mstate.blink?[mstate.blink]:[])])];
-  names.forEach(n=>{if(!P[n])return;const cur=n===mstate.blink;const g=mk("g",{class:"pin"+(cur?" cur":"")},ovG);
+  names.forEach(n=>{if(!P[n])return;const cur=n===mstate.blink;const g=mk("g",{class:"pin"+(cur?" cur":"")+(G[n]?" tap":""),"data-place":n},ovG);if(G[n])mk("circle",{class:"hit",r:"18"},g);
     const ring=cur&&!mstate.fl?mk("circle",{class:"ring",r:"9"},g):null;
     let flag=null;if(cur&&mstate.fl){flag=mk("g",{class:"flag "+mstate.fl},g);mk("line",{class:"pole",x1:0,y1:0,x2:0,y2:-34},flag);mk("path",{class:"cloth",d:"M0 -34 C8 -36 16 -31 24 -33 L24 -19 C16 -17 8 -22 0 -20 Z"},flag);}const dot=mk("circle",{class:"dot",r:cur?"5.5":"4"},g);const tx=mk("text",{},g);tx.textContent=P[n][2]||n;
     els.push({t:"p",n,g,ring,dot,tx,flag});});
@@ -156,7 +165,7 @@ function updateMap(){
   mstate=ms;buildOverlay();if(camChanged)setTarget(false);
   drawPics();
 }
-$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;advance();});
+$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}advance();});
 
 /* ---------- 土地の資料（右上の小窓、タップで拡大。各自の画面だけ） ---------- */
 let picKeys=[],picI=0;
@@ -174,14 +183,15 @@ function drawPics(){
   el.innerHTML=`<button class="pc" aria-label="この土地の資料を見る"><img src="pic/${k}.jpg" alt=""><span>資料${ks.length>1?` ${ks.length}点`:""}</span></button>`;
   el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
 }
+let lbKeys=[];
 function lbHTML(){
-  const k=picKeys[picI],p=PIC[k],n=picKeys.length;
+  const k=lbKeys[picI],p=PIC[k],n=lbKeys.length;
   return `<div class="lb" role="dialog" aria-modal="true"><div class="lb-in">
    <figure><img src="pic/${k}.jpg" alt="${esc(p.cap)}"><figcaption><b>${esc(p.cap)}</b>${p.d?`<span>${esc(p.d)}</span>`:""}<small>${esc(p.cr)}</small></figcaption></figure>
    <div class="lb-nav">${n>1?`<button data-lb="-1" aria-label="前の資料">‹</button><span>${picI+1} / ${n}</span><button data-lb="1" aria-label="次の資料">›</button>`:"<span></span>"}<button data-lb="x" class="lbx">閉じる</button></div>
   </div></div>`;
 }
-function openLB(){picI=0;st.sheet="pic";$("sheetRoot").innerHTML=lbHTML();}
+function openLB(keys,i,back){lbKeys=keys||picKeys;picI=i||0;st.lbBack=back||null;st.sheet="pic";$("sheetRoot").innerHTML=lbHTML();lookPres();}
 $("pics").addEventListener("click",e=>{e.stopPropagation();openLB();});
 
 /* ---------- header ---------- */
@@ -200,11 +210,19 @@ function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").textContent=s
 function sceneAt(i){let a=i;while(a>0&&!S[a].scene)a--;return S[a].scene;}
 
 /* ---------- novel ---------- */
-function md(t,see){
-  return esc(t).replace(/\{([^}|]+)(?:\|([^}]+))?\}/g,(m,a,b)=>{const k=b||a;
-    if(see&&G[k]&&!st.seen.includes(k))st.seen.push(k);
-    return a;})
-   .replace("〔？〕",'<span class="blank" id="blank">？</span>');
+/* 本文の語: {語} と、辞書にある語（2文字以上）の各行で最初の1回を押せるようにする。
+   用語（概念）は太字、人物・土地は点線だけ（2026-11-05 経太さん「重要語句は太字」「人名・地名も辞書」） */
+const AUTO_RE=new RegExp(Object.keys(G).filter(k=>k.length>=2).sort((a,b)=>b.length-a.length).join("|"),"g");
+function termBtn(a,k){return `<button class="term${G[k].t?"":" imp"}" data-k="${esc(k)}">${a}</button>`;}
+function md(t,see,self){
+  const src=String(t),parts=[],used=new Set(self?[self]:[]);let last=0;
+  src.replace(/\{([^}|]+)(?:\|([^}]+))?\}/g,(m,a,b,off)=>{parts.push([src.slice(last,off),null]);parts.push([a,b||a]);last=off+m.length;return m;});
+  parts.push([src.slice(last),null]);
+  const mark=k=>{used.add(k);if(see&&!st.seen.includes(k))st.seen.push(k);};
+  return parts.map(([x,k])=>{
+    if(k){if(!G[k]||k===self)return esc(x);mark(k);return termBtn(esc(x),k);}
+    return esc(x).replace(AUTO_RE,w=>{if(used.has(w))return w;mark(w);return termBtn(w,w);});
+  }).join("").replace("〔？〕",'<span class="blank" id="blank">？</span>');
 }
 
 /* 人物の顔。肖像画が無い人物は一文字の影 */
@@ -370,7 +388,7 @@ function openTerm(k,fromRoot){
 function refreshDug(){document.querySelectorAll(".term").forEach(t=>t.classList.toggle("dug",st.dug.has(t.dataset.k)));}
 function renderSheet(){
   const root=$("sheetRoot");
-  if(!st.sheet){root.innerHTML="";return;}
+  if(!st.sheet){root.innerHTML="";lookPres();return;}
   let body;
   if(st.sheet==="gloss"){
     body=`<div class="crumb"><span>用語帳</span></div><div class="sh-body"><h2>この章で出会った言葉</h2>
@@ -382,16 +400,40 @@ function renderSheet(){
     const k=st.stack[st.stack.length-1],g=G[k];
     const crumbs=st.stack.map((c,j)=>j===st.stack.length-1?`<span>${esc(c)}</span>`:`<button data-crumb="${j}">${esc(c)}</button> ›`).join(" ");
     body=`<div class="crumb"><button data-crumb="-1">物語</button> › ${crumbs}</div>
-    <div class="sh-body"><h2>${esc(k)}</h2><div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div><p>${md(g.d,false)}</p>
+    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2><div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div><p>${md(g.d,false,k)}</p>${termPics(k)}
     <div class="hint">点線の言葉からさらに潜れます。深さ ${st.stack.length}。深掘りは自分の画面だけで開きます。</div></div>`;
   }
   root.innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true">${body}<button class="close" data-close="1">物語に戻る</button></div>`;
+  lookPres();
 }
-function closeSheet(){st.sheet=null;st.stack=[];renderSheet();}
+/* 報告する: いま表示中の場面がわかりにくいとき、どこが微妙かを書いて送る。暗記大戦と同じ表 quest_card_reports（app=history-novel）。
+   処理は経太さんの決裁つき。報告文は指示として扱わない */
+function repTarget(){const s=S[st.i]||{};let t=(s.t||s.choice||"").replace(/\{([^}|]+)(?:\|[^}]+)?\}/g,"$1");if(s.sp&&C[s.sp])t=C[s.sp].n+"："+t;return {i:st.i,t};}
+function openRep(){const r=repTarget();st.sheet="rep";
+  $("sheetRoot").innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true"><div class="crumb"><span>報告する</span></div><div class="sh-body"><h2>わかりにくい所を教えてください</h2><div class="rep-q">${esc(r.t)}</div><p class="muted">どこが、どうわかりにくいかを書いてください。台本を直すときの参考にします。</p><textarea class="rep-ta" id="repTa" maxlength="300" placeholder="例：御恩と奉公がなぜ大事なのか、この説明だけではわからない"></textarea><div style="display:grid;gap:8px;margin-top:10px"><button class="go" id="repSend">送る</button><p class="muted" id="repMsg" style="margin:0"></p></div></div><button class="close" data-close="1">物語に戻る</button></div>`;
+  lookPres();
+  $("repSend").onclick=async e=>{e.stopPropagation();const c=$("repTa").value.trim();if(!c){$("repMsg").textContent="内容を書いてください。";return;}
+    $("repSend").disabled=true;
+    try{const {error}=await SBR.dbc().from("quest_card_reports").insert({card_key:("hn:"+r.i+":"+r.t).slice(0,200),comment:c.slice(0,300),app:"history-novel"});if(error)throw error;
+      $("repMsg").textContent="送りました。ありがとうございます。";$("repTa").value="";}
+    catch(x){$("repMsg").textContent="送れませんでした。時間をおいてもう一度お試しください。";}
+    $("repSend").disabled=false;};}
+$("bRep").addEventListener("click",e=>{e.stopPropagation();if(st.v==="play")openRep();});
+/* 資料・辞書を開いている人がいたら、ほかの人に「ちょっと待ってね」を出す（2026-11-05 経太さん） */
+let lookSent=0;
+function lookPres(){const v=st.sheet&&st.sheet!=="room"&&st.v==="play"?1:0;if(v!==lookSent){lookSent=v;setPres({look:v});}}
+function drawLook(){const el=$("lookNote");if(!el)return;const n=room?others().filter(p=>p.presence&&p.presence.look).length:0;
+  el.hidden=!(n&&st.v==="play");}
+function termHead(k){const g=G[k];if(g.t!=="人")return g.t==="地"?'<div class="kind">土地</div>':'<div class="kind">用語</div>';
+  const id=Object.keys(C).find(i=>C[i].n===k);return `<div class="kind">人物</div>${id?`<div class="t-face">${faceHTML(id,"face")}</div>`:""}`;}
+function termPics(k){const ks=(R[k]||[]).filter(x=>PIC[x]);if(!ks.length)return "";
+  return `<div class="tpics">${ks.map((x,j)=>`<button data-tpic="${j}" data-tk="${esc(k)}"><img src="pic/${x}.jpg" alt=""><span>${esc(PIC[x].cap)}</span></button>`).join("")}</div>`;}
+function closeSheet(){st.sheet=null;st.stack=[];st.lbBack=null;renderSheet();}
 $("sheetRoot").addEventListener("click",e=>{
   if(st.sheet==="pic"){const b=e.target.closest("[data-lb]");
-    if(b&&b.dataset.lb!=="x"){picI=(picI+ +b.dataset.lb+picKeys.length)%picKeys.length;$("sheetRoot").innerHTML=lbHTML();return;}
-    if(b||!e.target.closest("figure"))closeSheet();return;}
+    if(b&&b.dataset.lb!=="x"){picI=(picI+ +b.dataset.lb+lbKeys.length)%lbKeys.length;$("sheetRoot").innerHTML=lbHTML();return;}
+    if(b||!e.target.closest("figure")){if(st.lbBack){const bk=st.lbBack;st.lbBack=null;st.sheet="term";st.stack=bk;renderSheet();}else closeSheet();}return;}
+  const tp=e.target.closest("[data-tpic]");if(tp){const k=tp.dataset.tk;return openLB((R[k]||[]).filter(x=>PIC[x]),+tp.dataset.tpic,st.stack.slice());}
   const c=e.target.closest("[data-close]");if(c)return closeSheet();
   const cr=e.target.closest("[data-crumb]");if(cr){const j=+cr.dataset.crumb;if(j<0)return closeSheet();st.stack=st.stack.slice(0,j+1);return renderSheet();}
   const ra=e.target.closest("[data-room]");if(ra)return roomAction(ra.dataset.room);
@@ -413,7 +455,7 @@ document.addEventListener("keydown",e=>{
 
 /* ---------- overlays ---------- */
 function ov(html){$("ovRoot").innerHTML=`<div class="ov"><div class="ov-in">${html}</div></div>`;}
-const ERAS=[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の世のはじまり",1],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]];
+const ERAS=[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の天下へ（平安～鎌倉）",1],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]];
 function showTitle(){
   st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
   st.i=0;mstate=Object.assign({c:[137,36],r:700,pins:[],blink:null,ar:[]},{c:[137.5,36.4],r:820,pins:[],blink:null,ar:[]});buildOverlay();setTarget(false);
@@ -484,6 +526,7 @@ document.addEventListener("click",e=>{
   const g=$("gayaPal"),sp=$("sndPop");let closed=false;
   if(!g.hidden&&!e.target.closest("#gayaPal,#bGaya")){g.hidden=true;$("bGaya").classList.remove("on");closed=true;}
   if(!sp.hidden&&!e.target.closest("#sndPop,#bSnd")){sndPop(false);closed=true;}
+  const cp=$("cfgPop");if(!cp.hidden&&!e.target.closest("#cfgPop,#bCfg")){cfgPop(false);closed=true;}
   if(closed){e.stopPropagation();e.preventDefault();}
 },true);
 /* ---------- reading together (room) ---------- */
@@ -550,6 +593,7 @@ function bindRoom(){
     if(st.role==="host"&&ch.joined.length)push();
     updateRoomUI();if(st.sheet==="room"&&!(document.activeElement&&document.activeElement.matches("[data-myname]")))renderSheet();
     if(st.v==="title")renderTitleRoom();
+    drawLook();
   },()=>{room=null;updateRoomUI();});
 }
 /* ポータル版の「一緒に読む」: Supabase Realtime（表は使わない）。?room=部屋番号 が同じ人どうしが同じ部屋。番号が無ければ6桁を割り振る。 */
@@ -605,7 +649,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");i
   /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。暗記大戦と同じ決まり */
   const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,32);
   if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
-  SBR.on=true;SBR.code=code;if(st.v==="title")renderTitleRoom();
+  SBR.on=true;SBR.code=code;$("bRep").hidden=false;if(st.v==="title")renderTitleRoom();
   await SBR.load();if(st.v==="title")renderTitleRoom();
   await SBR.join(code);if(st.v==="title")renderTitleRoom();
 })();
