@@ -7,7 +7,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="hn.css?v=96822351">
+<link rel="stylesheet" href="hn.css?v=cd96821e">
 
 <div class="app">
   <header>
@@ -34,6 +34,7 @@
     <div class="gayaLayer" id="gayaLayer"></div>
     <div class="card" id="card"></div>
     <div class="pics" id="pics"></div>
+    <button class="bhome" id="bHome" hidden aria-label="地図を元の位置に戻す">元の位置</button>
   </div>
   <div class="novel" id="novel">
     <div class="page" id="page"><div class="col">
@@ -210,7 +211,7 @@ const S0=[
 {t:"だがふしぎな話だ。スペインもポルトガルも、ヨーロッパの西の端にある小さな国にすぎない。もっと大きな船を、もっとたくさん持っていた国がほかにあったのに。\nなぜ、世界の海をつないだのは彼らだったのか。"},
 {t:"話は100年あまり前、海の向こうの大帝国、中国にさかのぼる。",m:{c:[110,20],r:2600,clear:1,pins:["南京"],blink:"南京",fl:"r"}},
 
-{scene:{y:1405,bgm:"ming",w:"日本は室町時代",era:"明（中国）",e:"鄭和の大艦隊",m:{c:[85,12],r:2700,pins:["南京"],blink:"南京",fl:"r"}}},
+{scene:{y:1405,bgm:"ming",w:"日本は室町時代",era:"明（中国）",e:"鄭和の大艦隊",m:{c:[80,14],r:2700,fw:4500,pins:["南京"],blink:"南京",fl:"r"}}},
 {t:"1405年、{明}の都、南京。{永楽帝}の命を受けて、巨大な艦隊が出発した。率いるのは{鄭和}。"},
 {t:"大きな船は60隻あまり。乗りこんだのは2万7000人をこえる。一番大きな船は長さ100メートルをこえたともいわれる。",n:"船の大きさには、もっと小さかったという説もある。それでも当時の世界で最大級の艦隊だったことは確か。"},
 {sp:"zhenghe",t:"「天に届く大波も、山のごとき荒波も…\nわが帆は高く張られ、昼も夜も星のように駆ける」"},
@@ -224,7 +225,7 @@ const S0=[
 {who:"明の朝廷の決断",choice:"艦隊は金を食う。北の国境は危うい。明の朝廷は——",a:1,
  hm:{c:[112,36],r:1000,blink:"南京",fl:"r"},
  o:[
- {t:"「海の向こうへ、さらに船を出し続けよ」",im:{c:[85,12],r:2700,blink:"南京",ar:[{p:["マラッカ",[80,-5],[50,-20],[30,-36],[15,-30]],s:"if",l:"アフリカの先へ（IF）"}]},ifr:[
+ {t:"「海の向こうへ、さらに船を出し続けよ」",im:{c:[80,14],r:2700,fw:4500,blink:"南京",ar:[{p:["マラッカ",[80,-5],[50,-20],[30,-36],[15,-30]],s:"if",l:"アフリカの先へ（IF）"}]},ifr:[
   "艦隊はふたたび南の海へ。今度はアフリカ東岸からさらに南、まだ誰も知らない海の先をめざした。",
   "ところが、船を造るたびに国の蔵が空になっていく。しかも持ち帰るのはキリンや宝石ばかり。もうけにはならない。",
   "そのあいだに、北の守りが手薄になった。",
@@ -241,7 +242,7 @@ const S0=[
 {t:"とくにコショウなどの香辛料は、インドや東南アジアでしかとれない。アラビアの商人、そして{ヴェネツィア}の商人の手を何度も通り、ヨーロッパに着くころには何倍もの値段になっていた。",
  m:{c:[45,25],r:2000,clear:1,pins:["カリカット","アレクサンドリア","ヴェネツィア","コンスタンティノープル"],blink:"ヴェネツィア",fl:null,ar:[{p:["カリカット",[60,14],[44,12],[38,21],[33.6,28],"アレクサンドリア"],s:"o",l:"イスラーム商人"},{p:["アレクサンドリア",[22,35],"ヴェネツィア"],s:"o",l:"ヴェネツィア商人"}]}},
 {t:"それなら、間の商人を通さず、アフリカを回って自分で取りに行けばいい。誰も見たことのない海の道を探す、気の遠くなる計画だった。",
- m:{c:[-5,10],r:2900,clear:1,blink:"リスボン",fl:"pt",ar:[{p:["リスボン",[-18,20],[-10,0],[5,-20],[20,-36],[45,-20],[60,5],"カリカット"],s:"if",l:"アフリカを回れば？"}]}},
+ m:{c:[28,1],r:4300,fw:4800,clear:1,blink:"リスボン",fl:"pt",ar:[{p:["リスボン",[-18,20],[-10,0],[5,-20],[20,-36],[45,-20],[60,5],"カリカット"],s:"if",l:"アフリカを回れば？"}]}},
 {scene:{y:1434,bgm:"sea",w:"日本は室町時代",era:"大航海時代",e:"ボジャドール岬",m:{c:[-12,31],r:700,pins:["リスボン","ボジャドール岬"],blink:"ボジャドール岬",fl:"pt"}}},
 {t:"エンリケは毎年のように船を南へ送った。だが船乗りたちは、{ボジャドール岬}の先へ進もうとしない。"},
 {t:"岬の先は海が煮えたぎり、二度と戻れない「暗黒の海」だと信じられていたからだ。十数年のあいだ、どの船も引き返した。"},
@@ -302,7 +303,7 @@ const S0=[
 {t:"1500年、インドへ向かうポルトガルの{カブラル}の船隊が、大きく西に回りすぎて南アメリカの陸地に着いた。線の東側だ。こうして{ブラジル}はポルトガル領になった。南アメリカで、ブラジルだけがポルトガル語を話すのはこのためだ。",
  m:{pins:["ブラジル"],blink:"ブラジル",fl:"pt",ar:[{p:["リスボン",[-22,15],[-30,-5],"ブラジル"],s:"s",l:"カブラル"}]}},
 
-{scene:{y:1498,bgm:"sea",w:"日本は室町時代",era:"大航海時代",e:"インドへ",m:{c:[25,-5],r:3000,pins:["リスボン","喜望峰","マリンディ","カリカット"],blink:"カリカット",fl:"pt"}}},
+{scene:{y:1498,bgm:"sea",w:"日本は室町時代",era:"大航海時代",e:"インドへ",m:{c:[33,2],r:3900,fw:4400,pins:["リスボン","喜望峰","マリンディ","カリカット"],blink:"カリカット",fl:"pt"}}},
 {t:"そのころポルトガルは、ついにアフリカ回りの道を完成させていた。1497年、{ヴァスコ・ダ・ガマ}の船隊がリスボンを出る。",
  m:{ar:[{p:["リスボン","ヴェルデ岬",[-25,-12],[2,-32],"喜望峰",[36,-24],"マリンディ",[60,8],"カリカット"],s:"s",l:"ヴァスコ・ダ・ガマ"}]}},
 {t:"喜望峰を回り、アフリカ東岸のマリンディで、インド洋をよく知る水先案内人を雇った。1498年5月、船はインドの{カリカット}に着いた。",m:{c:[60,0],r:1400}},
@@ -310,9 +311,9 @@ const S0=[
 {sp:"tunis",t:"「なんてこった！　いったい何しに来やがった！」"},
 {sp:"dagama",t:"「キリスト教徒と…\n香辛料を求めて来たのだ」"},
 {t:"商人がおどろいたのも無理はない。インド洋には、アラビアやインドの商人たちの大きな貿易の網が、とうに広がっていた。ポルトガルは、そこへ遅れてやってきた新顔だった。"},
-{t:"それでも、持ち帰った香辛料は航海の費用の何十倍にもなったと伝わる。間の商人を通さない道が、ついに開けたのだ。",m:{c:[25,-5],r:3000}},
+{t:"それでも、持ち帰った香辛料は航海の費用の何十倍にもなったと伝わる。間の商人を通さない道が、ついに開けたのだ。",m:{c:[33,2],r:3900,fw:4400}},
 {t:"ポルトガルは大砲を積んだ船で港を攻め、要塞を築いていった。1510年に{ゴア}、1511年に{マラッカ}。香辛料の島、{モルッカ諸島}にも手を伸ばす。広い土地ではなく、港と港を結ぶ「点と線」の帝国だった。",
- m:{c:[90,8],r:1900,clear:1,pins:["ゴア","マラッカ","モルッカ諸島","ホルムズ"],blink:"マラッカ",fl:"pt",ar:[{p:["ゴア",[90,4],"マラッカ"],s:"s",l:""},{p:["マラッカ",[115,-3],"モルッカ諸島"],s:"s",l:"香辛料の島へ"},{p:["ゴア",[63,20],"ホルムズ"],s:"s",l:""}]}},
+ m:{c:[100,5],r:1900,fw:2900,clear:1,pins:["ゴア","マラッカ","モルッカ諸島","ホルムズ"],blink:"マラッカ",fl:"pt",ar:[{p:["ゴア",[90,4],"マラッカ"],s:"s",l:""},{p:["マラッカ",[115,-3],"モルッカ諸島"],s:"s",l:"香辛料の島へ"},{p:["ゴア",[63,20],"ホルムズ"],s:"s",l:""}]}},
 
 {scene:{y:1519,bgm:"sea",w:"日本は戦国時代",era:"大航海時代",e:"マゼランの船隊",m:{c:[-40,-10],r:3200,pins:["サンルーカル"],blink:"サンルーカル",fl:"es"}}},
 {t:"東回りの道は、ポルトガルに押さえられた。スペインに残された道は、西だけだ。"},
@@ -332,7 +333,7 @@ const S0=[
  {t:"「進む。海峡の向こうには、必ず海がある」",h:1}],
  fb:"マゼランは進んだ。抜けた先には、おだやかな海が広がっていた。マゼランはこの海を「太平洋（静かな海）」と名づけた。"},
 {t:"だが、{太平洋}は誰の想像よりも広かった。3か月以上、人の住む島にたどり着けない。船隊に加わっていたイタリア人、{ピガフェッタ}が記録を残している。",
- m:{c:[-150,-10],r:3200,clear:1,pins:["マゼラン海峡","マクタン島"],blink:null,ar:[{p:["マゼラン海峡",[-80,-48],[-110,-25],[-160,-5],[-215,13.4],"マクタン島"],s:"s",l:"太平洋横断"}]}},
+ m:{c:[-153,-10],r:3200,fw:8800,clear:1,pins:["マゼラン海峡","マクタン島"],blink:null,ar:[{p:["マゼラン海峡",[-80,-48],[-110,-25],[-160,-5],[-215,13.4],"マクタン島"],s:"s",l:"太平洋横断"}]}},
 {sp:"pigafetta",t:"「虫だらけの粉と化したビスケットを食べ…\n帆桁を包む牛の皮まで煮て食べた。\nネズミが半ドゥカートで売り買いされた」"},
 {t:"1521年3月、ようやくフィリピンの島々に着いた。ところがマゼランは、{マクタン島}の首長{ラプラプ}と戦い、命を落とす。",m:{c:"マクタン島",r:420,blink:"マクタン島",fl:"k"}},
 {t:"残った船乗りは、{エルカーノ}を中心にモルッカ諸島で香辛料を積み、そこから先は西へ。ポルトガルの船を避けながら、インド洋を渡り、喜望峰を回った。",
@@ -379,17 +380,17 @@ const S0=[
 {t:"ポルトガルの船は東アジアの海にも入りこんだ。1543年、中国人の船に乗ったポルトガル人が、九州の南の{種子島}に流れ着く。",
  m:{ar:[{p:["マラッカ",[110,12],[122,24],"種子島"],s:"s",l:"ポルトガル人"}]}},
 {t:"彼らが持っていた{鉄砲}を、島の領主は大金で買い取った。鉄砲はやがて日本中に広まり、戦国時代の戦い方を変えていく。",m:{c:[131,31],r:180,blink:"種子島",pins:["鹿児島"]}},
-{t:"1549年には、{イエズス会}の宣教師{ザビエル}が{鹿児島}に上陸し、キリスト教を伝えた。日本も、大航海時代の海とつながったのだ。",m:{c:[110,15],r:2000,blink:"鹿児島",ar:[{p:["ゴア",[90,4],"マラッカ",[112,12],[124,26],"鹿児島"],s:"s",l:"ザビエル"}]}},
+{t:"1549年には、{イエズス会}の宣教師{ザビエル}が{鹿児島}に上陸し、キリスト教を伝えた。日本も、大航海時代の海とつながったのだ。",m:{c:[102,15],r:2000,fw:3000,blink:"鹿児島",ar:[{p:["ゴア",[90,4],"マラッカ",[112,12],[124,26],"鹿児島"],s:"s",l:"ザビエル"}]}},
 {sp:"xavier",t:"「この国の人々は、これまでに出会った中で\n最もすぐれた人々である。\n名誉を何より重んじる」"},
 
 {scene:{y:1545,bgm:"world",w:"日本は戦国時代",era:"大航海時代",e:"銀の山",m:{c:"ポトシ",r:300,pins:["ポトシ"],blink:"ポトシ",fl:"es"}}},
 {t:"1545年、アンデス山中の{ポトシ}で、山ごと銀でできているような大銀山が見つかった。",img:["d_potosi"]},
 {t:"掘ったのは、強制的に働かされた先住民だった。標高4000メートルをこえる高地の、暗く危ない坑道で、多くの人が命を落とした。"},
 {t:"掘り出された{銀}は、船でスペインへ運ばれた。ヨーロッパには銀があふれ、物の値段がどんどん上がっていく。{価格革命}だ。",
- m:{c:[-40,10],r:3200,pins:["ポトシ","パナマ","セビリャ"],blink:"セビリャ",ar:[{p:["ポトシ",[-72,-12],[-80,-2],"パナマ",[-72,15],[-50,25],[-25,33],"セビリャ"],s:"s",l:"銀"}]}},
+ m:{c:[-43,9],r:3300,fw:3900,pins:["ポトシ","パナマ","セビリャ"],blink:"セビリャ",ar:[{p:["ポトシ",[-72,-12],[-80,-2],"パナマ",[-72,15],[-50,25],[-25,33],"セビリャ"],s:"s",l:"銀"}]}},
 {t:"同じころ、ジャガイモ・トウモロコシ・トマト・トウガラシがアメリカ大陸から世界へ。馬・牛・小麦、そして病気がヨーロッパからアメリカ大陸へ。動物や作物の大移動が始まった。{コロンブス交換}と呼ばれる。",
  m:{ar:[{p:[[-70,0],[-40,25],[-10,35]],s:"o",l:"ジャガイモ・トウモロコシ"},{p:[[-12,30],[-40,10],[-62,-5]],s:"o",l:"馬・牛・小麦・天然痘"}]}},
-{scene:{y:1571,bgm:"world",w:"日本は戦国時代",era:"大航海時代",e:"太平洋の道",m:{c:[-170,20],r:2600,pins:["アカプルコ","マニラ"],blink:"マニラ",fl:"es"}}},
+{scene:{y:1571,bgm:"world",w:"日本は戦国時代",era:"大航海時代",e:"太平洋の道",m:{c:[-170,20],r:2600,fw:7400,pins:["アカプルコ","マニラ"],blink:"マニラ",fl:"es"}}},
 {t:"1571年、スペインはフィリピンに{マニラ}の町を築いた。メキシコの{アカプルコ}との間を、大きな帆船が毎年行き来するようになる。{ガレオン貿易}だ。",
  m:{ar:[{p:["アカプルコ",[-150,12],[-200,13],"マニラ"],s:"s",l:"銀"},{p:["マニラ",[-210,36],[-160,40],[-125,36],"アカプルコ"],s:"o",l:"絹・陶磁器"}]}},
 {t:"船が運んだのは、アメリカ大陸の銀。マニラで待っていたのは、絹や陶磁器を積んだ中国の商人たちだった。"},
@@ -407,4 +408,4 @@ const S=S0;
 const PIC={"ch_henrique": {"cap": "henrique", "cr": "Nuno Gonçalves／パブリックドメイン／Wikimedia Commons「Henry the Navigator1.jpg」"}, "ch_columbus": {"cap": "columbus", "cr": "Sebastiano del Piombo／パブリックドメイン／Wikimedia Commons「Portrait of a Man, Said to be Christopher Columbus.jpg」"}, "ch_dagama": {"cap": "dagama", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Vasco da Gama (Livro de Lisuarte de Abreu).jpg」"}, "ch_magellan": {"cap": "magellan", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Ferdinand Magellan.jpg」"}, "ch_isabel": {"cap": "isabel", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「IsabellaofCastile03.jpg」"}, "ch_joao2": {"cap": "joao2", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「IOANNES QVARTVS PORTVGALIAE REX (Kunsthistorisches Museum).png」"}, "ch_cortes": {"cap": "cortes", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Retrato de Hernán Cortés.jpg」"}, "ch_moctezuma": {"cap": "moctezuma", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Moctezuma Mendoza.jpg」"}, "ch_pizarro": {"cap": "pizarro", "cr": "Amable-Paul Coutan／パブリックドメイン／Wikimedia Commons「Portrait of Francisco Pizarro.jpg」"}, "ch_atahualpa": {"cap": "atahualpa", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Atahuallpa, Inca XIIII From Berlin Ethnologisches Museum, Staatliche Museen, Berlin, Germany.png」"}, "ch_lascasas": {"cap": "lascasas", "cr": "作者不詳 / Unidentified painter／パブリックドメイン／Wikimedia Commons「Fray Bartolomé de las Casas.jpg」"}, "ch_xavier": {"cap": "xavier", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Franciscus de Xabier.jpg」"}, "ch_elcano": {"cap": "elcano", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Juan Sebastián Elcano, anonymous 19th century painting.jpg」"}, "ch_pigafetta": {"cap": "pigafetta", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「Antonio pigafetta.png」"}, "d_giraffe": {"cap": "沈度「瑞応麒麟図」", "d": "1414年、ベンガルの使節が明の永楽帝に献上したキリンを描いた絵。キリンはもとはアフリカ東岸から運ばれた。中国では伝説の聖獣「麒麟」とみなされた", "cr": "Shen Du (沈度, 1357–1434)／パブリックドメイン／Wikimedia Commons「Tribute Giraffe with Attendant.jpg」"}, "p_belem": {"cap": "ベレンの塔（リスボン）", "d": "16世紀はじめ、テージョ川の入り口を守るために建てられた塔。インドへ向かう船はこの前を通って出ていった", "cr": "Alvesgaspar／CC BY-SA 3.0／Wikimedia Commons「Torre Belém April 2009-4a.jpg」"}, "d_caravel": {"cap": "ピンタ号の複製船", "d": "コロンブスの第1回航海に加わったカラベル船。三角帆と四角い帆を組み合わせている（スペイン・パロスの復元船）", "cr": "Miguel Ángel \"fotógrafo\"／CC BY-SA 2.5／Wikimedia Commons「LaPinta.jpg」"}, "p_cape": {"cap": "喜望峰の近く（ケープ半島）", "d": "アフリカ大陸の南西の端。ディアスはこのあたりで嵐にあい、気づかないうちにアフリカの南端を回っていた", "cr": "Diego Delso／CC BY-SA 4.0／Wikimedia Commons「Playa Dias, Cape Point, Sudáfrica, 2018-07-23, DD 103.jpg」"}, "d_landing": {"cap": "ジョン・ヴァンダーリン「コロンブスの上陸」", "d": "1847年に描かれた想像の絵。アメリカ合衆国議会議事堂に飾られている", "cr": "John Vanderlyn／パブリックドメイン／Wikimedia Commons「Landing of Columbus (2) (cropped).jpg」"}, "d_calicut": {"cap": "ブラウンとホーヘンベルフ「カリカット」", "d": "1572年に出版された都市図集の一枚。港には多くの船が並んでいる", "cr": "BRAUN AND HOGENBERG／パブリックドメイン／Wikimedia Commons「Calicut 1572.jpg」"}, "d_cantino": {"cap": "カンティーノ図（1502年）", "d": "ポルトガルの最新の航海の成果を描いた世界地図。大西洋を南北に走る線がトルデシリャス条約の境界線。左側にブラジルの海岸も見える", "cr": "作者不詳 Portuguese (1502)／パブリックドメイン／Wikimedia Commons「Cantino planisphere (1502).jpg」"}, "p_strait": {"cap": "マゼラン海峡（人工衛星写真）", "d": "南アメリカ大陸の南の端。入り組んだ水路が大西洋と太平洋を結んでいる", "cr": "Jacques Descloitres, MODIS Rapid Response Team, NASA/GSFC／パブリックドメイン／Wikimedia Commons「StraitOfMagellan.jpg」"}, "d_tenochtitlan": {"cap": "テノチティトランの復元図", "d": "湖の島の上に広がる都を、研究をもとにコンピューターで描いた現代の想像図", "cr": "thomas kole／CC BY 4.0／Wikimedia Commons「Vista completa de Tenochtitlán.jpg」"}, "p_cusco": {"cap": "クスコのアルマス広場", "d": "インカの都の中心だった広場。インカの建物を壊し、その石の上にスペイン人が大聖堂を建てた", "cr": "Sucram Yef／CC BY 2.0／Wikimedia Commons「Cusco Plaza de Armas.jpg」"}, "p_cajamarca": {"cap": "身代金の部屋（カハマルカ）", "d": "アタワルパが、手の届く高さまで黄金で満たすと約束したと伝わる部屋", "cr": "Velvet／CC BY-SA 4.0／Wikimedia Commons「Cajamarca cuarto del rescate.jpg」"}, "d_potosi": {"cap": "ポトシの町とセロ・リコ", "d": "奥の赤い山が、銀を掘りつくすほど掘られた「豊かな山」", "cr": "Parallelepiped09／CC BY-SA 4.0／Wikimedia Commons「Vista de la Villa Imperial de Potosí.jpg」"}, "p_potosi": {"cap": "セロ・リコ（ボリビア・ポトシ）", "d": "標高約4800メートル。16世紀から掘られ続け、山の中は坑道だらけになっている", "cr": "Mhwater at Dutch Wikipedia／パブリックドメイン／Wikimedia Commons「Cerro ricco.jpg」"}, "p_malacca": {"cap": "ア・ファモサ（マラッカ）", "d": "1511年にマラッカを攻め取ったポルトガルが築いた要塞の門。いまはこの門だけが残る", "cr": "Chongkian／CC BY-SA 4.0／Wikimedia Commons「A Famosa Fortress.JPG」"}, "d_victoria": {"cap": "ビクトリア号の複製船", "d": "世界一周を果たしたビクトリア号を、当時の記録をもとに復元した船", "cr": "Gnsin／CC BY-SA 3.0／Wikimedia Commons「Nao Victoria.jpg」"}, "d_smallpox": {"cap": "『フィレンツェ絵文書』の天然痘", "d": "16世紀、スペイン人の修道士サアグンがアステカの人々から聞き取ってまとめた記録。天然痘に苦しむ人々が描かれている", "cr": "作者不詳／パブリックドメイン／Wikimedia Commons「FlorentineCodex BK12 F54 smallpox.jpg」"}};
 
 </script>
-<script src="hn-engine.js?v=b064a4e7"></script>
+<script src="hn-engine.js?v=fb43db98"></script>
