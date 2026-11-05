@@ -214,7 +214,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .bsub{font-size:13px;color:var(--card-muted)}
 .arow .v.vs{font-size:14px;font-family:var(--body);font-weight:700}
 .volw{display:flex;align-items:center;gap:10px;font-size:13px}.volw span{flex:none}.volr{flex:1;min-width:0;accent-color:var(--acc,#6b8f3a)}
-.bar{position:relative}.volpop{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--card);color:var(--card-ink);border:1px solid var(--card-line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:12px 14px;display:flex;flex-direction:column;gap:10px;width:min(260px,80vw)}
+.bar{position:relative}.spkbtn{display:inline-flex;align-items:center;justify-content:center;padding:3px 10px}.volpop{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--card);color:var(--card-ink);border:1px solid var(--card-line);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:12px 14px;display:flex;flex-direction:column;gap:10px;width:min(260px,80vw)}
 #volLobby{display:flex;flex-direction:column;gap:8px;align-items:flex-start}#volLobby .volw{width:100%;max-width:320px}
 .mute{background:transparent;border:1px solid #ffffff44;border-radius:999px;padding:3px 10px;font-size:12px;color:var(--onhead)}
 .answers.flipin .arow{animation:aflip .5s ease-out both}
@@ -358,7 +358,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <div id="volLobby"></div>
     </div>
     <div class="panel">
-      <span class="small muted">配色</span>
+      <span class="small muted">テーマカラー</span>
       <div class="levels genres" id="greens"></div>
       <div class="levels genres" id="tones"></div>
     </div>
@@ -372,7 +372,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 
   <!-- 出題 -->
   <section id="game" hidden style="display:flex;flex-direction:column;gap:12px">
-    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute" id="muteBtn" type="button" aria-pressed="true">音：オン</button><button class="mute" id="quitBtn" type="button">やめる</button></div>
+    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute spkbtn" id="muteBtn" type="button" aria-pressed="true" aria-label="音量"></button><button class="mute" id="quitBtn" type="button">ゲームをやめる</button></div>
     <div class="players" id="gamePlayers"></div>
     <div class="card" id="card">
       <span class="era" id="cEra"></span>
@@ -1414,7 +1414,7 @@ let VOL=(()=>{try{const v=parseInt(localStorage.getItem("nb-vol"),10);return isN
 function out(a){ if(!MASTER||MASTER.context!==a){ MASTER=a.createGain(); MASTER.connect(a.destination); } MASTER.gain.value=(VOL/100)**2*1.25; return MASTER; }
 function setVol(v){ VOL=Math.max(0,Math.min(100,Math.round(v))); try{localStorage.setItem("nb-vol",String(VOL))}catch(e){} if(MASTER) MASTER.gain.value=(VOL/100)**2*1.25; renderMute(); if(voiceEl) voiceEl.volume=VOL/100; document.querySelectorAll(".volr").forEach(r=>{ if(+r.value!==VOL) r.value=VOL; }); }
 function volSlider(){ const w=el("label","volw"); w.append(el("span",null,"音量")); const r=document.createElement("input"); r.type="range"; r.min="0"; r.max="100"; r.step="5"; r.value=VOL; r.className="volr"; r.setAttribute("aria-label","音量");
-  r.oninput=()=>setVol(+r.value); r.onchange=()=>{ if(!muted&&!voiceSrc&&!voiceEl) se("ok"); }; w.append(r); return w; }
+  r.oninput=()=>{ if(muted&&+r.value>0){ muted=false; try{localStorage.setItem("nb-mute","0")}catch(e){} } setVol(+r.value); if(VOL===0) stopVoice(); }; r.onchange=()=>{ if(!muted&&!voiceSrc&&!voiceEl) se("ok"); }; w.append(r); return w; }
 function tone(freq,start,dur,vol,type){ const a=ac(); if(!a) return; const t=a.currentTime+start;
   const o=a.createOscillator(), g=a.createGain(); o.type=type||"sine"; o.frequency.value=freq;
   g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+0.015); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
@@ -1430,7 +1430,11 @@ function se(kind){ if(muted) return;
   else if(kind==="ng"){ buzz(130,0,0.17,0.07); buzz(130,0.24,0.5,0.07); }         // ブッ、ブー
   else if(kind==="flip"){ tone(1568,0,0.06,0.03); }
 }
-function renderMute(){ const b=$("muteBtn"); if(b){ b.textContent=muted?"音：オフ":"音："+VOL; b.setAttribute("aria-pressed",String(!muted)); } const l=$("muteLobby"); if(l) l.textContent=muted?"音をオンにする":"音をオフにする"; }
+// 音はスピーカーのアイコン1つ（消音・音量0は斜線）。押すと音量と消音の枠が開く（2026-11-05 Keita「歴史ノベルとそろえて」）
+function spk(off){ return '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor" stroke="none"/>'+(off?'<path d="M17 9l5 6M22 9l-5 6"/>':'<path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/>')+'</svg>'; }
+function silent(){ return muted||VOL===0; }
+function renderMute(){ const b=$("muteBtn"); if(b){ b.innerHTML=spk(silent()); b.setAttribute("aria-label",silent()?"音：消音中（押すと音量）":"音量 "+VOL); b.setAttribute("aria-pressed",String(!silent())); }
+  document.querySelectorAll(".mutet").forEach(t=>t.textContent=muted?"音を出す":"音を消す"); }
 const ASK_MS=10000, NEXT_MAX_MS=90000;
 // ---- 地図・つながり・分布 ----
 const SVGNS="http://www.w3.org/2000/svg";
@@ -2091,9 +2095,9 @@ $("nick").addEventListener("input",e=>{S.name=e.target.value.trim().slice(0,12);
 document.addEventListener("pointerdown",()=>{ if(!muted) ac(); },{once:true});
 function toggleMute(){ muted=!muted; try{localStorage.setItem("nb-mute",muted?"1":"0")}catch(e){} renderMute(); if(!muted){ac(); se("ok");} else stopVoice(); }
 $("volLobby").append(volSlider());
-{ const lm=el("button","clink","音をオフにする"); lm.type="button"; lm.id="muteLobby"; lm.onclick=toggleMute; $("volLobby").append(lm); renderMute(); }
+{ const lm=el("button","clink mutet","音を消す"); lm.type="button"; lm.onclick=toggleMute; $("volLobby").append(lm); renderMute(); }
 $("muteBtn").onclick=e=>{ e.stopPropagation(); let pop=$("volPop"); if(pop){ pop.remove(); return; }
-  pop=el("div","volpop"); pop.id="volPop"; pop.append(volSlider()); const t=el("button","playbtn",muted?"音をオンにする":"音をオフにする"); t.type="button"; t.onclick=()=>{ toggleMute(); t.textContent=muted?"音をオンにする":"音をオフにする"; }; pop.append(t);
+  pop=el("div","volpop"); pop.id="volPop"; pop.append(volSlider()); const t=el("button","playbtn mutet",muted?"音を出す":"音を消す"); t.type="button"; t.onclick=()=>toggleMute(); pop.append(t);
   pop.onclick=ev=>ev.stopPropagation(); $("muteBtn").closest(".bar").append(pop); };
 document.addEventListener("click",()=>{ const p=$("volPop"); if(p) p.remove(); });
 renderMute();
@@ -2130,7 +2134,7 @@ lqInit();
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
 function toLobby(){ stopVoice(); S.solo=false; if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
 $("lobbyBtn").onclick=toLobby;
-{ let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="やめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="やめる";},3000); }; }
+{ let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="ゲームをやめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="ゲームをやめる";},3000); }; }
 
 // 公開版: Supabase Realtime の presence で同じ部屋の人をつなぐ（DBの表は使わない）
 function sbRoom(cfg){
