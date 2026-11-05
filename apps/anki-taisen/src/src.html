@@ -68,6 +68,10 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .chip .st{font-size:11px;color:var(--muted)}
 .chip .st.ok{color:var(--ok)}
 .invite{background:var(--acc);color:var(--onacc);border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.invite{position:fixed;z-index:30;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:640px;margin:0 auto;box-shadow:0 6px 24px rgba(0,0,0,.35);animation:invpulse 1.6s ease-in-out infinite}
+@keyframes invpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+#startBtn.callme{animation:invpulse 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.invite,#startBtn.callme{animation:none}}
 .invite button{background:var(--head);color:var(--onhead);font-weight:800;padding:8px 14px;border-radius:9px}
 /* game */
 .bar{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;background:var(--head);color:var(--onhead);border-radius:14px;padding:8px 10px 8px 14px}
@@ -1378,11 +1382,14 @@ const S={
 if(!MODES.some(m=>m.id===S.mode)) S.mode="J";
 if(!GENRES.some(g=>g.id===S.genre)) S.genre="H";
 if(!BMODES.some(m=>m.id===S.bmode)) S.bmode="V";
+// 出題のしかたは歴史(日本史/世界史/ミックス)と学問・教養(まぜる/画像で/説明で)で保存先を分ける（2026-11-05 Keita指摘：学問が「この画像は何？」だけになる不具合）
+function modeFor(g){ if(isCon(g)){ const m=store.get("nb-cmode"); return CMODES.some(x=>x.id===m)?m:"M"; } const m=store.get("nb-mode"); return MODES.some(x=>x.id===m)?m:"J"; }
+S.mode=modeFor(S.genre);
 let room=null;
 
 function myPresence(){
   return {name:S.name||"名無し", view:S.view, gid:S.gid, lv:S.lv, cnt:S.cnt, mode:S.mode, genre:S.genre, bmode:S.bmode, ht:S.ht, qi:S.qi, phase:S.phase,
-    ans:S.ans, skip:S.skip, ready:S.ready, wait:S.wait, again:S.again, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
+    ans:S.ans, skip:S.skip, ready:S.ready, wait:S.wait, again:S.again, amode:S.amode, score:S.score, custom:S.custom, hist:S.hist, stamp:S.stamp};
 }
 function push(){ if(room){ room.presence(myPresence()).catch(()=>{}); } }
 function others(){
@@ -1421,7 +1428,7 @@ function renderGenreTree(){
       if(icn){ const im=document.createElement("img"); im.className="gic"; im.src=ICONS+icn+".svg"; im.alt=""; im.width=16; im.height=16; nm.append(im); }
       nm.append(n.id?gName(n.id):n.name); b.append(nm);
       if(n.id){ const ms=mastery(n.id); b.append(el("span",null,(n.id==="H"?"年号":gCount(n.id)+(isCon(n.id)?"語":"種"))+(ms>0?"・習得"+ms+"%":""))); }
-      b.onclick=()=>{ const lv=gLeaves(n); if(!lv.includes(S.genre)){ S.genre=lv[0]; store.set("nb-genre",S.genre); } renderPickers(); push(); };
+      b.onclick=()=>{ const lv=gLeaves(n); if(!lv.includes(S.genre)){ S.genre=lv[0]; store.set("nb-genre",S.genre); S.mode=modeFor(S.genre); } renderPickers(); push(); };
       row.append(b); });
     if(d===0) box.append(row);
     else { if(!sub){ sub=el("div","gsub"); box.append(sub); } if(d>1) sub.append(el("span","gsublab",(path[d-1]&&path[d-1].name)||"")); sub.append(row); }
@@ -1441,7 +1448,7 @@ function renderPickers(){
   $("modesBox").style.display=(!isB||hasVoice(S.genre))?"flex":"none";
   const isK=isCon(S.genre);
   if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bm2",k); renderPickers(); push();});
-  else if(isK){ if(hasImgQ(S.genre)){ $("modesBox").style.display="flex"; $("modesLabel").textContent="出題のしかた"; seg("modes", CMODES.map(m=>({key:m.id,name:m.id==="J"&&hasSndQ(S.genre)?"画像・音で":m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();}); } else $("modesBox").style.display="none"; }
+  else if(isK){ if(hasImgQ(S.genre)){ $("modesBox").style.display="flex"; $("modesLabel").textContent="出題のしかた"; seg("modes", CMODES.map(m=>({key:m.id,name:m.id==="J"&&hasSndQ(S.genre)?"画像・音で":m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-cmode",k); renderPickers(); push();}); } else $("modesBox").style.display="none"; }
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
   const lvs=isK?[{lv:1},{lv:2},{lv:3}]:isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
   if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
@@ -1490,8 +1497,10 @@ function renderLobby(){
   } else if(!S.wait && hostWait() && S.view==="lobby"){
     const w=hostWait(); const who=lobbyPeers().find(pr=>validWait(pr.wait)&&pr.wait.gid===w.gid);
     inv.hidden=false;
-    $("inviteText").textContent=`${safeName(who)}さんが「${genreLabel(w.genre,w.mode,w.bmode)}・${lvName(w.lv,w.genre)}」で待っています`+(w.qi>0&&!isPick(w.genre)?(()=>{const c=deckFor(w.mode,w.lv)[w.qi];return c?`（「${c.name}」から）`:"";})():"");
+    $("inviteText").textContent=`${safeName(who)}さんが「${genreLabel(w.genre,w.mode,w.bmode)}・${lvName(w.lv,w.genre)}${w.genre!=="H"&&(w.amode==="C"||w.amode==="T")?"・"+(w.amode==="C"?"4択":"入力"):""}」で対戦を待っています`+(w.qi>0&&!isPick(w.genre)?(()=>{const c=deckFor(w.mode,w.lv)[w.qi];return c?`（「${c.name}」から）`:"";})():"");
+    if(S.seenWait!==w.gid){ S.seenWait=w.gid; try{ tone(880,0,.12,.25); tone(1320,.14,.18,.25); }catch(e){} try{ navigator.vibrate&&navigator.vibrate([120,60,120]); }catch(e){} }
   } else inv.hidden=true;
+  { const w=!S.wait&&S.view==="lobby"?hostWait():null; $("startBtn").textContent=S.wait?"OK！（押すと取り消し）":w?"参加して対戦をはじめる":"対戦をはじめる"; $("startBtn").classList.toggle("callme",!!w); }
 }
 function findOpenGame(){
   const gs=others().map(p=>p.presence).filter(pr=>typeof pr.gid==="string" && pr.view==="game" && !pr.gid.startsWith("solo"));
@@ -1506,10 +1515,12 @@ function okLine(id, me, rows){
   const all=[[S.name||"名無し",me],...rows]; const ok=all.filter(r=>r[1]).map(r=>r[0]+" OK！"); const rest=all.length-ok.length;
   box.textContent=ok.length? ok.join("　")+(rest?`　（あと${rest}人）`:"") : "";
 }
+// 答え方（入力/4択）は対戦ではホスト（待っている人・対戦中の人）に合わせる。ロビーに戻ると自分の設定に戻す（2026-11-05 Keita指摘）
+function hostAmode(a){ if(a==="T"||a==="C") S.amode=a; }
 function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&[1,2,3,4].includes(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
 function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="lobby"); }
 function startQi(){ return isPick(S.genre)?0:fromQi(S.mode,S.lv,S.from); }
-function startFromWait(w){ if(typeof w.ht==="boolean") S.ht=w.ht; const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
+function startFromWait(w){ if(typeof w.ht==="boolean") S.ht=w.ht; hostAmode(w.amode); const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
 function lobbyCheck(){
   const lp=lobbyPeers(); if(!S.wait){ okLine("waitStart",false,[]); return; }
   const h=hostWait(); if(h && h.gid>S.wait.gid){ S.wait={...h}; push(); }
@@ -1910,13 +1921,13 @@ $("startBtn").onclick=()=>{
   S.solo=false;
   if(!lobbyPeers().length){ startGame(newGid(),S.genre,S.mode,S.lv,startQi()); return; }
   const h=hostWait();
-  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,ht:S.ht,qi:startQi()};
+  S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,ht:S.ht,qi:startQi(),amode:S.amode};
   $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
 $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
-  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V"; if(typeof g.ht==="boolean") S.ht=g.ht;
+  const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V"; if(typeof g.ht==="boolean") S.ht=g.ht; hostAmode(g.amode);
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
   startGame(g.gid,genre,mode,lv,qi,bm,cu,cnt); };
 // PC（マウス操作の端末）では人生クエストを新しいタブで開く
@@ -1935,7 +1946,7 @@ $("lqLogin").onclick=async()=>{ if(!LQ.sb) return; try{ sessionStorage.setItem("
 $("lqToggle").onclick=()=>{ store.set("nb-lq-off",lqOff()?"0":"1"); renderLink(); lqPull(); };
 lqInit();
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
-function toLobby(){ stopVoice(); S.solo=false; if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
+function toLobby(){ stopVoice(); S.solo=false; S.amode=store.get("nb-amode")||"T"; if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; S.mode=modeFor(S.genre); } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
 $("lobbyBtn").onclick=toLobby;
 { let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="ゲームをやめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="ゲームをやめる";},3000); }; }
 
