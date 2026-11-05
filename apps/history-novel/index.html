@@ -76,6 +76,7 @@ header{position:relative;display:flex;align-items:center;gap:12px;border-bottom:
 .spn{font-size:13.5px;font-weight:700;letter-spacing:.1em;padding-bottom:3px;border-bottom:1px solid var(--line);align-self:flex-start;padding-right:18px}
 .src{font-size:11.5px;line-height:1.6;color:var(--muted);margin-top:2px}
 .nar{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}
+.txt.nar{display:block}/* 本文の地の文は1つの流れ（用語ボタンが格子のマスに分かれる不具合 2026-11-05） */
 .fc{width:40px;height:48px;border-radius:4px;object-fit:cover;object-position:50% 18%;background:var(--line);display:block;margin-top:6px}
 .fc.sil{display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted);border:1px solid var(--line);background:transparent}
 .past .face{width:44px;height:54px}.past .src{display:none}
@@ -739,7 +740,7 @@ function updateMap(){
   mstate=ms;buildOverlay();if(camChanged)setTarget(false);
   drawPics();
 }
-$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}advance();});
+$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics"))return;const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
 
 /* ---------- 土地の資料（右上の小窓、タップで拡大。各自の画面だけ） ---------- */
 let picKeys=[],picI=0;
