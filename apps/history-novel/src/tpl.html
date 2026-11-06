@@ -39,6 +39,7 @@ window.hnFont=function(k){if(!HN_FONTS[k])k="dot";var d=document.documentElement
       <div class="cfg-row"><span>見た目</span><div class="skins" id="skins" role="radiogroup" aria-label="見た目"></div></div>
       <div class="cfg-row"><span>文字</span><div class="skins fonts" id="fonts" role="radiogroup" aria-label="文字"></div></div>
       <div class="cfg-row"><span>文字の大きさ</span><div class="seg" role="radiogroup" aria-label="文字の大きさ"><button data-fs="s" role="radio">小</button><button data-fs="m" role="radio">中</button><button data-fs="l" role="radio">大</button></div></div>
+      <div class="cfg-row" id="repRow" hidden><span>この場面</span><button type="button" class="rep-btn" id="bRep">わかりにくい所を報告する</button></div>
     </div>
   </header>
   <div class="mapwrap" id="mapwrap">
@@ -56,7 +57,7 @@ window.hnFont=function(k){if(!HN_FONTS[k])k="dot";var d=document.documentElement
     </div></div>
     <div class="gayaPal" id="gayaPal" hidden></div>
     <div class="look-note" id="lookNote" hidden>資料を見てるプレイヤーがいるよ。ちょっと待ってね</div>
-    <div class="ctrl"><button class="back" id="bk" hidden>◀ 戻る</button><button class="gyb" id="bGaya" aria-label="ガヤを飛ばす">ガヤ</button><button class="gyb rep" id="bRep" hidden>報告する</button><div class="next" id="nx" hidden>タップで次へ</div></div>
+    <div class="ctrl"><button class="back" id="bk" style="visibility:hidden">◀ 戻る</button><button class="gyb" id="bGaya" aria-label="ガヤを飛ばす">ガヤ</button><div class="next" id="nx" hidden>タップで次へ</div></div>
   </div>
 </div>
 <div id="sheetRoot"></div>

@@ -396,3 +396,6 @@ ruby rt{font-size:.5em;font-weight:500;letter-spacing:0;color:var(--muted);font-
 :root[data-font]:not([data-font="skin"]) body,:root[data-font]:not([data-font="skin"]) body *{font-family:var(--df),'DotGothic16',monospace!important;font-weight:400!important}
 :root[data-font]:not([data-font="skin"]) .sel .app-name,:root[data-font]:not([data-font="skin"]) .sel .app-name b,:root[data-font]:not([data-font="skin"]) .eras .era .en,:root[data-font]:not([data-font="skin"]) .card-in .ce,:root[data-font]:not([data-font="skin"]) .when .y{letter-spacing:.02em!important}
 .fonts button{font-size:13px}
+
+.rep-btn{font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:4px;text-align:left}
+.rep-btn:hover{border-color:var(--ink)}
