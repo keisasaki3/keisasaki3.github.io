@@ -9,17 +9,21 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
 <script>
 // 対戦のつなぎ役: Supabase Realtime presence（表は使わない）。publishable key は公開してよい値。
-// 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振り、URLに書き込む。
-// 同じ部屋番号のURLを開いた人どうしが同じ部屋。部屋のURLはロビーの「この部屋のURLをシェア」で送る。
+// 部屋（2026-11-06 Keita決定・暫定）: ?room= が無ければ誰でも入れる「オープンルーム」（部屋名 open）。
+// 個室は「個室を作る」でランダム6桁の ?room= を作り、そのURLを「この部屋のURLをシェア」で送る。同じ部屋番号のURLを開いた人どうしが同じ部屋。
+// （2026-11-05 版は ?room= が無ければ必ずランダム6桁を割り振っていた。SUPER歴史ノベルはその決まりのまま）
 window.ANKI_SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx",
-  room:(function(){var q=new URLSearchParams(location.search),r=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,32);
-    if(!r){r=String(100000+Math.floor(Math.random()*900000));q.set("room",r);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
-    return r;})()};
-document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-share-room]");if(!b)return;
-  var url=location.origin+location.pathname+"?room="+window.ANKI_SB.room;
-  if(navigator.share){navigator.share({title:"激突！暗記大戦",text:"部屋No."+window.ANKI_SB.room+" で対戦しよう",url:url}).catch(function(){});}
+  room:(function(){var r=(new URLSearchParams(location.search).get("room")||"").replace(/[^\w-]/g,"").slice(0,32);return r||"open";})()};
+document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)return;
+  if(t.closest("[data-new-room]")){var q=new URLSearchParams(location.search);q.set("room",String(100000+Math.floor(Math.random()*900000)));location.href=location.pathname+"?"+q.toString();return;}
+  if(t.closest("[data-open-room]")){var q2=new URLSearchParams(location.search);q2.delete("room");var s=q2.toString();location.href=location.pathname+(s?"?"+s:"");return;}
+  var b=t.closest("[data-share-room]");if(!b)return;
+  var open=window.ANKI_SB.room==="open",url=location.origin+location.pathname+(open?"":"?room="+window.ANKI_SB.room);
+  if(navigator.share){navigator.share({title:"激突！暗記大戦",text:open?"オープンルームで対戦しよう":"部屋No."+window.ANKI_SB.room+" で対戦しよう",url:url}).catch(function(){});}
   else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){b.textContent="コピーしました";setTimeout(function(){b.textContent="この部屋のURLをシェア";},2000);});}});
-document.addEventListener("DOMContentLoaded",function(){var n=document.getElementById("roomNo");if(n)n.textContent=window.ANKI_SB.room;});
+document.addEventListener("DOMContentLoaded",function(){var open=window.ANKI_SB.room==="open",l=document.getElementById("roomLabel"),n=document.getElementById("roomNo");
+  if(open&&l)l.innerHTML="<b style=\"font-size:1.1em\">オープンルーム</b>（誰でも入れます）";else if(n)n.textContent=window.ANKI_SB.room;
+  var nb=document.querySelector("[data-new-room]"),ob=document.querySelector("[data-open-room]");if(nb)nb.hidden=!open;if(ob)ob.hidden=open;});
 </script>
 </head>
 <body>
@@ -306,8 +310,12 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
     <h1>激<span class="tilt">突</span>！<span>暗記</span>大戦<small>年号も用語も鳥も木も、みんなで覚える</small></h1>
 
     <div class="roombar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-      <span>部屋No.<b id="roomNo" style="font-size:1.25em;letter-spacing:.08em"></b></span>
-      <button type="button" class="btn ghost" data-share-room style="width:auto;padding:8px 14px">この部屋のURLをシェア</button>
+      <span id="roomLabel">部屋No.<b id="roomNo" style="font-size:1.25em;letter-spacing:.08em"></b></span>
+      <span style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="btn ghost" data-share-room style="width:auto;padding:8px 14px">この部屋のURLをシェア</button>
+        <button type="button" class="btn ghost" data-new-room style="width:auto;padding:8px 14px">個室を作る</button>
+        <button type="button" class="btn ghost" data-open-room style="width:auto;padding:8px 14px" hidden>オープンルームへ</button>
+      </span>
     </div>
 
     <div class="invite" id="invite" hidden>
