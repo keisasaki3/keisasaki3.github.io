@@ -56,7 +56,21 @@ new ResizeObserver(resize).observe(svg);
 function setTarget(instant){
   /* r=短い辺の半分に入れる距離。rw があれば横幅の半分に rw を入れる（世界全体を見せる場面用）。
      fw=横幅の半分に最低限入れる距離（縦長のスマホで東西の端が切れないように。PCでは効かない） */
-  const c=pj(pt(mstate.c));let s=mstate.rw?W/(2*mstate.rw):Math.min(W,H)/(2*mstate.r);if(mstate.fw)s=Math.min(s,W/(2*mstate.fw));
+  let c=pj(pt(mstate.c));let s=mstate.rw?W/(2*mstate.rw):Math.min(W,H)/(2*mstate.r);if(mstate.fw)s=Math.min(s,W/(2*mstate.fw));
+  /* その行で話題の地点（新しいピン・点滅・矢印）が画面からはみ出すなら、全部入るように中心と縮尺を直す（2026-11-06 報告#11#12）。
+     余白は旗と地名ラベルのぶん。左右FX、上FT、下FB */
+  /* 会話の窓が出ているときは、窓に隠れない上の部分に、点滅中の地点（なければ話題の地点）を入れる（報告#13の場面で喜望峰が窓の裏に隠れていた） */
+  const tk=$("talk"),tb=tk&&!tk.hidden?Math.max(talkH,talkSpan())+28:0;
+  const fp=(tb&&mstate.blink?[mstate.blink]:(mstate.fit||[])).map(k=>pt(k)).filter(Boolean).map(pj);
+  if(fp.length){const FX=46,FT=46,FB=Math.max(22,tb),iw=Math.max(40,W-2*FX),ih=Math.max(40,H-FT-FB);
+    const inside=q=>{const x=(q[0]-c[0])*s+W/2,y=(q[1]-c[1])*s+H/2;return x>=FX&&x<=W-FX&&y>=FT&&y<=H-FB;};
+    if(!fp.every(inside)){const xs=fp.map(q=>q[0]),ys=fp.map(q=>q[1]);
+      const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+      s=Math.min(s,iw/Math.max(1e-6,x1-x0),ih/Math.max(1e-6,y1-y0));
+      /* 元の中心はできるだけ保ち、はみ出す分だけずらす */
+      const hw=iw/2/s,hh=ih/2/s,cy0=c[1]+(FT-FB)/2/s;
+      const cx=Math.min(Math.max(c[0],x1-hw),x0+hw),cy=Math.min(Math.max(cy0,y1-hh),y0+hh);
+      c=[cx,cy-(FT-FB)/2/s];}}
   Object.assign(from,cam);Object.assign(to,{x:c[0],y:c[1],s});t0=performance.now();
   if(instant||!camInit||matchMedia("(prefers-reduced-motion:reduce)").matches){Object.assign(cam,to);Object.assign(from,to);camInit=true;}
   kick();
@@ -166,24 +180,26 @@ function frame(now){
 function kick(){if(!rafOn){rafOn=true;requestAnimationFrame(frame);}}
 kick();
 function mergeM(ms,m){if(!m)return;if(m.clear)ms.ar=[];
+  /* fit=画面に必ず入れる地点。カメラを動かした行で入れ直し、動かさない行では足していく */
+  if(m.c||m.r)ms.fit=(!m.clear&&ms.blink)?[ms.blink]:[];/* 点滅中の地点は持ち越して入れる（clear のときは外す） */ms.fit=[...(ms.fit||[]),...(m.pins||[]),...(m.blink?[m.blink]:[]),...(m.ar||[]).flatMap(a=>a.p)];
   if(m.c)ms.c=m.c;if(m.r){ms.r=m.r;ms.rw=m.rw||null;ms.fw=m.fw||null;}if(m.pins)ms.pins=[...new Set([...ms.pins,...m.pins])];if(m.blink!==undefined){ms.blink=m.blink;ms.fl=m.fl||null;}if(m.ar)ms.ar=[...ms.ar,...m.ar];}
 function choiceM(s,j,sub,ms){const o=s.o[j];if(o.h||sub>=o.ifr.length){ms.ar=ms.ar.filter(a=>a.s!=="if");mergeM(ms,s.hm);}else{mergeM(ms,o.im);}}
 function computeMap(){
   let a=st.i;while(a>0&&!S[a].scene)a--;
   const ms=Object.assign(HOME(),{fl:null});
   for(let k=a;k<=st.i&&k<S.length;k++){const s=S[k];
-    if(s.scene){Object.assign(ms,{pins:[],ar:[],blink:null});mergeM(ms,s.scene.m);continue;}
+    if(s.scene){Object.assign(ms,{pins:[],ar:[],blink:null,fit:[]});mergeM(ms,s.scene.m);continue;}
     mergeM(ms,s.m);
     if(s.choice&&st.ans[k]!=null){choiceM(s,st.ans[k],k===st.i?st.sub:99,ms);}
   }
   return ms;
 }
 function updateMap(){
-  const ms=computeMap();const camChanged=JSON.stringify([ms.c,ms.r,ms.rw,ms.fw])!==JSON.stringify([mstate.c,mstate.r,mstate.rw,mstate.fw]);
+  const ms=computeMap();const camChanged=JSON.stringify([ms.c,ms.r,ms.rw,ms.fw,ms.fit,!$("talk").hidden])!==JSON.stringify([mstate.c,mstate.r,mstate.rw,mstate.fw,mstate.fit,mstate.tk]);ms.tk=!$("talk").hidden;
   mstate=ms;buildOverlay();if(camChanged||userCam)setTarget(false);
   userView(false);drawPics();
 }
-$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics,#bHome"))return;if(dragMoved){dragMoved=false;return;}const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
+$("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics,#bHome"))return;if(dragMoved){dragMoved=false;return;}const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}const tm=e.target.closest("#talk .term");if(tm&&st.v==="play"){e.stopPropagation();return openTerm(tm.dataset.k,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
 
 /* ---------- 地図を指で動かす（2026-11-05 経太さん）。ドラッグで移動、ピンチ／ホイールで拡大縮小。自分の画面だけ。
    次の文に進むと場面の位置に戻る。「元の位置」ボタンでもすぐ戻せる ---------- */
@@ -292,7 +308,9 @@ function lineHTML(s,cur){
 function showTalk(s){const c=C[s.sp]||{n:s.sp},el=$("talk");
   el.innerHTML=`<div class="tk-f">${faceHTML(s.sp,"face")}<div class="tk-n">${esc(c.n)}</div></div><div class="tk-b"><div class="txt">${md(s.t,true)}</div></div>`;
   el.hidden=false;el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
+  talkH=talkSpan();/* 文字を打ち始める前（全文が入った状態）の高さを覚えておく。カメラ合わせに使う */
   typeIn(el.querySelector(".txt"));}
+let talkH=0;function talkSpan(){const el=$("talk");return el.hidden?0:el.offsetHeight+(parseFloat(getComputedStyle(el).bottom)||0);}
 function hideTalk(){const el=$("talk");el.hidden=true;el.innerHTML="";}
 
 function sceneCard(){const sc=sceneAt(st.i);if(!sc)return;
