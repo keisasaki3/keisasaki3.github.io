@@ -25,12 +25,16 @@ $("bSnd").onclick=e=>{e.stopPropagation();if(!$("cfgPop").hidden)cfgPop(false);s
 $("sndPop").addEventListener("click",e=>e.stopPropagation());
 /* 設定（歯車）: ノベルの文字の大きさ 小・中・大（端末に保存。2026-11-05 経太さん） */
 const ICO_CFG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/><circle cx="12" cy="12" r="6.6"/></svg>';
-let fsz="m";try{const v=localStorage.getItem("fs");if(v==="s"||v==="l"||v==="m")fsz=v;}catch(e){}
-function drawCfg(){document.documentElement.dataset.fs=fsz;document.querySelectorAll("#cfgPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fsz)));}
+let fsz=matchMedia("(min-width:900px)").matches?"l":"s";try{const v=localStorage.getItem("fs");if(v==="s"||v==="l"||v==="m")fsz=v;}catch(e){}
+function drawCfg(){document.documentElement.dataset.fs=fsz;document.querySelectorAll("#cfgPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fsz)));
+  const sk=document.documentElement.dataset.skin;$("skins").innerHTML=Object.entries(window.HN_SKINS||{}).map(([k,v])=>`<button data-skin="${k}" role="radio" aria-checked="${k===sk}"><i style="background:${v.c}"></i>${v.n}</button>`).join("");}
+/* 見た目の切替。暗い見た目と明るい見た目で地形の画像（-d）が変わるので読み直す */
+function setSkin(k){const was=isDark();k=window.hnSkin(k);try{localStorage.setItem("hn-skin",k);}catch(x){}drawCfg();
+  if(was!==isDark()){terrEls.forEach(t=>{t.loaded=false;});terrain();}}
 function cfgPop(open){$("cfgPop").hidden=!open;$("bCfg").setAttribute("aria-expanded",String(open));}
 $("bCfg").innerHTML=ICO_CFG;
 $("bCfg").onclick=e=>{e.stopPropagation();if(!$("sndPop").hidden)sndPop(false);cfgPop($("cfgPop").hidden);};
-$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const b=e.target.closest("[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
+$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const sk=e.target.closest("[data-skin]");if(sk){setSkin(sk.dataset.skin);return;}const b=e.target.closest("[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
 drawCfg();
 $("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
 $("sndVol").onchange=()=>{if(audible())SE.page();};
@@ -243,7 +247,7 @@ function bgm(key){
   try{const a=new Audio(BGM[k]);a.loop=true;a.volume=0;a.play().catch(()=>{});bgmEl=a;fadeA(a,.35*vol/100);}catch(e){}
 }
 function fadeA(a,to,done){const from=a.volume,t0=performance.now();(function f(){const k=Math.min(1,(performance.now()-t0)/1200);a.volume=from+(to-from)*k;if(k<1)requestAnimationFrame(f);else done&&done();})();}
-function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").textContent=sc.w||"";$("hEra").textContent=sc.era;$("hEv").textContent=sc.e;
+function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").innerHTML=esc(sc.w||"").replace(AUTO_RE,w=>ruby(w,w));$("hEra").textContent=sc.era;$("hEv").textContent=sc.e;
   $("prog").style.width=(100*Math.min(1,st.i/(S.length-1))).toFixed(1)+"%";}
 function sceneAt(i){let a=i;while(a>0&&!S[a].scene)a--;return S[a].scene;}
 
@@ -251,7 +255,10 @@ function sceneAt(i){let a=i;while(a>0&&!S[a].scene)a--;return S[a].scene;}
 /* 本文の語: {語} と、辞書にある語（2文字以上）の各行で最初の1回を押せるようにする。
    用語（概念）は太字、人物・土地は点線だけ（2026-11-05 経太さん「重要語句は太字」「人名・地名も辞書」） */
 const AUTO_RE=new RegExp(Object.keys(G).filter(k=>k.length>=2).sort((a,b)=>b.length-a.length).join("|"),"g");
-function termBtn(a,k){return `<button class="term${G[k].t?"":" imp"}" data-k="${esc(k)}">${a}</button>`;}
+/* 漢字の語には読み仮名を上に振る（各行の最初の1回＝押せる語だけ。2026-11-06 経太さん「名前や地名が読めない」） */
+const KANJI=/[\u4e00-\u9fff々]/;
+function ruby(a,k){const r=G[k]&&G[k].r;return r&&a===esc(k)&&KANJI.test(k)?`<ruby>${a}<rt>${esc(r)}</rt></ruby>`:a;}
+function termBtn(a,k){return `<button class="term${G[k].t?"":" imp"}" data-k="${esc(k)}">${ruby(a,k)}</button>`;}
 function md(t,see,self){
   const src=String(t),parts=[],used=new Set(self?[self]:[]);let last=0;
   src.replace(/\{([^}|]+)(?:\|([^}]+))?\}/g,(m,a,b,off)=>{parts.push([src.slice(last,off),null]);parts.push([a,b||a]);last=off+m.length;return m;});
@@ -285,7 +292,8 @@ function hideTalk(){const el=$("talk");el.hidden=true;el.innerHTML="";}
 
 function sceneCard(){const sc=sceneAt(st.i);if(!sc)return;
   $("card").innerHTML=`<div class="card-in"><div class="cy">${sc.y}<small>年</small></div><div class="cw">${esc(sc.w||"")}</div><div class="ce">${esc(sc.e)}</div></div>`;
-  clearTimeout(sceneCard.t);sceneCard.t=setTimeout(()=>{$("card").innerHTML="";},2500);}
+  }
+$("card").addEventListener("click",e=>{e.stopPropagation();advance();});
 function setWho(w){const e=$("who");e.hidden=!w;e.textContent=w||"";}
 function nxText(){$("nx").textContent=isFollower()?"ホストが進めます":"タップで次へ";}
 function staticHTML(k){
@@ -460,7 +468,7 @@ let lookSent=0;
 function lookPres(){const v=st.sheet&&st.sheet!=="room"&&st.v==="play"?1:0;if(v!==lookSent){lookSent=v;setPres({look:v});}}
 function drawLook(){const el=$("lookNote");if(!el)return;const n=room?others().filter(p=>p.presence&&p.presence.look).length:0;
   el.hidden=!(n&&st.v==="play");}
-function termHead(k){const g=G[k];if(g.t!=="人")return g.t==="地"?'<div class="kind">土地</div>':'<div class="kind">用語</div>';
+function termHead(k){const g=G[k];if(g.t!=="人")return g.t==="地"?'<div class="kind">土地</div>':g.t==="年"?'<div class="kind">年号</div>':'<div class="kind">用語</div>';
   const id=Object.keys(C).find(i=>C[i].n===k);return `<div class="kind">人物</div>${id?`<div class="t-face">${faceHTML(id,"face")}</div>`:""}`;}
 function termPics(k){const ks=(R[k]||[]).filter(x=>PIC[x]);if(!ks.length)return "";
   return `<div class="tpics">${ks.map((x,j)=>`<button data-tpic="${j}" data-tk="${esc(k)}"><img src="pic/${x}.jpg" alt=""><span>${esc(PIC[x].cap)}</span></button>`).join("")}</div>`;}
@@ -515,7 +523,11 @@ function showTitle(){
   renderTitleRoom();push();
 }
 /* 別の章（別のページ）へ。部屋番号はそのまま持っていく */
-function goPage(p){const q=new URLSearchParams(location.search);location.href=p+(q.toString()?"?"+q.toString():"");}
+function goPage(p){const q=new URLSearchParams(location.search);q.set("go","1");location.href=p+"?"+q.toString();}
+/* 本棚から別の章を選んで来たときは、タイトルで止めずにそのまま読み始める（2回押さないと始まらない不具合の修正、2026-11-06）。
+   部屋の続き（SBR.saved）を読み込んでから押す。参加者（ホストが別にいる）のときは押さない */
+const goFlag=(()=>{const q=new URLSearchParams(location.search);if(q.get("go")!=="1")return false;q.delete("go");try{history.replaceState(null,"",location.pathname+(q.toString()?"?"+q.toString():"")+location.hash);}catch(e){}return true;})();
+function autoGo(){if(!goFlag||autoGo.done)return;autoGo.done=true;setTimeout(()=>{const sb=$("start");if(st.v==="title"&&sb&&!sb.disabled&&!isFollower())sb.click();},400);}
 function renderTitleRoom(){
   const el=$("titleRoom");if(!el)return;
   const h=hostPeer(),sb=$("start");
@@ -695,12 +707,12 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");i
     if(room)bindRoom();
     return;
   }
-  if(!window.supabase)return;
+  if(!window.supabase){autoGo();return;}
   /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。暗記大戦と同じ決まり */
   const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,24);
   if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
   SBR.on=true;SBR.code=code;$("bRep").hidden=false;if(st.v==="title")renderTitleRoom();
   await SBR.load();if(st.v==="title")renderTitleRoom();
-  await SBR.join(code);if(st.v==="title")renderTitleRoom();
+  try{await SBR.join(code);}catch(e){}if(st.v==="title")renderTitleRoom();autoGo();
 })();
 drawSnd();setScene(S[0].scene);mstate=Object.assign(HOME(),S[0].scene.m);buildOverlay();resize();showTitle();

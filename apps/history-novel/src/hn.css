@@ -328,3 +328,60 @@ html.title-mode header,html.title-mode .novel{display:none}
 .bhome[hidden]{display:none}
 #map{cursor:grab}#map:active{cursor:grabbing}
 #map{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+
+/* ---------- 見た目（スキン）: 2026-11-06 経太さん採用の4種。html[data-skin] で切替、初期は kin（墨と金箔）。
+   赤は強調だけ。太い黒線・ずらし影・赤ベタはやめる。フォントは tpl.html の頭で skin ごとに読み込む ---------- */
+/* 共通: 線を細く、ずらし影をやめて柔らかい影、赤ベタをやめる */
+:root[data-skin]{--shadow:transparent}
+.app{background:var(--frame,var(--sea))}
+header,.novel,.mapwrap{border:var(--bw,1px) solid var(--bd,var(--line))!important;border-radius:var(--rd,6px)!important;box-shadow:var(--sh,0 1px 3px rgba(0,0,0,.08))!important}
+.novel{background:var(--paper)}
+.when .y{font-family:var(--h)!important;font-weight:var(--hw,600)!important;letter-spacing:.04em}
+.when .era:not(:empty){background:transparent!important;color:var(--tagc,var(--ink))!important;border:1px solid var(--tagc,var(--ink));border-radius:2px!important;font-weight:600}
+.menu button{border:1px solid var(--bd,var(--line))!important;border-radius:var(--rd,6px)!important;background:transparent!important;font-family:var(--u)!important;font-weight:500!important}
+.prog i{background:var(--pg,var(--ink))!important}
+.tk-b{border:var(--bw,1px) solid var(--bd,var(--line))!important;border-radius:var(--rd,6px)!important;box-shadow:var(--sh2,0 4px 18px rgba(0,0,0,.12))!important;background:var(--paper)!important}
+.tk-b::before{border-color:var(--bd,var(--line))!important;border-width:0 0 var(--bw,1px) var(--bw,1px)!important;background:var(--paper)!important}
+.tk-b .txt{font-family:var(--body,var(--f));font-weight:400!important}
+.tk-f .face{border:1px solid var(--bd,var(--line))!important;border-radius:var(--rd,6px)!important;box-shadow:var(--sh,0 1px 3px rgba(0,0,0,.1))!important}
+.tk-n{background:var(--nb,var(--ink))!important;color:var(--nf,var(--paper))!important;border-radius:2px!important;font-family:var(--u)!important;font-weight:600!important;letter-spacing:.08em}
+.pc,.gyb,.gayaPal button,.bhome,.shelf button,.gy{border:1px solid var(--bd,var(--line))!important;box-shadow:none!important;border-radius:var(--rd,6px)!important}
+.gyb.on{background:var(--ink)!important;border-color:var(--ink)!important}
+.card-in{border:var(--bw,1px) solid var(--bd,var(--line))!important;border-radius:var(--rd,6px)!important;box-shadow:var(--sh2,0 6px 24px rgba(0,0,0,.15))!important;background:var(--paper)!important}
+.card-in .cy{font-family:var(--h)!important;font-weight:var(--hw,600)}
+.card-in .ce{background:transparent!important;color:var(--ink)!important;border-top:1px solid var(--accent);border-radius:0!important;font-family:var(--h)!important;font-weight:var(--hw,600)!important;letter-spacing:.12em;padding:6px 8px 0!important}
+.sel .app-name{font-family:var(--h)!important;font-weight:var(--hw,600)!important;letter-spacing:.1em}
+.sel .app-name b{color:var(--sup,var(--accent))!important;font-family:var(--sf,var(--h));letter-spacing:.14em}
+.eras .era{border:1px solid var(--bd,var(--line))!important;box-shadow:none!important;border-radius:var(--rd,6px)!important}
+.eras .era.on{border-color:var(--bdon,var(--ink))!important}
+.eras .era .no{border:1px solid var(--bd,var(--line))!important;font-family:var(--h)!important}
+.eras .era.on .no{background:var(--ink)!important;border-color:var(--ink)!important;color:var(--paper)!important}
+.eras .era .en{font-family:var(--h)!important;font-weight:var(--hw,600)}
+.eras .era.on .et{background:transparent!important;color:var(--accent)!important;border:1px solid var(--accent);border-radius:2px!important}
+.shelf button[aria-selected="true"]{background:var(--ink)!important;color:var(--paper)!important}
+.said .spn{color:var(--nb2,var(--ink))!important;font-weight:700}
+.next::after{border-top-color:var(--ink)!important}
+
+:root[data-skin="kin"]{--bg:#fbfaf6;--paper:#fbfaf6;--sea:#dde2e1;--land:#fbf9f3;--coast:#8d877b;--frame:#1e1d1b;--ink:#1e1d1b;--muted:#77726a;--line:#d8d2c4;--bd:#c9b78a;--accent:#a3282a;--sup:#b08d3c;--nb:#1e1d1b;--nf:#e9d9a8;--tagc:#8a6d2b;--pg:#b08d3c;--h:'Shippori Mincho B1',serif;--u:'Noto Sans JP',sans-serif;--hw:800;--rd:3px;--sh:0 2px 10px rgba(0,0,0,.25)}
+:root[data-skin="konjo"]{--bg:#ffffff;--paper:#ffffff;--sea:#e7ebf1;--frame:#e7ebf1;--ink:#1c2a44;--muted:#66708a;--line:#d6dbe5;--bd:#c3cad8;--accent:#a3282a;--sup:#1c2a44;--nb:#1c2a44;--nf:#fff;--tagc:#2f4a7a;--pg:#2f4a7a;--h:'Zen Old Mincho',serif;--u:'Zen Kaku Gothic New',sans-serif;--hw:700;--rd:8px}
+:root[data-skin="washi"]{--bg:#f6f2e9;--paper:#f8f5ee;--sea:#e1e0d6;--land:#faf7f0;--coast:#8a8174;--frame:#ebe5d8;--ink:#2a2622;--muted:#7a7166;--line:#dcd3c3;--bd:#2a2622;--accent:#b3352b;--sup:#b3352b;--nb:#2a2622;--nf:#f6f2e9;--tagc:#2a2622;--pg:#2a2622;--h:'Shippori Mincho',serif;--u:'BIZ UDPGothic',sans-serif;--body:'Shippori Mincho',serif;--hw:800;--rd:2px;--bw:1px;--sh:none;--sh2:0 2px 10px rgba(60,40,20,.12)}
+:root[data-skin="shosai"]{--bg:#16201c;--paper:#18231f;--sea:#121a17;--land:#24302b;--coast:#4d5a52;--frame:#0f1613;--ink:#ece4d0;--muted:#a59d88;--line:#2c3a34;--bd:#5a4f37;--accent:#d2a85a;--sup:#d2a85a;--nb:#d2a85a;--nf:#16201c;--tagc:#d2a85a;--pg:#d2a85a;--halo:rgba(22,32,28,.9);--h:'Shippori Mincho B1',serif;--u:'Zen Kaku Gothic New',sans-serif;--hw:700;--rd:4px;--sh:0 2px 12px rgba(0,0,0,.4);color-scheme:dark}
+/* 区切りの場面カードは自動で消さない。カードかノベル欄を押すと次へ（2026-11-06） */
+.card{pointer-events:none}.card-in{pointer-events:auto;cursor:pointer;animation:cardIn .5s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+.card-in .tap{font-size:11px;color:var(--muted);margin-top:8px;font-family:var(--u);letter-spacing:.08em}
+/* タイトル画面でも音量と歯車を右上に出す（2026-11-06） */
+html.title-mode header{display:flex!important;position:fixed;top:calc(10px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));left:auto;z-index:35;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important}
+html.title-mode header .when,html.title-mode header .prog,html.title-mode #bEnd,html.title-mode #bGl,html.title-mode #bRoom{display:none!important}
+html.title-mode header .menu button{background:var(--paper)!important}
+/* 設定の見た目 */
+.skins{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.skins button{font-size:12.5px;padding:6px 8px;border:1px solid var(--line);border-radius:4px;display:flex;align-items:center;gap:6px;text-align:left}
+.skins button[aria-checked="true"]{border-color:var(--ink);font-weight:700}
+.skins i{width:14px;height:14px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.2)}
+.cfg-row+.cfg-row{margin-top:10px}
+/* 読み仮名 */
+ruby rt{font-size:.5em;font-weight:500;letter-spacing:0;color:var(--muted);font-family:var(--f)}
+.term ruby{ruby-align:center}
+.when .w ruby rt{font-size:.62em}
+.menu button:hover{color:var(--ink)!important;background:var(--sea)!important}
