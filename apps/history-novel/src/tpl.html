@@ -11,6 +11,8 @@
 window.HN_SKINS={kin:{n:"墨と金箔",c:"#b08d3c",f:"Shippori+Mincho+B1:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700"},konjo:{n:"紺青",c:"#1c2a44",f:"Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700"},washi:{n:"和紙と墨",c:"#e9e1cf",f:"Shippori+Mincho:wght@500;700;800&family=BIZ+UDPGothic:wght@400;700"},shosai:{n:"夜の書斎",c:"#16201c",dark:1,f:"Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700"}};
 window.hnSkin=function(k){if(!HN_SKINS[k])k="kin";var d=document.documentElement,s=HN_SKINS[k];d.dataset.skin=k;d.dataset.theme=s.dark?"dark":"light";document.getElementById("skinFont").href="https://fonts.googleapis.com/css2?family="+s.f+"&display=swap";return k;};
 (function(){var k;try{k=localStorage.getItem("hn-skin");}catch(e){}hnSkin(k);})();
+/* 別の章から移ってきたとき（?go=1）は、タイトル画面を一瞬見せずに本文から始める（ちらつき防止） */
+if(/[?&]go=1(&|$)/.test(location.search))document.documentElement.classList.add("going");
 /* 文字（書体）。見た目とは別に選ぶ。初期はDotGothic16（2026-11-06 経太さん） */
 window.HN_FONTS={dot:{n:"ドット",fam:"DotGothic16",g:"DotGothic16"},pm:{n:"ドット細め",fam:"PixelMplus12",u:"fonts/PixelMplus12-Regular.woff2"},kh:{n:"ドット明朝",fam:"KH Dot Hibiya",u:"fonts/KH-Dot-Hibiya-24.woff2"},skin:{n:"明朝・ゴシック"}};
 window.hnFont=function(k){if(!HN_FONTS[k])k="dot";var d=document.documentElement,f=HN_FONTS[k];d.dataset.font=k;

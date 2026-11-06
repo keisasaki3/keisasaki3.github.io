@@ -536,7 +536,8 @@ function goPage(p){const q=new URLSearchParams(location.search);q.set("go","1");
 /* 本棚から別の章を選んで来たときは、タイトルで止めずにそのまま読み始める（2回押さないと始まらない不具合の修正、2026-11-06）。
    部屋の続き（SBR.saved）を読み込んでから押す。参加者（ホストが別にいる）のときは押さない */
 const goFlag=(()=>{const q=new URLSearchParams(location.search);if(q.get("go")!=="1")return false;q.delete("go");try{history.replaceState(null,"",location.pathname+(q.toString()?"?"+q.toString():"")+location.hash);}catch(e){}return true;})();
-function autoGo(){if(!goFlag||autoGo.done)return;autoGo.done=true;setTimeout(()=>{const sb=$("start");if(st.v==="title"&&sb&&!sb.disabled&&!isFollower())sb.click();},400);}
+function autoGo(){if(!goFlag||autoGo.done)return;autoGo.done=true;const sb=$("start");if(st.v==="title"&&sb&&!sb.disabled&&!isFollower())sb.click();document.documentElement.classList.remove("going");}
+if(goFlag)setTimeout(()=>document.documentElement.classList.remove("going"),4000);
 function renderTitleRoom(){
   const el=$("titleRoom");if(!el)return;
   const h=hostPeer(),sb=$("start");
@@ -544,7 +545,7 @@ function renderTitleRoom(){
     if(sb)sb.disabled=true;
     el.innerHTML=`<p class="muted">${esc(h?nameOf(h):"ホスト")}さんが始めるのを待っています　<button class="lnk" data-room="solo">ひとりで読む</button></p>`;
   }else{
-    if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");const sv=SBR.on&&SBR.saved;if(sv&&sv.v==="play"&&!(h&&!h.sameTab)){$("ovRoot").innerHTML="";resetProgress();goTo(sv.i,sv.ans||{},sv.sub||0);push();}else startReading();};}
+    if(sb){sb.disabled=false;sb.onclick=()=>{SE.scene();/* ほかにホストがいるなら、ひとりで読み始めずにホストに合わせる（2026-11-06 同期ずれ修正） */if(room&&st.role!=="host"){const hh=hostPeer();if(hh&&!hh.sameTab){roomAction("follow");return;}}if(SBR.on&&room&&st.role==="solo"&&!(h&&!h.sameTab))roomAction("host");const sv=SBR.on&&SBR.saved;if(sv&&sv.v==="play"&&!(h&&!h.sameTab)){$("ovRoot").innerHTML="";resetProgress();goTo(sv.i,sv.ans||{},sv.sub||0);push();}else startReading();};}
     el.innerHTML=SBR.on?`${h&&!h.sameTab?`<p class="muted">${esc(nameOf(h))}さんが読んでいます　<button class="lnk" data-room="follow">参加する</button></p>`:""}${SBR.saved&&SBR.saved.v==="play"&&!(h&&!h.sameTab)?`<p class="muted">この部屋の続きから読みます（ホストが「終了」を押すと最初からに戻ります）</p>`:""}<p class="muted">部屋No.<b>${esc(SBR.code)}</b>　<button class="lnk" data-share="1">この部屋のURLをシェア</button></p>`:room?`<p class="muted">${st.role==="host"?`ホストとして読みます（${others().length+1}人）　<button class="lnk" data-room="solo">やめる</button>`:`<button class="lnk" data-room="host">一緒に読む</button>`}</p>`:"";
   }
   el.querySelectorAll("[data-room]").forEach(b=>b.onclick=()=>roomAction(b.dataset.room));
@@ -603,8 +604,9 @@ let room=null,user=null,peers=[],names={};let myPres={};
 function setPres(patch){Object.assign(myPres,patch);if(room)room.presence(Object.assign({},myPres)).catch(()=>{});}
 function others(){return peers.filter(p=>!p.sameTab&&p.kind==="viewer");}
 function hostPeer(){
-  return peers.filter(p=>p.presence&&p.presence.host&&p.presence.s&&typeof p.presence.ep==="number")
-    .sort((a,b)=>b.presence.ep-a.presence.ep)[0]||null;
+  /* 自分の行は自分の送った状態（myPres）で見る。受信側の記録には自分の状態が入らないため、以前は自分がホストでも数えられず、後から来たホストに合わせてしまっていた */
+  return peers.map(p=>p.sameTab?Object.assign({},p,{presence:myPres}):p).filter(p=>p.presence&&p.presence.host&&p.presence.s&&typeof p.presence.ep==="number")
+    .sort((a,b)=>a.presence.ep-b.presence.ep)[0]||null;/* ホストが二人いたら先に始めた方（ep が小さい方）を正とする */
 }
 function nameOf(p){return p.sameTab?"あなた":(p.by&&names[p.by])||p.name||"だれか";}
 function snapshot(){return {v:st.v,i:st.i,sub:st.sub||0,ans:st.ans,perm:st.perm,nd:st.nd,om:st.om};}
@@ -613,6 +615,8 @@ function push(){
   if(!room||st.role!=="host")return;
   clearTimeout(pushT);pushT=setTimeout(()=>{const sn=snapshot();setPres({host:true,ep:st.ep,s:sn});if(SBR.on&&sn.v==="play")SBR.save(sn);},60);
 }
+/* 届かなかった送信があっても数秒で追いつくよう、ホストは同じ状態を定期的に送り直す（受け手は同じ状態なら何もしない） */
+setInterval(()=>{if(room&&st.role==="host"&&others().length)setPres({});},3000);
 function applyHost(s){
   const key=JSON.stringify(s);if(key===st.lastS)return;st.lastS=key;
   if(s.v==="title"){resetProgress();showTitle();return;}
@@ -656,7 +660,8 @@ function bindRoom(){
     for(const p of peers){const g=p.presence&&p.presence.g;if(!g||p.sameTab)continue;const k=p.peer;if(gayaSeen[k]===undefined){gayaSeen[k]=g.n;if(Date.now()-g.at<3000)gayaFly(g.t,nameOf(p));continue;}if(g.n!==gayaSeen[k]){gayaSeen[k]=g.n;if(Date.now()-g.at<8000)gayaFly(g.t,nameOf(p));}}
     if(ch.joined.length)await resolveNames();
     const h=hostPeer();
-    if(st.role==="host"&&h&&!h.sameTab)roomAction("solo");
+    /* ホストが二人になったら、後から名乗った方が先のホストに合わせる（以前は一方が「ひとり読み」になり、そのまま一人だけ進んでいた） */
+    if(st.role==="host"&&h&&!h.sameTab)roomAction("follow");
     if(!SBR.on&&st.role==="solo"&&h&&!h.sameTab&&!st.autoAsked&&st.v==="title"){st.autoAsked=true;roomAction("follow");}
     if(st.role==="follow"&&h&&!h.sameTab)applyHost(h.presence.s);
     if(st.role==="host"&&ch.joined.length)push();

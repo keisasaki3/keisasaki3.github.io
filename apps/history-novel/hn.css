@@ -399,3 +399,6 @@ ruby rt{font-size:.5em;font-weight:500;letter-spacing:0;color:var(--muted);font-
 
 .rep-btn{font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:4px;text-align:left}
 .rep-btn:hover{border-color:var(--ink)}
+
+/* 章の移動中（?go=1）はタイトル画面を出さない */
+html.going body>*{visibility:hidden!important}
