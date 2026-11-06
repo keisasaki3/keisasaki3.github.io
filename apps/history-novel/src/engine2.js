@@ -311,7 +311,7 @@ function staticHTML(k){
 function renderPast(){let a=st.i-1;while(a>=0&&!S[a].scene)a--;let h="";for(let k=a+1;k<st.i;k++)h+=staticHTML(k);$("past").innerHTML=h;}
 function toBottom(){const p=$("page");requestAnimationFrame(()=>{p.scrollTop=p.scrollHeight;});}
 function run(){
-  let s=S[st.i],sceneChange=false;
+  let s=S[st.i],sceneChange=!!st.forceCard;st.forceCard=false;
   while(s&&s.scene){setScene(s.scene);st.i++;s=S[st.i];sceneChange=true;}
   st.cardHold=sceneChange;st.pend=null;
   if(!s)return;
@@ -621,6 +621,8 @@ function applyHost(s){
   const key=JSON.stringify(s);if(key===st.lastS)return;st.lastS=key;
   if(s.v==="title"){resetProgress();showTitle();return;}
   $("ovRoot").innerHTML="";
+  /* ホストがチャプターの最初の行に来たら、参加者にもチャプタータイトルを出す（参加者は場面の行を飛ばして着くため出ていなかった） */
+  if(s.i!==st.i&&!(s.sub)&&S[s.i-1]&&S[s.i-1].scene)st.forceCard=true;
   goTo(s.i,s.ans||{},s.sub||0);
 
 }
