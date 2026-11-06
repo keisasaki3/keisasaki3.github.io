@@ -193,6 +193,10 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .dr{font-size:14px;margin:0}
 .ensent{font-weight:600;line-height:1.7}.ensent .fill{color:var(--acc-ink);text-decoration:underline;text-underline-offset:3px}
 .gic{width:22px;height:22px;padding:3px;box-sizing:content-box;border-radius:7px;background:#2b2530;image-rendering:pixelated;vertical-align:middle;margin-right:7px}
+.randrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.randrow .btn{padding:10px 8px;font-size:15px}
+.gearbtn{position:fixed;z-index:40;top:calc(8px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.gearpop{position:fixed;z-index:41;top:calc(54px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:min(300px,calc(100vw - 16px));background:var(--card);color:var(--card-ink);border:1px solid var(--card-line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:12px;display:flex;flex-direction:column;gap:8px}
+.gearpop .zrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.gearpop .zrow button{padding:8px 4px;border-radius:10px;border:1.5px solid var(--card-line);background:var(--card-soft);color:var(--card-ink);font-weight:700}.gearpop .zrow button[aria-pressed="true"]{border-color:var(--card-acc);background:var(--card-acc);color:#fff}
 .btn.sub{background:transparent;color:var(--ink);border:2px solid var(--acc)}
 .report{text-align:center}.rk{display:flex;gap:8px;align-items:center;font-size:14px}.rk input{width:18px;height:18px}.report textarea{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--ink);width:100%;box-sizing:border-box}
 .learnline{margin:0;text-align:center;letter-spacing:.05em}
@@ -303,6 +307,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 [hidden]{display:none!important}
 </style>
 
+<button type="button" class="gearbtn" id="gearBtn" aria-label="設定" title="設定"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.4zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg></button>
 <div class="app" id="app">
 
   <!-- ロビー -->
@@ -327,6 +332,10 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <label for="nick">あなたの名前
         <input id="nick" maxlength="12" placeholder="例：本能寺の火元" autocomplete="off">
       </label>
+      <div class="randrow">
+        <button class="btn sub" id="randAc" type="button">🎲 学問ランダム</button>
+        <button class="btn sub" id="randCu" type="button">🎲 教養ランダム</button>
+      </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <span class="small muted">ジャンル</span>
         <div class="gtree" id="genres"></div>
@@ -2128,6 +2137,31 @@ $("startBtn").onclick=()=>{
   const h=hostWait();
   S.wait=h? {...h} : {gid:newGid(),genre:S.genre,mode:S.mode,lv:S.lv,cnt:S.cnt,bmode:S.bmode,ht:S.ht,qi:startQi(),amode:S.amode};
   $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
+// 学問ランダム／教養ランダム（2026-11-06 Keita依頼）: やさしい・10問は固定、ジャンル・出題のしかた・鳥の出題形式はランダムで、そのまま「対戦をはじめる」。歴史（通しで遊ぶ年号）は除く。答え方（入力/4択）は各自の設定のまま
+function randGo(top){
+  const node=GTREE.kids.find(n=>n.name===top); const ids=gLeaves(node).filter(g=>g!=="H"); if(!ids.length) return;
+  const g=ids[Math.floor(Math.random()*ids.length)]; const rnd=a=>a[Math.floor(Math.random()*a.length)];
+  if(S.wait){ S.wait=null; push(); }
+  ensureGenre(g).then(()=>{
+    S.genre=g; store.set("nb-genre",g); S.lv=1; S.cnt=10;
+    if(hasVoice(g)) S.bmode=rnd(BMODES).id;
+    if(isCon(g)){ const ok=hasImgQ(g)?CMODES.filter(m=>deckFor(m.id,1,g,null,S.bmode).length>=10).map(m=>m.id):["M"]; S.mode=rnd(ok.length?ok:["M"]); }
+    renderPickers(); push(); $("startBtn").onclick();
+  }).catch(()=>{});
+}
+// 歯車の設定: 表示の大きさ（パソコン向け、2026-11-06 Keita依頼）。html の zoom を変える。端末ごと nb-zoom
+const ZOOMS=[{k:"1",n:"標準"},{k:"1.25",n:"大きめ"},{k:"1.5",n:"特大"}];
+function applyZoom(z){ document.documentElement.style.zoom=(z&&z!=="1")?z:""; }
+applyZoom(store.get("nb-zoom")||"1");
+$("gearBtn").onclick=e=>{ e.stopPropagation(); let pop=$("gearPop"); if(pop){ pop.remove(); return; }
+  pop=el("div","gearpop"); pop.id="gearPop"; pop.onclick=ev=>ev.stopPropagation();
+  pop.append(el("b",null,"設定")); pop.append(el("span","small","表示の大きさ（パソコンで遊ぶときに）"));
+  const row=el("div","zrow"); const cur=store.get("nb-zoom")||"1";
+  ZOOMS.forEach(z=>{ const b=el("button",null,z.n); b.type="button"; b.setAttribute("aria-pressed",String(z.k===cur)); b.onclick=()=>{ store.set("nb-zoom",z.k); applyZoom(z.k); row.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); }; row.append(b); });
+  pop.append(row); document.body.append(pop); };
+document.addEventListener("click",()=>{ const p=$("gearPop"); if(p) p.remove(); });
+$("randAc").onclick=()=>randGo("学問");
+$("randCu").onclick=()=>randGo("教養");
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
 $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
@@ -2151,7 +2185,7 @@ $("lqLogin").onclick=async()=>{ if(!LQ.sb) return; try{ sessionStorage.setItem("
 $("lqToggle").onclick=()=>{ store.set("nb-lq-off",lqOff()?"0":"1"); renderLink(); lqPull(); };
 lqInit();
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
-function toLobby(){ stopVoice(); S.solo=false; S.amode=store.get("nb-amode")||"T"; if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; S.mode=modeFor(S.genre); } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
+function toLobby(){ stopVoice(); S.solo=false; S.amode=store.get("nb-amode")||"T"; S.cnt=store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")); if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; S.mode=modeFor(S.genre); } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
 $("lobbyBtn").onclick=toLobby;
 { let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="ゲームをやめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="ゲームをやめる";},3000); }; }
 
