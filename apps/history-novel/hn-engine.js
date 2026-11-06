@@ -274,7 +274,8 @@ function md(t,see,self){
 function faceHTML(id,cls){const c=C[id];if(!c)return "";
   /* ドット顔（Retro Diffusion で肖像画から作ったもの）があればそれを優先。2026-11-06 試験導入: 頼朝・清盛 */
   if(c.dot)return `<img class="${cls} dot" src="ch/dot/${c.dot}.png" alt="${esc(c.n)}" loading="lazy">`;
-  return (c.img&&PIC["ch_"+c.img])?`<img class="${cls}" src="ch/${c.img}.jpg" alt="${esc(c.n)}" loading="lazy">`:`<span class="${cls} sil" aria-hidden="true">${esc(c.k||c.n[0])}</span>`;}
+  /* 肖像画が無い人物は共通の黒い影（128×160ドット、2026-11-06 経太さん作の形） */
+  return (c.img&&PIC["ch_"+c.img])?`<img class="${cls}" src="ch/${c.img}.jpg" alt="${esc(c.n)}" loading="lazy">`:`<img class="${cls} dot mob" src="ch/dot/mob.png" alt="" aria-hidden="true">`;}
 /* 地の文は句点で改行（かっこの中は除く） */
 function brk(s){let d=0,o="";for(let i=0;i<s.length;i++){const c=s[i];o+=c;if("「『（(".includes(c))d++;else if("」』）)".includes(c))d=Math.max(0,d-1);else if(c==="。"&&d===0&&i<s.length-1)o+="\n";}return o;}
 function lineHTML(s,cur){
