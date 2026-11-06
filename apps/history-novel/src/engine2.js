@@ -33,7 +33,7 @@ function setFont(k){k=window.hnFont(k);try{localStorage.setItem("hn-font",k);}ca
 /* 見た目の切替。暗い見た目と明るい見た目で地形の画像（-d）が変わるので読み直す */
 function setSkin(k){const was=isDark();k=window.hnSkin(k);try{localStorage.setItem("hn-skin",k);}catch(x){}drawCfg();
   if(was!==isDark()){terrEls.forEach(t=>{t.loaded=false;});terrain();}}
-function cfgPop(open){$("cfgPop").hidden=!open;$("bCfg").setAttribute("aria-expanded",String(open));}
+function cfgPop(open){$("cfgPop").hidden=!open;$("repRow").hidden=!(SBR.on&&st.v==="play");$("bCfg").setAttribute("aria-expanded",String(open));}
 $("bCfg").innerHTML=ICO_CFG;
 $("bCfg").onclick=e=>{e.stopPropagation();if(!$("sndPop").hidden)sndPop(false);cfgPop($("cfgPop").hidden);};
 $("cfgPop").addEventListener("click",e=>{e.stopPropagation();const sk=e.target.closest("button[data-skin]");if(sk){setSkin(sk.dataset.skin);return;}const fo=e.target.closest("button[data-font]");if(fo){setFont(fo.dataset.font);return;}const b=e.target.closest("button[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
@@ -317,7 +317,7 @@ function run(){
   setScene(sceneAt(st.i));
   st.v="play";st.sub=0;document.documentElement.classList.remove("title-mode");if(!sceneChange){$("card").innerHTML="";}
   $("choices").innerHTML="";$("fbx").innerHTML="";$("nx").hidden=true;st.wait=false;nxText();renderPast();
-  $("bk").hidden=isFollower()||prevIndex()<0;
+  $("bk").style.visibility=isFollower()||prevIndex()<0?"hidden":"";
   if(s.end){hideTalk();updateMap();showEnd();return;}
   if(s.choice){
     st.wait=true;setWho(s.who||"あなたの決断");
@@ -467,7 +467,7 @@ function openRep(){const r=repTarget();st.sheet="rep";
       $("repMsg").textContent="送りました。ありがとうございます。";$("repTa").value="";}
     catch(x){$("repMsg").textContent="送れませんでした。時間をおいてもう一度お試しください。";}
     $("repSend").disabled=false;};}
-$("bRep").addEventListener("click",e=>{e.stopPropagation();if(st.v==="play")openRep();});
+$("bRep").addEventListener("click",e=>{e.stopPropagation();cfgPop(false);if(st.v==="play")openRep();});
 /* 資料・辞書を開いている人がいたら、ほかの人に「ちょっと待ってね」を出す（2026-11-05 経太さん） */
 let lookSent=0;
 function lookPres(){const v=st.sheet&&st.sheet!=="room"&&st.v==="play"?1:0;if(v!==lookSent){lookSent=v;setPres({look:v});}}
@@ -512,7 +512,7 @@ let shelfOn=CFG.shelf;
 function erasHTML(){const sh=SHELF.find(x=>x.id===shelfOn);
   return sh.eras.map((e,j)=>e[3]===CFG.page?`<li><button class="era on ch" id="start"><span class="no">${j+1}</span><span class="en">${e[2]}</span><span class="et">${e[4]}</span></button></li>`
    :e[3]?`<li><button class="era on ch" data-page="${e[3]}"><span class="no">${j+1}</span><span class="en">${e[2]}</span><span class="et">${e[4]}</span></button></li>`
-   :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">${e[0]}</span><span class="et">準備中</span></div></li>`).join("");}
+   :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">？？？</span><span class="et">準備中</span></div></li>`).join("");}
 function showTitle(){
   st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
   st.i=0;mstate=Object.assign(HOME(),{c:CFG.home.c,r:CFG.home.r});buildOverlay();setTarget(false);userView(false);
@@ -622,7 +622,7 @@ function roomAction(a){
   else if(a==="solo"){st.role="solo";st.lastS="";setPres({host:null,ep:null,s:null});}
   else if(a==="follow"){st.role="follow";st.lastS="";const h=hostPeer();if(h)applyHost(h.presence.s);}
   updateRoomUI();if(st.sheet==="room")renderSheet();
-  if(st.v==="title")renderTitleRoom();else if(st.v==="play"){nxText();$("bk").hidden=isFollower()||prevIndex()<0;document.querySelectorAll("#choices .opt").forEach(b=>{if(st.wait)b.disabled=isFollower();});}
+  if(st.v==="title")renderTitleRoom();else if(st.v==="play"){nxText();$("bk").style.visibility=isFollower()||prevIndex()<0?"hidden":"";document.querySelectorAll("#choices .opt").forEach(b=>{if(st.wait)b.disabled=isFollower();});}
 }
 function roomSheet(){
   const h=hostPeer();
@@ -716,7 +716,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");i
   /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。暗記大戦と同じ決まり */
   const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,24);
   if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
-  SBR.on=true;SBR.code=code;$("bRep").hidden=false;if(st.v==="title")renderTitleRoom();
+  SBR.on=true;SBR.code=code;if(st.v==="title")renderTitleRoom();
   await SBR.load();if(st.v==="title")renderTitleRoom();
   try{await SBR.join(code);}catch(e){}if(st.v==="title")renderTitleRoom();autoGo();
 })();
