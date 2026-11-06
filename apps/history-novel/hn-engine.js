@@ -313,6 +313,7 @@ function toBottom(){const p=$("page");requestAnimationFrame(()=>{p.scrollTop=p.s
 function run(){
   let s=S[st.i],sceneChange=false;
   while(s&&s.scene){setScene(s.scene);st.i++;s=S[st.i];sceneChange=true;}
+  st.cardHold=sceneChange;st.pend=null;
   if(!s)return;
   setScene(sceneAt(st.i));
   st.v="play";st.sub=0;document.documentElement.classList.remove("title-mode");if(!sceneChange){$("card").innerHTML="";}
@@ -346,6 +347,8 @@ function run(){
 let typer=null;
 function typeIn(el,done){
   if(typer)typer.finish(true);
+  /* チャプタータイトルが出ている間は本文を始めない（押して閉じたら打ち始める。2026-11-06 経太さん） */
+  if(st.cardHold&&el){el.style.visibility="hidden";st.pend=()=>{el.style.visibility="";typeIn(el,done);};$("nx").hidden=false;return;}
   $("nx").hidden=true;
   const fin=()=>{if(!st.wait&&st.v==="play")$("nx").hidden=false;done&&done();toBottom();};
   if(!el||matchMedia("(prefers-reduced-motion:reduce)").matches){fin();return;}
@@ -396,7 +399,8 @@ function answerRecall(s,j,quiet){
   st.wait=false;const fbe=$("content").querySelector(".fb");fbe.innerHTML=`<span class="tag ${hit?"ok":"ng"}">${hit?"正解":"復習へ"}</span>${md(first,false)}${hit?"":"<span class=\"note\">章末の「次の扉」にもう一度並びます。</span>"}`;
   typeIn(fbe);push();toBottom();
 }
-function advance(){if(typer&&!st.sheet){typer.finish();return;}
+function releaseCard(){st.cardHold=false;$("card").innerHTML="";const f=st.pend;st.pend=null;if(f)f();}
+function advance(){if(st.cardHold&&!st.sheet&&st.v==="play"){releaseCard();return;}if(typer&&!st.sheet){typer.finish();return;}
   if(isFollower()||st.wait||st.sheet||st.v!=="play")return;
   const s=S[st.i];
   if(s&&s.choice&&st.ans[st.i]!=null){const o=s.o[st.ans[st.i]];if(!o.h&&st.sub<o.ifr.length){st.sub++;drawChoice(s);SE.page();push();toBottom();return;}}
@@ -514,7 +518,7 @@ function erasHTML(){const sh=SHELF.find(x=>x.id===shelfOn);
    :e[3]?`<li><button class="era on ch" data-page="${e[3]}"><span class="no">${j+1}</span><span class="en">${e[2]}</span><span class="et">${e[4]}</span></button></li>`
    :`<li><div class="era off"><span class="no">${j+1}</span><span class="en">？？？</span><span class="et">準備中</span></div></li>`).join("");}
 function showTitle(){
-  st.v="title";document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
+  st.v="title";st.cardHold=false;st.pend=null;document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
   st.i=0;mstate=Object.assign(HOME(),{c:CFG.home.c,r:CFG.home.r});buildOverlay();setTarget(false);userView(false);
   $("ovRoot").innerHTML=`<div class="ov sel"><div class="sel-in">
    <h1 class="app-name"><b>SUPER</b>歴史ノベル</h1>
