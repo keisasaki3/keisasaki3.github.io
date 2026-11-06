@@ -27,14 +27,16 @@ $("sndPop").addEventListener("click",e=>e.stopPropagation());
 const ICO_CFG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/><circle cx="12" cy="12" r="6.6"/></svg>';
 let fsz=matchMedia("(min-width:900px)").matches?"l":"s";try{const v=localStorage.getItem("fs");if(v==="s"||v==="l"||v==="m")fsz=v;}catch(e){}
 function drawCfg(){document.documentElement.dataset.fs=fsz;document.querySelectorAll("#cfgPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fsz)));
-  const sk=document.documentElement.dataset.skin;$("skins").innerHTML=Object.entries(window.HN_SKINS||{}).map(([k,v])=>`<button data-skin="${k}" role="radio" aria-checked="${k===sk}"><i style="background:${v.c}"></i>${v.n}</button>`).join("");}
+  const sk=document.documentElement.dataset.skin;$("skins").innerHTML=Object.entries(window.HN_SKINS||{}).map(([k,v])=>`<button data-skin="${k}" role="radio" aria-checked="${k===sk}"><i style="background:${v.c}"></i>${v.n}</button>`).join("");
+  const fk=document.documentElement.dataset.font;$("fonts").innerHTML=Object.entries(window.HN_FONTS||{}).map(([k,v])=>`<button data-font="${k}" role="radio" aria-checked="${k===fk}" style="font-family:${v.fam?`'${v.fam}'`:"var(--h)"},serif">${v.n}</button>`).join("");}
+function setFont(k){k=window.hnFont(k);try{localStorage.setItem("hn-font",k);}catch(x){}drawCfg();}
 /* 見た目の切替。暗い見た目と明るい見た目で地形の画像（-d）が変わるので読み直す */
 function setSkin(k){const was=isDark();k=window.hnSkin(k);try{localStorage.setItem("hn-skin",k);}catch(x){}drawCfg();
   if(was!==isDark()){terrEls.forEach(t=>{t.loaded=false;});terrain();}}
 function cfgPop(open){$("cfgPop").hidden=!open;$("bCfg").setAttribute("aria-expanded",String(open));}
 $("bCfg").innerHTML=ICO_CFG;
 $("bCfg").onclick=e=>{e.stopPropagation();if(!$("sndPop").hidden)sndPop(false);cfgPop($("cfgPop").hidden);};
-$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const sk=e.target.closest("[data-skin]");if(sk){setSkin(sk.dataset.skin);return;}const b=e.target.closest("[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
+$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const sk=e.target.closest("button[data-skin]");if(sk){setSkin(sk.dataset.skin);return;}const fo=e.target.closest("button[data-font]");if(fo){setFont(fo.dataset.font);return;}const b=e.target.closest("button[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
 drawCfg();
 $("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
 $("sndVol").onchange=()=>{if(audible())SE.page();};
