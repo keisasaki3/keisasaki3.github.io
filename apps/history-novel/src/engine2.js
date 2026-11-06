@@ -399,9 +399,10 @@ function answerRecall(s,j,quiet){
   st.wait=false;const fbe=$("content").querySelector(".fb");fbe.innerHTML=`<span class="tag ${hit?"ok":"ng"}">${hit?"正解":"復習へ"}</span>${md(first,false)}${hit?"":"<span class=\"note\">章末の「次の扉」にもう一度並びます。</span>"}`;
   typeIn(fbe);push();toBottom();
 }
-function releaseCard(){st.cardHold=false;$("card").innerHTML="";const f=st.pend;st.pend=null;if(f)f();}
+function releaseCard(){st.cardHold=false;$("card").innerHTML="";const f=st.pend;st.pend=null;if(f)f();push();}
 function advance(){if(st.cardHold&&!st.sheet&&st.v==="play"){releaseCard();return;}if(typer&&!st.sheet){typer.finish();return;}
   if(isFollower()||st.wait||st.sheet||st.v!=="play")return;
+  if(room&&st.role==="host"&&others().some(p=>p.presence&&p.presence.look)){st.lookPoke=Date.now();drawLook();setTimeout(drawLook,3100);}
   const s=S[st.i];
   if(s&&s.choice&&st.ans[st.i]!=null){const o=s.o[st.ans[st.i]];if(!o.h&&st.sub<o.ifr.length){st.sub++;drawChoice(s);SE.page();push();toBottom();return;}}
   st.i++;SE.page();run();}
@@ -476,7 +477,8 @@ $("bRep").addEventListener("click",e=>{e.stopPropagation();cfgPop(false);if(st.v
 let lookSent=0;
 function lookPres(){const v=st.sheet&&st.sheet!=="room"&&st.v==="play"?1:0;if(v!==lookSent){lookSent=v;setPres({look:v});}}
 function drawLook(){const el=$("lookNote");if(!el)return;const n=room?others().filter(p=>p.presence&&p.presence.look).length:0;
-  el.hidden=!(n&&st.v==="play");}
+  /* ほかの人が資料を見ていて、自分がホストで次へを押したときだけ、3秒出す（2026-11-06 経太さん） */
+  el.hidden=!(n&&st.v==="play"&&st.role==="host"&&Date.now()-(st.lookPoke||0)<3000);}
 function termHead(k){const g=G[k];if(g.t!=="人")return g.t==="地"?'<div class="kind">土地</div>':g.t==="年"?'<div class="kind">年号</div>':'<div class="kind">用語</div>';
   const id=Object.keys(C).find(i=>C[i].n===k);return `<div class="kind">人物</div>${id?`<div class="t-face">${faceHTML(id,"face")}</div>`:""}`;}
 function termPics(k){const ks=(R[k]||[]).filter(x=>PIC[x]);if(!ks.length)return "";
@@ -609,7 +611,7 @@ function hostPeer(){
     .sort((a,b)=>a.presence.ep-b.presence.ep)[0]||null;/* ホストが二人いたら先に始めた方（ep が小さい方）を正とする */
 }
 function nameOf(p){return p.sameTab?"あなた":(p.by&&names[p.by])||p.name||"だれか";}
-function snapshot(){return {v:st.v,i:st.i,sub:st.sub||0,ans:st.ans,perm:st.perm,nd:st.nd,om:st.om};}
+function snapshot(){return {v:st.v,i:st.i,sub:st.sub||0,ans:st.ans,perm:st.perm,nd:st.nd,om:st.om,c:st.cardHold?1:0};}
 let pushT=null;
 function push(){
   if(!room||st.role!=="host")return;
@@ -618,11 +620,13 @@ function push(){
 /* 届かなかった送信があっても数秒で追いつくよう、ホストは同じ状態を定期的に送り直す（受け手は同じ状態なら何もしない） */
 setInterval(()=>{if(room&&st.role==="host"&&others().length)setPres({});},3000);
 function applyHost(s){
-  const key=JSON.stringify(s);if(key===st.lastS)return;st.lastS=key;
+  /* c＝ホストの画面にチャプタータイトルが出ているか。位置が同じで c だけ変わったら（ホストが窓を閉じた）、参加者の窓も閉じて本文を始める */
+  const pos=Object.assign({},s);delete pos.c;const key=JSON.stringify(pos);
+  if(key===st.lastS){if(!s.c&&st.cardHold&&st.v==="play")releaseCard();return;}st.lastS=key;
   if(s.v==="title"){resetProgress();showTitle();return;}
   $("ovRoot").innerHTML="";
   /* ホストがチャプターの最初の行に来たら、参加者にもチャプタータイトルを出す（参加者は場面の行を飛ばして着くため出ていなかった） */
-  if(s.i!==st.i&&!(s.sub)&&S[s.i-1]&&S[s.i-1].scene)st.forceCard=true;
+  if(s.c&&s.i!==st.i)st.forceCard=true;
   goTo(s.i,s.ans||{},s.sub||0);
 
 }
