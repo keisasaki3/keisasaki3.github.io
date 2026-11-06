@@ -536,7 +536,8 @@ function goPage(p){const q=new URLSearchParams(location.search);q.set("go","1");
 /* 本棚から別の章を選んで来たときは、タイトルで止めずにそのまま読み始める（2回押さないと始まらない不具合の修正、2026-11-06）。
    部屋の続き（SBR.saved）を読み込んでから押す。参加者（ホストが別にいる）のときは押さない */
 const goFlag=(()=>{const q=new URLSearchParams(location.search);if(q.get("go")!=="1")return false;q.delete("go");try{history.replaceState(null,"",location.pathname+(q.toString()?"?"+q.toString():"")+location.hash);}catch(e){}return true;})();
-function autoGo(){if(!goFlag||autoGo.done)return;autoGo.done=true;setTimeout(()=>{const sb=$("start");if(st.v==="title"&&sb&&!sb.disabled&&!isFollower())sb.click();},400);}
+function autoGo(){if(!goFlag||autoGo.done)return;autoGo.done=true;const sb=$("start");if(st.v==="title"&&sb&&!sb.disabled&&!isFollower())sb.click();document.documentElement.classList.remove("going");}
+if(goFlag)setTimeout(()=>document.documentElement.classList.remove("going"),4000);
 function renderTitleRoom(){
   const el=$("titleRoom");if(!el)return;
   const h=hostPeer(),sb=$("start");
