@@ -385,3 +385,4 @@ ruby rt{font-size:.5em;font-weight:500;letter-spacing:0;color:var(--muted);font-
 .term ruby{ruby-align:center}
 .when .w ruby rt{font-size:.62em}
 .menu button:hover{color:var(--ink)!important;background:var(--sea)!important}
+.face.dot{image-rendering:pixelated;object-fit:cover;background:#c9b98f}

@@ -5,8 +5,8 @@ const P={
 };
 /* 登場人物。img は ch/ の画像。無い人物は一文字の影 */
 const C={
-kiyomori:{n:"平清盛",img:"kiyomori"},tokitada:{n:"平時忠",k:"時"},mochihito:{n:"以仁王",img:"mochihito"},
-yoritomo:{n:"源頼朝",img:"yoritomo"},tsunetane:{n:"千葉常胤",k:"常"},hirotsune:{n:"上総広常",k:"広"},
+kiyomori:{n:"平清盛",img:"kiyomori",dot:"kiyomori"},tokitada:{n:"平時忠",k:"時"},mochihito:{n:"以仁王",img:"mochihito"},
+yoritomo:{n:"源頼朝",img:"yoritomo",dot:"yoritomo"},tsunetane:{n:"千葉常胤",k:"常"},hirotsune:{n:"上総広常",k:"広"},
 yoshitsune:{n:"源義経",img:"yoshitsune"},masako:{n:"北条政子",img:"masako"},kugyo:{n:"公暁",k:"公"},
 gotoba:{n:"後鳥羽上皇",img:"gotoba"},hiromoto:{n:"大江広元",img:"hiromoto"},gokenin:{n:"御家人たち",k:"衆"},
 yoshitoki:{n:"北条義時",k:"義"},niinoama:{n:"二位尼",k:"尼"},yasutoki:{n:"北条泰時",img:"yasutoki"}
