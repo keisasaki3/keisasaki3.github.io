@@ -4,7 +4,7 @@
 元画像をそのまま入れる。サイズ 128×160。プロンプトなしでよい。
 - kiyomori.png 平清盛 / mochihito.png 以仁王 / yoshitsune.png 源義経 / masako.png 北条政子
 - gotoba.png 後鳥羽上皇 / hiromoto.png 大江広元 / yasutoki.png 北条泰時
-- 頼朝は済み（_done_yoritomo_pixelate.png）
+- 頼朝は済み（_done_yoritomo_pixelate.png）、後鳥羽上皇も済み（_done_gotoba_pixelate.png、2026-11-06 ch/dot/gotoba.png）
 
 ## 肖像画のないモブ（RD Pro / Portrait）
 入力画像に _done_yoritomo_pixelate.png を入れ、以下のプロンプト。サイズ 128×160。
