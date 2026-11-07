@@ -1922,10 +1922,12 @@ const DTERMS=Object.keys(DIDX).filter(t=>t.length>=2&&!DIDX[t][1]).sort((a,b)=>b
 const ETERMS=Object.keys(DIDX).filter(t=>DIDX[t][1]).sort((a,b)=>b.length-a.length);
 const DRE=(DTERMS.length||ETERMS.length)? new RegExp([...(ETERMS.length?["\\b(?:"+ETERMS.map(rxq).join("|")+")\\b"]:[]),...DTERMS.map(rxq)].join("|"),"gi") : null;
 function dlink(label,t){ const b=el("button","dlink",label); b.type="button"; b.onclick=e=>{ e.stopPropagation(); openDict(t,$("dict").hidden); }; return b; }
-const KATA=/[\u30A1-\u30FA\u30FC]/;
+const KATA=/[\u30A1-\u30FA\u30FC]/; const HIRA=/[\u3041-\u309F]/, HONLY=/^[\u3041-\u309F\u30FC]+$/;
 function fillLinked(node,text,self){ node.textContent=""; if(!DRE){ node.textContent=text; return; }
   const used=new Set([self]); let last=0; text.replace(DRE,(m,off)=>{ const k=dkey(m); if(!k||used.has(k)) return m;
     // カタカナ語の途中（イスラムの「ラム」、テムジンの「ジン」）はリンクしない
+    // ひらがなだけの見出し語（読み札の「しい」等）は、ひらがなの途中（望ましい）ではリンクしない（2026-11-06 誤り報告#10）
+    if(HONLY.test(m)&&(HIRA.test(text[off-1]||"")||HIRA.test(text[off+m.length]||""))) return m;
     if(KATA.test(m[0])&&KATA.test(text[off-1]||"")) return m; if(KATA.test(m[m.length-1])&&KATA.test(text[off+m.length]||"")) return m; used.add(k); if(off>last) node.append(text.slice(last,off)); node.append(dlink(m,k)); last=off+m.length; return m; });
   if(last<text.length) node.append(text.slice(last)); }
 let dstack=[];
