@@ -50,7 +50,8 @@ for _id,_f,_en in _subj:
     for _c in _a:
         if _c["t"] in _vis: _c["v"]=1
     _wd(_f,_a); _cman[_f]=len(_a)
-    for _c in _a: _didx.setdefault(_c["t"],[_f,1 if _en else 0])
+    if _f!="math":   # 数学は答えが式・数なので辞書リンクにしない
+        for _c in _a: _didx.setdefault(_c["t"],[_f,1 if _en else 0])
     for _c in _a:
         if _c.get("tp"): _tps[_c["tp"]]=_tps.get(_c["tp"],0)+1
 for _name,_src,_l in (("dx-history","dict-history.json",0),("dx-en","dict-en.json",1)):
