@@ -366,6 +366,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <button class="btn" id="startBtn" type="button">対戦をはじめる</button>
       <button class="btn sub" id="soloBtn" type="button" hidden>ひとりで遊ぶ</button>
       <button class="btn sub" id="reviewBtn" type="button" hidden>今日の復習</button>
+      <button class="btn sub" id="forceBtn" type="button" hidden>そろった人ではじめる</button>
       <div class="waiting" id="waitStart"></div>
     </div>
 
@@ -1736,7 +1737,9 @@ function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="
 function startQi(){ return isPick(S.genre)?0:fromQi(S.mode,S.lv,S.from); }
 function startFromWait(w){ if(typeof w.ht==="boolean") S.ht=w.ht; hostAmode(w.amode); const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
 function lobbyCheck(){
-  const lp=lobbyPeers(); if(!S.wait){ okLine("waitStart",false,[]); return; }
+  const lp=lobbyPeers(); $("forceBtn").hidden=!S.wait; if(!S.wait){ okLine("waitStart",false,[]); return; }
+  // 同じ対戦がもう始まっていたら（だれかが「そろった人ではじめる」を押した）、待っていた人も合流する（2026-11-08 Keita依頼）
+  { const g=findOpenGame(); if(g&&g.gid===S.wait.gid){ S.wait=null; $("forceBtn").hidden=true; $("joinBtn").onclick(); return; } }
   const h=hostWait(); if(h && h.gid>S.wait.gid){ S.wait={...h}; push(); }
   if(lp.every(pr=>validWait(pr.wait)&&pr.wait.gid===S.wait.gid)){ startFromWait(S.wait); return; }
   okLine("waitStart", true, lp.map(pr=>[safeName(pr), !!(validWait(pr.wait)&&pr.wait.gid===S.wait.gid)]));
@@ -2148,6 +2151,7 @@ function randGo(top){
     S.genre=g; store.set("nb-genre",g); S.lv=1; S.cnt=10;
     if(hasVoice(g)) S.bmode=rnd(BMODES).id;
     if(isCon(g)){ const ok=hasImgQ(g)?CMODES.filter(m=>deckFor(m.id,1,g,null,S.bmode).length>=10).map(m=>m.id):["M"]; S.mode=rnd(ok.length?ok:["M"]); }
+    S.amode="C";   // ランダムはいつも4択（2026-11-08 Keita指摘「ランダムで入力が出た」）。ロビーに戻ると自分の設定に戻る
     renderPickers(); push(); $("startBtn").onclick();
   }).catch(()=>{});
 }
@@ -2164,6 +2168,8 @@ $("gearBtn").onclick=e=>{ e.stopPropagation(); let pop=$("gearPop"); if(pop){ po
 document.addEventListener("click",()=>{ const p=$("gearPop"); if(p) p.remove(); });
 $("randAc").onclick=()=>randGo("学問");
 $("randCu").onclick=()=>randGo("教養");
+// 全員のOKを待たずに始める（2026-11-08 Keita依頼）。OKした人は自動で合流、まだの人には「対戦中です［参加する］」が出る
+$("forceBtn").onclick=()=>{ if(S.wait){ $("forceBtn").hidden=true; S.solo=false; startFromWait(S.wait); } };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
 $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
