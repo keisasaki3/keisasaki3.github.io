@@ -1148,7 +1148,7 @@ const LOADED={}, LOADING={};
 const CIMG = {/*CIMG*/};
 // 音で出題する札（クラシックの名曲など）。科目 → 用語 → [音源, 演奏, ライセンス, 出典ページ, 部分]
 const CSND = {/*CSND*/};
-const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"h",f:"math",name:"数学"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
+const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"h",f:"math",name:"数学"},{id:"j",f:"boki3",name:"簿記3級"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
 SUBJ.forEach(sj=>{ ALL[sj.id]=[]; });
 const subjByF=f=>SUBJ.find(x=>x.f===f);
 function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,snd:(CSND[sj.f]||{})[c.t]||null,tp:c.tp||"",vis:!!c.v,w:Array.isArray(c.w)?c.w:null,key:sj.id+":"+(c.k||c.t)}));
@@ -1167,9 +1167,9 @@ function inSeason(c,m){ if(c.mon){ const [a,b]=c.mon; return a<=b? (m>=a&&m<=b) 
 const GENRES=[{id:"H",name:"歴史",cat:"K"},...SUBJ.map(x=>({id:x.id,name:x.name,cat:"K"})),{id:"B",name:"関東の鳥",cat:"Z"},{id:"D",name:"北海道の鳥",cat:"Z"},{id:"T",name:"関東の木",cat:"Z"}];
 // ジャンルの木（葉は id を持つ。中身のない葉・枝は表示しない）
 const GTREE={name:"すべて",kids:[
-  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"2"},{id:"A"},{id:"h"},{id:"1"},{id:"F"},{id:"4"},{id:"Y"},{id:"O"},{id:"Z"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"X"},{id:"U"},{id:"S"},{id:"3"},{id:"N"},{id:"5"},{id:"6"},{id:"7"},{name:"英語",ic:"english",kids:[{id:"V"},{id:"I"},{id:"8"}]}]},
+  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"2"},{id:"A"},{id:"j"},{id:"h"},{id:"1"},{id:"F"},{id:"4"},{id:"Y"},{id:"O"},{id:"Z"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"X"},{id:"U"},{id:"S"},{id:"3"},{id:"N"},{id:"5"},{id:"6"},{id:"7"},{name:"英語",ic:"english",kids:[{id:"V"},{id:"I"},{id:"8"}]}]},
   {name:"教養",ic:"culture",kids:[{name:"鳥",ic:"bird",kids:[{id:"B"},{id:"D"}]},{name:"木",ic:"tree",kids:[{id:"T"}]},{id:"9"},{id:"a"},{id:"b"},{id:"f"},{id:"c"},{id:"e"},{id:"d"},{id:"g"}]}]};
-const GICON={h:"math",H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",1:"math",2:"business-administration",3:"medicine",4:"religious-studies",5:"art",6:"literature",V:"business-english",I:"idioms",7:"linguistics-languages",8:"business-english",9:"heritage",a:"architecture",b:"art",c:"cuisine",d:"drink",e:"season",f:"classical",g:"constellation",B:"bird",D:"bird",T:"tree"};
+const GICON={h:"math",j:"assets",H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",1:"math",2:"business-administration",3:"medicine",4:"religious-studies",5:"art",6:"literature",V:"business-english",I:"idioms",7:"linguistics-languages",8:"business-english",9:"heritage",a:"architecture",b:"art",c:"cuisine",d:"drink",e:"season",f:"classical",g:"constellation",B:"bird",D:"bird",T:"tree"};
 const ICONS="../../shared/icons/";
 const gName=id=>(GENRES.find(g=>g.id===id)||{}).name||id;
 const gCount=id=>{ const sj=SUBJ.find(x=>x.id===id); return sj?(CMAN[sj.f]||0):(ALL[id]||[]).length; };
@@ -1178,6 +1178,7 @@ const gLeaves=n=>n.id?[n.id]:n.kids.filter(gHas).flatMap(gLeaves);
 function gPathTo(id,n=GTREE,acc=[]){ if(!n.kids) return null; for(const k of n.kids){ if(k.id===id) return acc; if(k.kids){ const r=gPathTo(id,k,acc.concat([k])); if(r) return r; } } return null; }
 let gNav=null;
 const isCon=g=>SUBJ.some(x=>x.id===g);
+const isProb=g=>g==="h"||g==="j";   // 問題を解いて4択で答える科目（数学・簿記3級）
 const subjTop=g=>(SUBJ.find(x=>x.id===g)||{}).k?"教養":"学問";
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
 const isPick=g=>g==="B"||g==="T"||g==="D"||isCon(g); const hasVoice=g=>g==="B"||g==="D";
@@ -1456,7 +1457,7 @@ function renderPickers(){
   seg("greens", [{key:"wakakusa",name:"若草"},{key:"tokiwa",name:"常磐"}], S.green, null, k=>{S.green=k; store.set("nb-green",k); document.documentElement.dataset.green=k; renderPickers();});
   seg("tones", [{key:"mint",name:"明るい"},{key:"chestnut",name:"暗い"}], S.tone, null, k=>{S.tone=k; store.set("nb-tone",k); applyTone(k); renderPickers();});
   renderGenreTree();
-  { const hist=S.genre==="H"||S.genre==="h"; $("amodesBox").style.display=hist?"none":"flex";
+  { const hist=S.genre==="H"||isProb(S.genre); $("amodesBox").style.display=hist?"none":"flex";
     seg("amodes", [{key:"T",name:"入力"},{key:"C",name:"4択"}], S.amode, null, k=>{S.amode=k; store.set("nb-amode",k); renderPickers();}); }
   const isB=isPick(S.genre);
   $("modesLabel").textContent=isB?"出題のしかた":"出題範囲";
@@ -1473,6 +1474,7 @@ function renderPickers(){
   $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
+  if(S.genre==="j"){ $("rangeNote").textContent=["","日商簿記3級の基本（勘定科目の区分・日常の取引の仕訳）","3級の決算と帳簿（決算整理・消費税・貸倒れ・固定資産の売却・補助簿と財務諸表）","基礎と応用ぜんぶ"][S.lv]+"。取引を読んで、正しい仕訳を4択から選びます（「借方 / 貸方」の順）。答え合わせで考え方を確認できます。"; return; }
   if(S.genre==="h"){ $("rangeNote").textContent=["","中3〜高校の基本（方程式・関数・三角比・指数対数・数列・微積・確率）","数III・大学教養・実務（極限・微積の発展・線形代数・統計・お金の計算）","基礎と応用ぜんぶ"][S.lv]+"。問題を解いて、正しい答えを4択から選びます。答え合わせで解き方を確認できます。"; return; }
   if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?(hasSndQ(S.genre)?"画像を見て、または曲を聞いて、あてはまる用語を入力します（画像・音のある札だけ）":"画像を見て、あてはまる用語を入力します（画像のある札だけ）"):hasSndQ(S.genre)?"名曲は音、見た目で覚える札は画像、ほかは説明文で出題します":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
@@ -1496,7 +1498,7 @@ function chip(name, opts={}){
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
 function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
-function lvName(lv,g){ if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(g==="h") return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
+function lvName(lv,g){ if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
   $("soloBtn").hidden=!others().length;
