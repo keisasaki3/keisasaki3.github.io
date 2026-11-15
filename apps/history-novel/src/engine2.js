@@ -445,7 +445,7 @@ function answerRecall(s,j,quiet){
   if(!quiet)(hit?SE.ok:SE.ng)();
   $("content").querySelectorAll(".note").forEach(n=>n.remove());
   const bl=$("blank");bl.className="blank "+(hit?"ok":"ng");bl.innerHTML=`<button class="term" data-k="${esc(s.recall)}">${esc(s.rw||s.recall)}</button>`;
-  const first=EN&&G[s.recall].ja?G[s.recall].ja:G[s.recall].d.split("。")[0]+"。";
+  const g0=G[s.recall]||{};const first=EN&&g0.ja?g0.ja:(g0.d||"").split("。")[0]+(g0.d?"。":"");
   st.wait=false;const fbe=$("content").querySelector(".fb");fbe.innerHTML=`<span class="tag ${hit?"ok":"ng"}">${hit?"正解":"復習へ"}</span>${md(first,false)}${hit?"":"<span class=\"note\">章末の「次の扉」にもう一度並びます。</span>"}`;
   typeIn(fbe);push();toBottom();
 }
