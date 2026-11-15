@@ -192,7 +192,7 @@ function mergeM(ms,m){if(!m)return;if(m.clear)ms.ar=[];
   /* fit=画面に必ず入れる地点。カメラを動かした行で入れ直し、動かさない行では足していく */
   if(m.c||m.r)ms.fit=(!m.clear&&ms.blink)?[ms.blink]:[];/* 点滅中の地点は持ち越して入れる（clear のときは外す） */ms.fit=[...(ms.fit||[]),...(m.pins||[]),...(m.blink?[m.blink]:[]),...(m.ar||[]).flatMap(a=>a.p)];
   if(m.c)ms.c=m.c;if(m.r){ms.r=m.r;ms.rw=m.rw||null;ms.fw=m.fw||null;}if(m.pins)ms.pins=[...new Set([...ms.pins,...m.pins])];if(m.blink!==undefined){ms.blink=m.blink;ms.fl=m.fl||null;}if(m.ar)ms.ar=[...ms.ar,...m.ar];}
-function choiceM(s,j,sub,ms){const o=s.o[j];if(o.h||sub>=o.ifr.length){ms.ar=ms.ar.filter(a=>a.s!=="if");mergeM(ms,s.hm);}else{mergeM(ms,o.im);}}
+function choiceM(s,j,sub,ms){const o=s.o[j];if(o.h||s.dd||sub>=(o.ifr||[]).length){ms.ar=ms.ar.filter(a=>a.s!=="if");mergeM(ms,s.hm);}else{mergeM(ms,o.im);}}
 function computeMap(){
   let a=st.i;while(a>0&&!S[a].scene)a--;
   const ms=Object.assign(HOME(),{fl:null});
