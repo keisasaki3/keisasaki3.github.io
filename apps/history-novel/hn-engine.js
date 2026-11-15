@@ -329,10 +329,14 @@ let sayA=null,enVoice=null;
 function pickVoice(){if(!("speechSynthesis" in window))return;const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
   enVoice=vs.find(v=>/en[-_]GB/i.test(v.lang)&&/Daniel|Arthur|Google UK English Male|Male/i.test(v.name))||vs.find(v=>/en[-_]GB/i.test(v.lang))||vs[0]||null;}
 if(EN&&"speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
-function sayStop(){if(sayA){sayA.pause();sayA=null;}if("speechSynthesis" in window)speechSynthesis.cancel();}
-function say(text,au){sayStop();if(!audible()||!text)return;
-  if(au){try{sayA=new Audio(au);sayA.volume=Math.min(1,vol/100);sayA.play().catch(()=>{});}catch(e){}return;}
-  if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=enVoice?enVoice.lang:"en-GB";if(enVoice)u.voice=enVoice;u.rate=.92;u.volume=Math.min(1,vol/100);speechSynthesis.speak(u);}
+let sayBtn=null;function sayMark(b){if(sayBtn)sayBtn.classList.remove("on");sayBtn=b||null;if(sayBtn)sayBtn.classList.add("on");}
+function sayStop(){sayMark(null);if(sayA){sayA.pause();sayA=null;}if("speechSynthesis" in window)speechSynthesis.cancel();}
+/* btn: 押されたボタン。読んでいるあいだだけ .on（2026-11-15 経太さん: ボタンが押せたか分かるように） */
+function say(text,au,btn){sayStop();if(!text)return;
+  if(!audible()){if(btn){btn.classList.add("mute");setTimeout(()=>btn.classList.remove("mute"),900);}return;}
+  if(au){try{sayA=new Audio(au);sayA.volume=Math.min(1,vol/100);sayMark(btn);const a=sayA;a.onended=()=>{if(sayA===a)sayMark(null);};sayA.play().catch(()=>sayMark(null));}catch(e){}return;}
+  if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=enVoice?enVoice.lang:"en-GB";if(enVoice)u.voice=enVoice;u.rate=.92;u.volume=Math.min(1,vol/100);
+  sayMark(btn);u.onend=u.onerror=()=>{if(sayBtn===btn)sayMark(null);};speechSynthesis.speak(u);}
 
 /* 台詞は地図の上の窓に出す（顔・名前・台詞） */
 function showTalk(s){const c=C[s.sp]||{n:s.sp},el=$("talk");
@@ -541,7 +545,7 @@ $("sheetRoot").addEventListener("click",e=>{
   if(st.sheet==="pic"){const b=e.target.closest("[data-lb]");
     if(b&&b.dataset.lb!=="x"){picI=(picI+ +b.dataset.lb+lbKeys.length)%lbKeys.length;$("sheetRoot").innerHTML=lbHTML();return;}
     if(b||!e.target.closest("figure")){if(st.lbBack){const bk=st.lbBack;st.lbBack=null;st.sheet="term";st.stack=bk;renderSheet();}else closeSheet();}return;}
-  const sb=e.target.closest(".sayb");if(sb){e.stopPropagation();say(sb.dataset.say,sb.dataset.au);return;}
+  const sb=e.target.closest(".sayb");if(sb){e.stopPropagation();say(sb.dataset.say,sb.dataset.au,sb);return;}
   const tp=e.target.closest("[data-tpic]");if(tp){const k=tp.dataset.tk;return openLB((R[k]||[]).filter(x=>PIC[x]),+tp.dataset.tpic,st.stack.slice());}
   const c=e.target.closest("[data-close]");if(c)return closeSheet();
   const cr=e.target.closest("[data-crumb]");if(cr){const j=+cr.dataset.crumb;if(j<0)return closeSheet();st.stack=st.stack.slice(0,j+1);return renderSheet();}
@@ -551,7 +555,7 @@ $("sheetRoot").addEventListener("click",e=>{
 $("bGl").onclick=e=>{e.stopPropagation();st.sheet="gloss";st.stack=[];renderSheet();};
 $("bRoom").onclick=e=>{e.stopPropagation();st.sheet="room";st.stack=[];renderSheet();};
 $("bEnd").onclick=e=>{e.stopPropagation();if(isFollower()){roomAction("solo");}else if(SBR.on&&st.role==="host")SBR.clear();st.dug=new Set();resetProgress();showTitle();};
-function enClick(e){const sb=e.target.closest(".sayb");if(sb){e.stopPropagation();say(sb.dataset.say,sb.dataset.au);return true;}
+function enClick(e){const sb=e.target.closest(".sayb");if(sb){e.stopPropagation();say(sb.dataset.say,sb.dataset.au,sb);return true;}
   const jb=e.target.closest(".jab");if(jb){e.stopPropagation();const box=jb.closest(".tk-b,#content,.past,.fb")||jb.parentElement.parentElement;const ja=box&&box.querySelector(".ja");if(ja){ja.hidden=!ja.hidden;jb.setAttribute("aria-expanded",String(!ja.hidden));}return true;}return false;}
 $("talk").addEventListener("click",e=>{enClick(e);});
 $("novel").addEventListener("click",e=>{if(enClick(e))return;
