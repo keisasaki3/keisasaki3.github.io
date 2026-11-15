@@ -479,7 +479,7 @@ const P={
 };
 /* 登場人物。img は ch/ の画像（パジェットの挿絵の切り抜き、仕上げのPRで入れる）。無い人物は影 */
 const C={
-holmes:{n:"Holmes"},watson:{n:"Watson"},note:{n:"The note"},kramm:{n:"Count Von Kramm"},king:{n:"The King"},irene:{n:"Irene Adler"},godfrey:{n:"Godfrey Norton"},crowd:{n:"Voices in the street"},youth:{n:"A slim youth"},oldwoman:{n:"An elderly woman"}
+holmes:{img:"holmes",n:"Holmes"},watson:{img:"watson",n:"Watson"},note:{n:"The note"},kramm:{img:"kramm",n:"Count Von Kramm"},king:{img:"king",n:"The King"},irene:{n:"Irene Adler"},godfrey:{n:"Godfrey Norton"},crowd:{n:"Voices in the street"},youth:{n:"A slim youth"},oldwoman:{n:"An elderly woman"}
 };
 const R={};
 const S0=[
@@ -523,7 +523,7 @@ const S0=[
 {choice:"ホームズは何を見て、ワトソンが「最近ずぶ濡れになった」と見抜いたのだろう？",dd:1,a:0,
  o:[{t:"Cuts on the inside of his left shoe",ja:"左の靴の内側の切り傷",h:1},{t:"Mud on the bottom of his trousers",ja:"ズボンのすその泥"},{t:"A cough and a red nose",ja:"せきと赤い鼻"}],
  fb:"答え合わせは、このあとのホームズの説明で。"},
-{sp:"watson",t:"“My dear Holmes,” said I, “this is too much. You would certainly have been burned, had you lived a few centuries ago.",ja:"「おいおいホームズ」と私は言った。「それはやりすぎだ。何百年か前に生まれていたら、間違いなく魔女として火あぶりにされていたぞ。"},
+{img:["p_fire"],sp:"watson",t:"“My dear Holmes,” said I, “this is too much. You would certainly have been burned, had you lived a few centuries ago.",ja:"「おいおいホームズ」と私は言った。「それはやりすぎだ。何百年か前に生まれていたら、間違いなく魔女として火あぶりにされていたぞ。"},
 {sp:"watson",t:"It is true that I had a country walk on Thursday and came home in a dreadful mess, but as I have changed my clothes I can’t imagine how you deduce it.",ja:"たしかに木曜日に田舎を歩いて、ひどい格好で帰ってきた。でも服は着替えたんだから、どうして推理できたのか見当もつかない。"},
 {sp:"watson",t:"As to Mary Jane, she is incorrigible, and my wife has given her notice, but there, again, I fail to see how you work it out.”",ja:"メアリー・ジェーンのほうは、どうしようもない子で、妻が辞めてもらうことにした。でも、それもどうやって割り出したのかわからないよ」"},
 {t:"He chuckled to himself and rubbed his long, nervous hands together.",ja:"彼はひとりでくすくす笑い、長い神経質そうな両手をこすり合わせた。"},
@@ -555,7 +555,7 @@ const S0=[
 {sp:"watson",t:"“This is indeed a mystery,” I remarked. “What do you imagine that it means?”",ja:"「これは本当に謎だね」と私は言った。「どういう意味だと思う？」"},
 {sp:"holmes",t:"“I have no data yet. It is a capital mistake to theorise before one has data.",ja:"「まだデータがない。データを持たないうちに理屈を立てるのは、大きな間違いだ。"},
 {sp:"holmes",t:"Insensibly one begins to twist facts to suit theories, instead of theories to suit facts. But the note itself. What do you deduce from it?”",ja:"知らず知らずのうちに、事実に合うように理屈を立てるのではなく、理屈に合うように事実をねじ曲げはじめてしまうからね。それより手紙そのものだ。君はここから何を推理する？」"},
-{t:"I carefully examined the writing, and the paper upon which it was written.",ja:"私は筆跡と、それが書かれた紙を注意深く調べた。"},
+{img:["p_writing"],t:"I carefully examined the writing, and the paper upon which it was written.",ja:"私は筆跡と、それが書かれた紙を注意深く調べた。"},
 {sp:"watson",t:"“The man who wrote it was presumably well to do,” I remarked, endeavouring to imitate my companion’s processes.",ja:"「これを書いた男は、おそらく裕福だね」と私は、相棒のやり方をまねようと努めながら言った。"},
 {sp:"watson",t:"“Such paper could not be bought under half a crown a packet. It is peculiarly strong and stiff.”",ja:"「こんな紙は、ひと包み半クラウン以下では買えない。妙に丈夫で、ぱりっとしている」"},
 {sp:"holmes",t:"“Peculiar—that is the very word,” said Holmes. “It is not an English paper at all. Hold it up to the light.”",ja:"「妙に、まさにその言葉だ」とホームズは言った。「これはそもそもイギリスの紙じゃない。光にかざしてごらん」"},
@@ -586,7 +586,7 @@ const S0=[
 {scene:{y:1888,w:"3月20日",era:"ヴィクトリア朝ロンドン",e:"仮面の客",m:{c:"Baker Street",r:60,pins:["Baker Street"],blink:"Baker Street"}}},
 {t:"A slow and heavy step, which had been heard upon the stairs and in the passage, paused immediately outside the door. Then there was a loud and authoritative tap.",ja:"階段から廊下へと聞こえていたゆっくりとした重い足音が、扉のすぐ外で止まった。それから、大きく威厳のあるノックが響いた。"},
 {sp:"holmes",t:"“Come in!” said Holmes.",ja:"「どうぞ！」とホームズが言った。"},
-{t:"A man entered who could hardly have been less than six feet six inches in height, with the chest and limbs of a Hercules.",ja:"入ってきた男は、身の丈6フィート6インチ（約198センチ）を下らず、ヘラクレスのような胸と手足をしていた。"},
+{img:["p_entered"],t:"A man entered who could hardly have been less than six feet six inches in height, with the chest and limbs of a Hercules.",ja:"入ってきた男は、身の丈6フィート6インチ（約198センチ）を下らず、ヘラクレスのような胸と手足をしていた。"},
 {t:"His dress was rich with a richness which would, in England, be looked upon as akin to bad taste.",ja:"その服装は豪華だったが、イギリスでは悪趣味に近いと見なされるような豪華さだった。"},
 {t:"Heavy bands of astrakhan were slashed across the sleeves and fronts of his double-breasted coat,",ja:"ダブルの上着の袖と前身ごろには、アストラカンの毛皮の太い帯が斜めに渡され、"},
 {t:"while the deep blue cloak which was thrown over his shoulders was lined with flame-coloured silk and secured at the neck with a brooch which consisted of a single flaming beryl.",ja:"肩にかけた濃い青のマントは炎の色の絹で裏打ちされ、首元を燃えるような緑柱石ひとつのブローチで留めていた。"},
@@ -710,7 +710,7 @@ const S0=[
 {t:"Indeed, apart from the nature of the investigation which my friend had on hand, there was something in his masterly grasp of a situation, and his keen, incisive reasoning,",ja:"実のところ、友が手がけている調査の中身は別にしても、状況をつかむ彼の見事な手際と、鋭く切れ味のよい推理には何かがあって、"},
 {t:"which made it a pleasure to me to study his system of work, and to follow the quick, subtle methods by which he disentangled the most inextricable mysteries.",ja:"彼の仕事の進め方を研究し、どうにもほどけそうにない謎を解きほぐしていく素早く巧妙な手口を追うのが、私には楽しみだった。"},
 {t:"So accustomed was I to his invariable success that the very possibility of his failing had ceased to enter into my head.",ja:"彼がいつも成功するのにすっかり慣れてしまって、彼がしくじるかもしれないなどという考えは、もう私の頭に浮かびもしなくなっていた。"},
-{t:"It was close upon four before the door opened, and a drunken-looking groom, ill-kempt and side-whiskered, with an inflamed face and disreputable clothes, walked into the room.",ja:"4時近くになってようやく扉が開き、酔っぱらったような馬丁が部屋に入ってきた。身なりはだらしなく、もみあげを伸ばし、顔は赤くはれ、服はみすぼらしかった。"},
+{img:["p_groom"],t:"It was close upon four before the door opened, and a drunken-looking groom, ill-kempt and side-whiskered, with an inflamed face and disreputable clothes, walked into the room.",ja:"4時近くになってようやく扉が開き、酔っぱらったような馬丁が部屋に入ってきた。身なりはだらしなく、もみあげを伸ばし、顔は赤くはれ、服はみすぼらしかった。"},
 {t:"Accustomed as I was to my friend’s amazing powers in the use of disguises, I had to look three times before I was certain that it was indeed he.",ja:"友の驚くべき変装の腕には慣れていたはずの私でも、それが本当に彼だと確信するまで、三度見直さなければならなかった。"},
 {t:"With a nod he vanished into the bedroom, whence he emerged in five minutes tweed-suited and respectable, as of old.",ja:"彼はうなずいて寝室に消え、5分後には、いつものようにツイードの背広を着たきちんとした姿で出てきた。"},
 {t:"Putting his hands into his pockets, he stretched out his legs in front of the fire and laughed heartily for some minutes.",ja:"両手をポケットに入れ、暖炉の前に足を投げ出して、彼は何分ものあいだ腹の底から笑った。"},
@@ -764,7 +764,7 @@ const S0=[
 {choice:"「あと3分しかない、でないと法的に有効にならない」。何の期限だろう？",dd:1,a:0,
  o:[{t:"Weddings had to be held before noon",ja:"結婚式は正午までに挙げる決まりだった",h:1},{t:"The church closed at noon",ja:"教会は正午に閉まる"},{t:"Their license ran out that day",ja:"結婚許可証がその日で切れる"}],
  fb:"当時のイギリスでは、教会の結婚式は決められた時間内（昔は正午まで）に挙げなければ無効だった。時刻は12時3分前。"},
-{sp:"holmes",t:"“I was half-dragged up to the altar, and before I knew where I was I found myself mumbling responses which were whispered in my ear,",ja:"「僕はなかば引きずられるように祭壇まで連れていかれ、気がつくと、耳元でささやかれる誓いの言葉をもごもごと繰り返し、",n:"1886年の法改正で結婚式は午後3時まで挙げられるようになっていた。ドイルはそれより前の「正午まで」の決まりで書いたとされる"},
+{img:["p_wedding"],sp:"holmes",t:"“I was half-dragged up to the altar, and before I knew where I was I found myself mumbling responses which were whispered in my ear,",ja:"「僕はなかば引きずられるように祭壇まで連れていかれ、気がつくと、耳元でささやかれる誓いの言葉をもごもごと繰り返し、",n:"1886年の法改正で結婚式は午後3時まで挙げられるようになっていた。ドイルはそれより前の「正午まで」の決まりで書いたとされる"},
 {sp:"holmes",t:"and vouching for things of which I knew nothing, and generally assisting in the secure tying up of Irene Adler, spinster, to Godfrey Norton, bachelor.",ja:"何も知らないことを請け合い、要するに、独身女性アイリーン・アドラーと独身男性ゴッドフリー・ノートンとを、しっかり結び合わせる手伝いをしていたんだ。"},
 {sp:"holmes",t:"It was all done in an instant, and there was the gentleman thanking me on the one side and the lady on the other, while the clergyman beamed on me in front.",ja:"すべてはあっという間に終わった。片側では紳士が、もう片側では婦人が僕に礼を言い、正面では牧師がにこにこと笑っていた。"},
 {sp:"holmes",t:"It was the most preposterous position in which I ever found myself in my life, and it was the thought of it that started me laughing just now.",ja:"生涯でいちばんばかげた立場に置かれたよ。さっき笑い出したのは、それを思い出したからさ。"},
@@ -810,7 +810,7 @@ const S0=[
 {sp:"holmes",t:"“Precisely.”",ja:"「そのとおり」"},
 {sp:"watson",t:"“Then you may entirely rely on me.”",ja:"「なら、すっかり任せてくれ」"},
 {sp:"holmes",t:"“That is excellent. I think, perhaps, it is almost time that I prepare for the new role I have to play.”",ja:"「すばらしい。そろそろ、僕が演じる新しい役の支度をする時間だな」"},
-{t:"He disappeared into his bedroom and returned in a few minutes in the character of an amiable and simple-minded Nonconformist clergyman.",ja:"彼は寝室に消え、数分後、人のよさそうな、素朴な非国教派の牧師になって戻ってきた。"},
+{img:["p_clergy"],t:"He disappeared into his bedroom and returned in a few minutes in the character of an amiable and simple-minded Nonconformist clergyman.",ja:"彼は寝室に消え、数分後、人のよさそうな、素朴な非国教派の牧師になって戻ってきた。"},
 {t:"His broad black hat, his baggy trousers, his white tie, his sympathetic smile, and general look of peering and benevolent curiosity were such as Mr. John Hare alone could have equalled.",ja:"つばの広い黒い帽子、だぶだぶのズボン、白いネクタイ、思いやりのこもった微笑み、そして何でものぞきこむような、善意あふれる好奇心の顔つき。これに並べるのは名優ジョン・ヘアくらいのものだろう。"},
 {t:"It was not merely that Holmes changed his costume. His expression, his manner, his very soul seemed to vary with every fresh part that he assumed.",ja:"ホームズは衣装を変えただけではなかった。新しい役を演じるたびに、表情も、ふるまいも、魂そのものまでもが変わるように見えた。"},
 {t:"The stage lost a fine actor, even as science lost an acute reasoner, when he became a specialist in crime.",ja:"彼が犯罪の専門家になったとき、科学が鋭い推理家を失ったのと同じように、舞台はすぐれた役者を失ったのだ。"},
@@ -846,7 +846,7 @@ const S0=[
 {t:"As it pulled up, one of the loafing men at the corner dashed forward to open the door in the hope of earning a copper, but was elbowed away by another loafer, who had rushed up with the same intention.",ja:"馬車が止まると、角でぶらついていた男のひとりが、銅貨を稼ごうと扉を開けに飛び出したが、同じつもりで駆け寄ったもうひとりのごろつきに肘で押しのけられた。"},
 {t:"A fierce quarrel broke out, which was increased by the two guardsmen, who took sides with one of the loungers, and by the scissors-grinder, who was equally hot upon the other side.",ja:"激しいけんかが始まり、ごろつきの一方に味方した近衛兵ふたりと、負けずにもう一方についた刃物研ぎ屋が加わって、さらに大きくなった。"},
 {t:"A blow was struck, and in an instant the lady, who had stepped from her carriage, was the centre of a little knot of flushed and struggling men, who struck savagely at each other with their fists and sticks.",ja:"殴り合いが始まり、馬車から降りた婦人は、たちまち顔を真っ赤にしてもみ合う男たちの輪の真ん中にいた。男たちは拳や杖で荒々しく殴り合っていた。"},
-{t:"Holmes dashed into the crowd to protect the lady; but, just as he reached her, he gave a cry and dropped to the ground, with the blood running freely down his face.",ja:"ホームズは婦人を守ろうと人ごみに飛びこんだ。だが彼女のもとにたどり着いたその瞬間、叫び声をあげて地面に倒れた。顔からは血がだらだらと流れていた。"},
+{img:["p_brawl"],t:"Holmes dashed into the crowd to protect the lady; but, just as he reached her, he gave a cry and dropped to the ground, with the blood running freely down his face.",ja:"ホームズは婦人を守ろうと人ごみに飛びこんだ。だが彼女のもとにたどり着いたその瞬間、叫び声をあげて地面に倒れた。顔からは血がだらだらと流れていた。"},
 {t:"At his fall the guardsmen took to their heels in one direction and the loungers in the other,",ja:"彼が倒れると、近衛兵たちは一方へ、ごろつきたちはもう一方へと、いっせいに逃げ出した。"},
 {t:"while a number of better dressed people, who had watched the scuffle without taking part in it, crowded in to help the lady and to attend to the injured man.",ja:"一方、けんかに加わらず見ていた身なりのいい人たちが大勢、婦人を助け、けが人の手当てをしようと集まってきた。"},
 {t:"Irene Adler, as I will still call her, had hurried up the steps; but she stood at the top with her superb figure outlined against the lights of the hall, looking back into the street.",ja:"アイリーン・アドラー、私はまだそう呼ぶことにするが、彼女は急いで玄関の階段を上がっていた。だが上で立ち止まり、玄関の明かりにすばらしい姿を浮かび上がらせながら、通りを振り返った。"},
@@ -904,7 +904,7 @@ const S0=[
 {scene:{y:1888,w:"3月21日 夜",era:"ヴィクトリア朝ロンドン",e:"すれ違った若者",m:{c:"Baker Street",r:40,pins:["Baker Street","Briony Lodge"],blink:"Baker Street"}}},
 {t:"We had reached Baker Street and had stopped at the door. He was searching his pockets for the key when someone passing said:",ja:"私たちはベイカー街に着き、玄関の前で立ち止まった。彼がポケットの鍵を探していると、通りがかった誰かが言った。"},
 {sp:"youth",t:"“Good-night, Mister Sherlock Holmes.”",ja:"「おやすみなさい、シャーロック・ホームズさん」"},
-{t:"There were several people on the pavement at the time, but the greeting appeared to come from a slim youth in an ulster who had hurried by.",ja:"そのとき歩道には何人か人がいたが、あいさつは、アルスター外套を着て足早に通り過ぎた、ほっそりした若者から聞こえたようだった。"},
+{img:["p_goodnight"],t:"There were several people on the pavement at the time, but the greeting appeared to come from a slim youth in an ulster who had hurried by.",ja:"そのとき歩道には何人か人がいたが、あいさつは、アルスター外套を着て足早に通り過ぎた、ほっそりした若者から聞こえたようだった。"},
 {sp:"holmes",t:"“I’ve heard that voice before,” said Holmes, staring down the dimly lit street. “Now, I wonder who the deuce that could have been.”",ja:"「あの声は前に聞いたことがある」とホームズは、薄暗い通りの先をじっと見つめながら言った。「はて、いったい誰だったんだろう」"},
 {scene:{y:1888,w:"3月22日 朝",era:"ヴィクトリア朝ロンドン",e:"空っぽの巣",m:{c:"Baker Street",r:40,pins:["Baker Street","Briony Lodge"],blink:"Baker Street"}}},
 {t:"I slept at Baker Street that night, and we were engaged upon our toast and coffee in the morning when the King of Bohemia rushed into the room.",ja:"その夜、私はベイカー街に泊まった。翌朝、二人でトーストとコーヒーをとっていると、ボヘミア王が部屋に駆けこんできた。"},
@@ -972,7 +972,7 @@ const S0=[
  fb:"ホームズが望んだのは、指輪ではなかった。"},
 {sp:"holmes",t:"“Your Majesty has something which I should value even more highly,” said Holmes.",ja:"「陛下は、私にとってもっと価値のあるものをお持ちです」とホームズは言った。"},
 {sp:"king",t:"“You have but to name it.”",ja:"「言ってみるがよい」"},
-{sp:"holmes",t:"“This photograph!”",ja:"「この写真です！」"},
+{img:["p_photo"],sp:"holmes",t:"“This photograph!”",ja:"「この写真です！」"},
 {t:"The King stared at him in amazement.",ja:"王はあっけにとられて彼を見つめた。"},
 {sp:"king",t:"“Irene’s photograph!” he cried. “Certainly, if you wish it.”",ja:"「アイリーンの写真だと！」と王は叫んだ。「もちろんだ、望むなら」"},
 {sp:"holmes",t:"“I thank your Majesty. Then there is no more to be done in the matter. I have the honour to wish you a very good morning.”",ja:"「ありがとうございます。では、この件でもう私のすべきことはありません。失礼いたします、陛下」"},
@@ -987,7 +987,8 @@ const S0=[
 const ORDER=["結婚したワトソンが、久しぶりにベイカー街を訪ねる","差出人のない手紙が、仮面の客の来訪を告げる","仮面の客の正体はボヘミア王だった","王がアイリーン・アドラーとの写真を取り戻してほしいと頼む","馬丁に化けたホームズが、アイリーンの結婚式の証人になる","火事騒ぎで、写真の隠し場所がわかる","アイリーンは夫と大陸へ去り、手紙と写真を残す"];
 const S=S0;
 
-const PIC={};
+/* 挿絵はシドニー・パジェット（1908年没、PD）。Strand Magazine 1891年7月号の初出から切り抜き。 */
+const PIC={"ch_holmes": {"cap": "holmes", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "ch_watson": {"cap": "watson", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "ch_kramm": {"cap": "kramm", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "ch_king": {"cap": "king", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_fire": {"cap": "パジェットの挿絵「それから彼は暖炉の前に立った」", "d": "221Bで、ワトソンの近況を言い当てるホームズ（右）と、椅子のワトソン（左）。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_writing": {"cap": "パジェットの挿絵「私は手紙の文字を念入りに調べた」", "d": "差出人のない手紙を光にかざすホームズ。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_entered": {"cap": "パジェットの挿絵「男が入ってきた」", "d": "仮面の客。毛皮の縁取りのマントに、炎のような緑柱石の留め金。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_groom": {"cap": "パジェットの挿絵「酔っぱらいのような馬丁」", "d": "馬丁に化けたホームズ。この変装でミューズの馬丁たちにまぎれこんだ。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_wedding": {"cap": "パジェットの挿絵「気づけば私は誓いの言葉をつぶやいていた」", "d": "聖モニカ教会の祭壇。証人にされたホームズ（左）。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_clergy": {"cap": "パジェットの挿絵「素朴な牧師」", "d": "非国教会の牧師に化けたホームズ。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_brawl": {"cap": "パジェットの挿絵「彼は叫び声をあげて倒れた」", "d": "ブライオニー荘の前の乱闘。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_goodnight": {"cap": "パジェットの挿絵「おやすみなさい、シャーロック・ホームズさん」", "d": "ベイカー街の戸口。通り過ぎるアルスター外套の若者。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}, "p_photo": {"cap": "パジェットの挿絵「この写真を！」", "d": "王（左）に写真を所望するホームズ（右）。", "cr": "Sidney Paget／パブリックドメイン／The Strand Magazine 1891年7月号（Internet Archive「StrandMagazine7」）"}};
 
 </script>
 <script src="../history-novel/hn-engine.js?v=ec1a82c6"></script>
