@@ -410,3 +410,23 @@ html.going body>*{visibility:hidden!important}
 .ctrl #bGaya{justify-self:center}
 .ctrl .next{justify-self:end;margin-left:0}
 .ctrl .next[hidden]{display:block!important;visibility:hidden}
+
+/* ---------- SUPER洋書ノベル（CFG.lang="en"）: 和訳・読み上げ・英語辞書・瞬間英作文（2026-11-15） ---------- */
+.term.env{font-weight:inherit}
+.enx{display:flex;gap:6px;align-items:center;margin-top:6px}
+.sayb,.jab{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:26px;padding:0 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;cursor:pointer}
+.sayb svg{width:16px;height:16px}
+.jab[aria-expanded="true"]{color:var(--ink);border-color:var(--muted)}
+.ja{margin-top:6px;padding-left:10px;border-left:2px solid var(--line);color:var(--muted);font-size:.86em;line-height:1.75;white-space:normal}
+.tk-b .enx{margin-top:4px}.tk-b .ja{font-size:13.5px;font-weight:400}
+.opt .oja{display:block;font-size:12px;color:var(--muted);font-weight:400}
+.sh-body .rd .ipa{font-family:"Segoe UI","Noto Sans",system-ui,sans-serif;letter-spacing:0}
+.sh-body .rd .sayb{margin-left:8px;vertical-align:middle}
+.enja{font-size:17px;font-weight:700;margin:6px 0 2px}
+.biz{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:14px;line-height:1.7}
+.biz b{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.flash{list-style:none;padding:0;margin:6px 0 14px;display:grid;gap:8px}
+.flash .fl{width:100%;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit;font:inherit;cursor:pointer;display:grid;gap:4px}
+.flash .fl .fe{font-weight:700}
+.flash .fl:not(.open)::after{content:"めくる";font-size:12px;color:var(--muted)}
+.past .enx{display:none}

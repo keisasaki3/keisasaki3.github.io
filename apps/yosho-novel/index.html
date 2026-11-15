@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SUPER洋書ノベル</title>
+<link rel="icon" type="image/png" sizes="32x32" href="../history-novel/app-icons/favicon-32.png"><link rel="icon" type="image/png" sizes="16x16" href="../history-novel/app-icons/favicon-16.png"><link rel="apple-touch-icon" href="../history-novel/app-icons/apple-touch-icon.png"><link rel="manifest" href="../history-novel/manifest.webmanifest"><meta name="apple-mobile-web-app-title" content="SUPER歴史">
+<meta name="claude:viewport-fit-sides" content="cover">
+<script src="https://unpkg.com/@supabase/supabase-js@2.117.1/dist/umd/supabase.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link id="skinFont" rel="stylesheet"><link id="dotFont" rel="stylesheet">
+<script>window.HN_LIB="../history-novel/";
+/* 見た目（スキン）を描画前に決める。初期は墨と金箔（2026-11-06 経太さん） */
+window.HN_SKINS={kin:{n:"墨と金箔",c:"#b08d3c",f:"Shippori+Mincho+B1:wght@500;700;800&family=Noto+Sans+JP:wght@400;500;700"},konjo:{n:"紺青",c:"#1c2a44",f:"Zen+Old+Mincho:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700"},washi:{n:"和紙と墨",c:"#e9e1cf",f:"Shippori+Mincho:wght@500;700;800&family=BIZ+UDPGothic:wght@400;700"},shosai:{n:"夜の書斎",c:"#16201c",dark:1,f:"Shippori+Mincho+B1:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700"}};
+window.hnSkin=function(k){if(!HN_SKINS[k])k="kin";var d=document.documentElement,s=HN_SKINS[k];d.dataset.skin=k;d.dataset.theme=s.dark?"dark":"light";document.getElementById("skinFont").href="https://fonts.googleapis.com/css2?family="+s.f+"&display=swap";return k;};
+(function(){var k;try{k=localStorage.getItem("hn-skin");}catch(e){}hnSkin(k);})();
+/* 別の章から移ってきたとき（?go=1）は、タイトル画面を一瞬見せずに本文から始める（ちらつき防止） */
+if(/[?&]go=1(&|$)/.test(location.search))document.documentElement.classList.add("going");
+/* 文字（書体）。見た目とは別に選ぶ。初期はDotGothic16（2026-11-06 経太さん） */
+window.HN_FONTS={dot:{n:"ドット",fam:"DotGothic16",g:"DotGothic16"},pm:{n:"ドット細め",fam:"PixelMplus12",u:"../history-novel/fonts/PixelMplus12-Regular.woff2"},kh:{n:"ドット明朝",fam:"KH Dot Hibiya",u:"../history-novel/fonts/KH-Dot-Hibiya-24.woff2"},skin:{n:"明朝・ゴシック"}};
+window.hnFont=function(k){if(!HN_FONTS[k])k="dot";var d=document.documentElement,f=HN_FONTS[k];d.dataset.font=k;
+ if(f.g){var l=document.getElementById("dotFont");if(!l.href)l.href="https://fonts.googleapis.com/css2?family="+f.g+"&display=swap";}
+ if(f.u&&!document.getElementById("ff-"+k)){var st=document.createElement("style");st.id="ff-"+k;st.textContent="@font-face{font-family:'"+f.fam+"';src:url("+f.u+") format('woff2');font-display:swap}";document.head.appendChild(st);}
+ return k;};
+(function(){var k;try{k=localStorage.getItem("hn-font");}catch(e){}hnFont(k);})();</script>
+<link rel="stylesheet" href="../history-novel/hn.css?v=d4a32961">
+
+<div class="app">
+  <header>
+    <div class="when"><span class="y" id="hY">1156</span><span class="w" id="hW"></span><span class="sep"></span><span class="era" id="hEra">平安時代末</span><span class="ev" id="hEv"></span></div>
+    <nav class="menu">
+      <button id="bGl" hidden>用語帳</button>
+      <button id="bRoom" hidden>参加者</button>
+      <button id="bSnd" aria-label="音" aria-haspopup="true" aria-expanded="false"></button>
+      <button id="bCfg" aria-label="設定" aria-haspopup="true" aria-expanded="false"></button>
+      <button id="bEnd">終了</button>
+    </nav>
+    <div class="prog"><i id="prog"></i></div>
+    <div id="sndPop" class="snd-pop" hidden>
+      <label class="snd-row"><span>音量</span><input id="sndVol" type="range" min="0" max="100" step="5" aria-label="音量"><b id="sndVolN"></b></label>
+      <button id="sndMute" type="button"></button>
+    </div>
+    <div id="cfgPop" class="snd-pop" hidden>
+      <div class="cfg-row"><span>見た目</span><div class="skins" id="skins" role="radiogroup" aria-label="見た目"></div></div>
+      <div class="cfg-row"><span>文字</span><div class="skins fonts" id="fonts" role="radiogroup" aria-label="文字"></div></div>
+      <div class="cfg-row"><span>文字の大きさ</span><div class="seg" role="radiogroup" aria-label="文字の大きさ"><button data-fs="s" role="radio">小</button><button data-fs="m" role="radio">中</button><button data-fs="l" role="radio">大</button></div></div>
+      <div class="cfg-row" id="repRow" hidden><span>この場面</span><button type="button" class="rep-btn" id="bRep">わかりにくい所を報告する</button></div>
+    </div>
+  </header>
+  <div class="mapwrap" id="mapwrap">
+    <svg id="map" aria-label="出来事の場所を示す地図"><rect width="100%" height="100%" fill="var(--sea)"/><g id="landG"><clipPath id="landClip"><path id="landP" class="land" d="M-467 -325 L529 -325 L529 275 L-467 275Z"/></clipPath><use href="#landP"/><g id="terrG" clip-path="url(#landClip)"></g></g><g id="ovG"></g></svg>
+    <div class="talk" id="talk" hidden></div>
+    <div class="gayaLayer" id="gayaLayer"></div>
+    <div class="card" id="card"></div>
+    <div class="pics" id="pics"></div>
+    <button class="bhome" id="bHome" hidden aria-label="地図を元の位置に戻す">元の位置</button>
+  </div>
+  <div class="novel" id="novel">
+    <div class="page" id="page"><div class="col">
+      <div id="past"></div>
+      <div id="cur"><div class="who" id="who" hidden></div><div id="content"></div><div class="choices" id="choices"></div><div id="fbx"></div></div>
+    </div></div>
+    <div class="gayaPal" id="gayaPal" hidden></div>
+    <div class="look-note" id="lookNote" hidden>資料を見てるプレイヤーがいるよ。ちょっと待ってね</div>
+    <div class="ctrl"><button class="back" id="bk" style="visibility:hidden">◀ 戻る</button><button class="gyb" id="bGaya" aria-label="ガヤを飛ばす">ガヤ</button><div class="next" id="nx" hidden>タップで次へ</div></div>
+  </div>
+</div>
+<div id="sheetRoot"></div>
+<div id="ovRoot"></div>
+
+<script>
+/* ---- この章のデータ（設定・辞書・台本・資料） ---- */
+/* SUPER洋書ノベル 第1話の設定（ドイル「ボヘミアの醜聞」1891）。lang:"en" で英語の行・和訳・読み上げ・英語辞書が働く。
+   地図は1880年代のロンドン（Bacon's New Ordnance Map, パブリックドメイン）。k は1度あたりの描画単位（街の地図なので大きくする） */
+const CFG={
+ app:"洋書ノベル",lang:"en",page:"index.html",shelf:"doyle",room:"holmes1",
+ k:5000,lon0:-0.15,lat0:51.515,init:{c:[-0.155,51.52],r:160},home:{c:[-0.145,51.518],r:240},
+ terrAlways:1,
+ terr:[],
+ shelves:[{id:"doyle",name:"ドイル",eras:[["ボヘミアの醜聞","1891","ボヘミアの醜聞","index.html","1888年 ロンドン"],["赤毛連盟","1891"],["花婿失踪事件","1891"],["ボスコム谷の惨劇","1891"],["五つのオレンジの種","1891"],["唇のねじれた男","1891"]]}],
+ attrib:"原文：Arthur Conan Doyle, A Scandal in Bohemia (1891)",credit:"原文：Arthur Conan Doyle “A Scandal in Bohemia”（1891、パブリックドメイン）。和訳・辞書はこのアプリのために作成",
+ endSub:"ボヘミアの醜聞 読了",endTitle:"あの女性（ひと）",
+ next:{t:"赤毛連盟",d:"赤い髪の男だけが入れる、奇妙な組合。仕事は百科事典を書き写すだけで、週4ポンド。うますぎる話の裏にあるものは？"},
+ flash:[
+  {ja:"データがないうちに推理するのは大きな間違いだ。",en:"It is a capital mistake to theorise before one has data."},
+  {ja:"君は見ているが、観察していない。",en:"You see, but you do not observe."},
+  {ja:"そこが肝心なところだ。",en:"That is just my point."}
+ ]
+};
+
+/* SUPER洋書ノベル 第1話の辞書。見出しは英語。ipa=発音、pos=品詞、ja=意味（いちばん短い訳）、biz=今の仕事で言うなら、d=説明（任意）、
+   forms=本文に出る活用形・別の形（大文字小文字は区別しない）。t:"人"=人物 "地"=土地 "俗"=当時の暮らし、無し=英語の語句 */
+const G={
+"Sherlock Holmes":{t:"人",forms:["Holmes"],ja:"シャーロック・ホームズ",d:"ロンドンのベイカー街221Bに住む「諮問探偵」。警察が手に負えない事件の相談に乗る。観察と推理の達人で、感情を推理の邪魔だと考えている。"},
+"Watson":{t:"人",forms:["Dr. Watson"],ja:"ジョン・H・ワトソン",d:"この物語の語り手。医者で、かつてホームズとベイカー街の部屋を分け合っていた。『緋色の研究』のあと結婚して家を出た。"},
+"Irene Adler":{t:"人",ja:"アイリーン・アドラー",d:"ホームズが「あの女性」と呼ぶただひとりの人。どんな人物かは、このあと明らかになる。"},
+"Mary Jane":{t:"人",ja:"メアリー・ジェーン",d:"ワトソン家のお手伝いの娘。ワトソンの靴をこそげて傷だらけにした。"},
+"Baker Street":{t:"地",ja:"ベイカー街",d:"ロンドン中心部の北西、リージェンツ・パークの南西にある通り。ホームズの下宿は221B番地（当時は実在しない番地）。"},
+"Odessa":{t:"地",ja:"オデッサ",d:"黒海に面した港町。当時はロシア帝国領（現在はウクライナ）。"},
+"Trincomalee":{t:"地",ja:"トリンコマリー",d:"セイロン島（現スリランカ）東岸の港町。当時はイギリスの植民地。"},
+"Holland":{t:"地",ja:"オランダ",d:"オランダの別名（正式にはネーデルラント）。ホームズはオランダ王家の依頼を片づけたばかり。"},
+"Study in Scarlet":{t:"俗",ja:"『緋色の研究』",d:"ホームズとワトソンが出会った最初の事件。ワトソンが書いて1887年に発表した、という設定になっている。"},
+"gasogene":{t:"俗",ipa:"/ˈɡæsədʒiːn/",pos:"名",ja:"ソーダ水製造器",d:"ガラス球を二つ重ねた家庭用の炭酸水づくりの器具。ウイスキーを割るのに使った。"},
+"spirit case":{t:"俗",pos:"名",ja:"酒瓶の入れ物（タンタラス）",d:"ウイスキーやブランデーの瓶を並べて鍵をかけておく木の箱。"},
+"slavey":{t:"俗",ipa:"/ˈsleɪvi/",pos:"名",ja:"（口語）下働きの娘",d:"中流家庭に住み込みで雑用をした若い女中を、少しくだけて呼ぶ言葉。"},
+"top-hat":{t:"俗",pos:"名",ja:"シルクハット",d:"紳士が外出のときにかぶった背の高い帽子。医者はこの中に聴診器を入れて往診した。"},
+"post":{ipa:"/pəʊst/",pos:"名",ja:"郵便（の配達）",biz:"by post（郵送で）は今も使う。the last post は「その日最後の配達」。当時のロンドンは1日に何度も配達があった。"},
+"eclipse":{ipa:"/ɪˈklɪps/",pos:"動",forms:["eclipses"],ja:"（ほかを）色あせさせる、しのぐ",biz:"Our Q3 sales eclipsed last year’s record.（第3四半期の売上が昨年の記録を上回った）"},
+"predominate":{ipa:"/prɪˈdɒmɪneɪt/",pos:"動",forms:["predominates"],ja:"優位を占める、上に立つ",biz:"今は predominant（支配的な）の形でよく使う。the predominant view（大勢の意見）"},
+"akin":{ipa:"/əˈkɪn/",pos:"形",ja:"（akin to で）〜に似た",biz:"This is akin to what we saw last year.（これは昨年起きたことに近い）"},
+"abhorrent":{ipa:"/əbˈhɒrənt/",pos:"形",ja:"ひどく嫌な、忌まわしい"},
+"precise":{ipa:"/prɪˈsaɪs/",pos:"形",ja:"正確な、精密な",biz:"Could you be more precise?（もう少し具体的に言ってもらえますか）"},
+"I take it":{pos:"句",ja:"思うに、〜だと理解している",biz:"I take it you’ve read the report?（報告書はもう読んだということでいいですね？）"},
+"gibe":{ipa:"/dʒaɪb/",pos:"名",ja:"あざけり、からかい"},
+"sneer":{ipa:"/snɪə/",pos:"名",ja:"冷笑、せせら笑い"},
+"motive":{ipa:"/ˈməʊtɪv/",pos:"名",forms:["motives"],ja:"動機",biz:"What’s the motive behind this proposal?（この提案の狙いは何でしょう）"},
+"intrusion":{ipa:"/ɪnˈtruːʒn/",pos:"名",forms:["intrusions"],ja:"侵入、立ち入り",biz:"Sorry for the intrusion.（お邪魔してすみません）"},
+"temperament":{ipa:"/ˈtemprəmənt/",pos:"名",ja:"気質"},
+"grit":{ipa:"/ɡrɪt/",pos:"名",ja:"砂粒（今は「根性」の意味でもよく使う）",biz:"She has real grit.（彼女は本当に粘り強い）"},
+"the late":{pos:"句",ja:"故〜、亡き〜",biz:"the late founder（亡き創業者）"},
+"dubious":{ipa:"/ˈdjuːbiəs/",pos:"形",ja:"怪しげな、疑わしい",biz:"I’m dubious about these numbers.（この数字には疑問がある）"},
+"drift":{ipa:"/drɪft/",pos:"動",forms:["drifted"],ja:"流される、離れていく",biz:"We’ve drifted away from the original plan.（当初の計画からずれてきている）"},
+"sufficient":{ipa:"/səˈfɪʃnt/",pos:"形",ja:"十分な",biz:"Is the budget sufficient?（予算は足りますか）"},
+"absorb":{ipa:"/əbˈzɔːb/",pos:"動",ja:"吸収する、（注意を）奪う",biz:"We can absorb the cost increase.（コスト増は吸収できる）"},
+"loathe":{ipa:"/ləʊð/",pos:"動",forms:["loathed"],ja:"ひどく嫌う"},
+"Bohemian":{ipa:"/bəʊˈhiːmiən/",pos:"形",ja:"自由奔放な、型にはまらない",d:"世間のしきたりにしばられない芸術家ふうの生き方。もとはボヘミア地方（今のチェコ）の人という意味。"},
+"lodgings":{ipa:"/ˈlɒdʒɪŋz/",pos:"名",ja:"下宿、貸間"},
+"alternate":{ipa:"/ˈɔːltəneɪt/",pos:"動",forms:["alternating"],ja:"交互に行き来する",biz:"We alternate between the two offices.（2つの事務所を交互に使っている）"},
+"ambition":{ipa:"/æmˈbɪʃn/",pos:"名",ja:"野心、大志"},
+"drowsiness":{ipa:"/ˈdraʊzinəs/",pos:"名",ja:"眠気、まどろみ"},
+"keen":{ipa:"/kiːn/",pos:"形",ja:"鋭い、熱心な",biz:"We’re keen to work with you.（ぜひご一緒したいと思っています）"},
+"faculties":{ipa:"/ˈfæklti/",pos:"名",ja:"能力、才能"},
+"abandon":{ipa:"/əˈbændən/",pos:"動",forms:["abandoned"],ja:"見捨てる、断念する",biz:"We abandoned the project.（そのプロジェクトは打ち切った）"},
+"summons":{ipa:"/ˈsʌmənz/",pos:"名",ja:"呼び出し"},
+"singular":{ipa:"/ˈsɪŋɡjələ/",pos:"形",ja:"奇妙な、並外れた",d:"ホームズ物語で何度も出る言葉。今は文法の「単数」の意味が普通。"},
+"accomplish":{ipa:"/əˈkʌmplɪʃ/",pos:"動",forms:["accomplished"],ja:"成し遂げる",biz:"What did we accomplish this quarter?（今期は何を達成できたか）"},
+"reigning":{ipa:"/ˈreɪnɪŋ/",pos:"形",ja:"君臨している、現在の",biz:"the reigning champion（現チャンピオン）"},
+"practice":{ipa:"/ˈpræktɪs/",pos:"名",forms:["civil practice"],ja:"（医者・弁護士の）開業、業務",biz:"a law practice（法律事務所）。in practice は「実際には」の意味でもよく使う。"},
+"wooing":{ipa:"/ˈwuːɪŋ/",pos:"名",ja:"求婚、言い寄ること",biz:"woo investors（投資家を口説く）は今も使う。"},
+"seize":{ipa:"/siːz/",pos:"動",forms:["seized"],ja:"つかむ、（感情が）襲う",biz:"seize the opportunity（好機をつかむ）"},
+"silhouette":{ipa:"/ˌsɪluˈet/",pos:"名",ja:"影絵、シルエット"},
+"blind":{ipa:"/blaɪnd/",pos:"名",ja:"日よけ、ブラインド"},
+"spare":{ipa:"/speə/",pos:"形",ja:"やせた（体つき）",biz:"今は spare time（空き時間）、Can you spare a minute?（少しお時間いいですか）が普通。"},
+"clasp":{ipa:"/klɑːsp/",pos:"動",forms:["clasped"],ja:"握りしめる、組む"},
+"on the scent":{pos:"句",forms:["upon the scent"],ja:"手がかりを追って",biz:"be on the scent of a deal（取引の匂いをかぎつけている）"},
+"effusive":{ipa:"/ɪˈfjuːsɪv/",pos:"形",ja:"感情をあらわにした、大げさな",biz:"effusive praise（手放しの称賛）"},
+"introspective":{ipa:"/ˌɪntrəˈspektɪv/",pos:"形",ja:"内省的な"},
+"wedlock":{ipa:"/ˈwedlɒk/",pos:"名",ja:"結婚生活"},
+"remark":{ipa:"/rɪˈmɑːk/",pos:"動",forms:["remarked"],ja:"（感想を）言う、述べる",biz:"closing remarks（閉会のあいさつ）"},
+"trifle":{ipa:"/ˈtraɪfl/",pos:"名",forms:["trifling"],ja:"少し、ささいなこと",biz:"a trifle late（少し遅れて）。trifling は「取るに足りない」"},
+"go into harness":{pos:"句",ja:"仕事に就く",d:"馬に馬具（harness）をつける、から。"},
+"deduce":{ipa:"/dɪˈdjuːs/",pos:"動",forms:["deduced","deduction"],ja:"推理する、推論する",biz:"From the data, we can deduce that demand is falling.（データから需要の減少が読み取れる）"},
+"incorrigible":{ipa:"/ɪnˈkɒrɪdʒəbl/",pos:"形",ja:"手に負えない、直しようのない"},
+"give notice":{pos:"句",forms:["given her notice"],ja:"解雇を言い渡す／辞職を申し出る",biz:"She handed in her notice.（彼女は退職届を出した）"},
+"chuckle":{ipa:"/ˈtʃʌkl/",pos:"動",forms:["chuckled"],ja:"くすくす笑う"},
+"simplicity itself":{pos:"句",ja:"簡単そのもの"},
+"parallel":{ipa:"/ˈpærəlel/",pos:"形",ja:"平行な",biz:"run in parallel（並行して進める）"},
+"scrape":{ipa:"/skreɪp/",pos:"動",forms:["scraped"],ja:"こすり落とす、こそげる"},
+"vile":{ipa:"/vaɪl/",pos:"形",ja:"ひどい、不快な"},
+"malignant":{ipa:"/məˈlɪɡnənt/",pos:"形",ja:"悪意のある、たちの悪い"},
+"iodoform":{t:"俗",ipa:"/aɪˈəʊdəfɔːm/",pos:"名",ja:"ヨードホルム",d:"傷の消毒に使われた薬。独特の強いにおいがした。"},
+"nitrate of silver":{t:"俗",pos:"名",ja:"硝酸銀",d:"いぼ取りや消毒に使った薬。皮膚につくと黒いしみになる。"},
+"stethoscope":{ipa:"/ˈsteθəskəʊp/",pos:"名",ja:"聴診器"},
+"secrete":{ipa:"/sɪˈkriːt/",pos:"動",forms:["secreted"],ja:"隠す"},
+"pronounce":{ipa:"/prəˈnaʊns/",pos:"動",ja:"断言する、宣告する"},
+"baffle":{ipa:"/ˈbæfl/",pos:"動",forms:["baffled"],ja:"当惑させる、さっぱりわからなくする",biz:"I’m baffled by this decision.（この決定には首をかしげる）"},
+"successive":{ipa:"/səkˈsesɪv/",pos:"形",ja:"連続する",biz:"for the third successive year（3年連続で）"},
+"quite so":{pos:"句",ja:"そのとおり",biz:"今なら Exactly. / Absolutely."},
+"observe":{ipa:"/əbˈzɜːv/",pos:"動",forms:["observed","observing","observer","observation"],ja:"観察する（気づいて心にとめる）",biz:"I’ve observed that our customers prefer email.（顧客はメールを好むと気づいた）",d:"see は目に入ること、observe は注意して見て心にとめること。ホームズはこの違いを大事にする。"},
+"distinction":{ipa:"/dɪˈstɪŋkʃn/",pos:"名",ja:"違い、区別",biz:"draw a distinction between A and B（AとBを区別する）"},
+"chronicle":{ipa:"/ˈkrɒnɪkl/",pos:"動",ja:"記録する",biz:"The book chronicles the company’s rise.（その本は会社の成長を記録している）"},
+"notepaper":{ipa:"/ˈnəʊtpeɪpə/",pos:"名",ja:"便せん"},
+"undated":{ipa:"/ʌnˈdeɪtɪd/",pos:"形",ja:"日付のない"},
+"signature":{ipa:"/ˈsɪɡnətʃə/",pos:"名",ja:"署名"},
+"call upon":{pos:"句",ja:"訪問する",biz:"今は visit / drop by。call on someone to do は「〜するよう求める」"},
+"consult":{ipa:"/kənˈsʌlt/",pos:"動",ja:"相談する",biz:"consult with legal（法務に相談する）"},
+"moment":{ipa:"/ˈməʊmənt/",pos:"名",ja:"（of moment で）重要性",biz:"今は a matter of great importance と言うのが普通。"},
+"exaggerate":{ipa:"/ɪɡˈzædʒəreɪt/",pos:"動",forms:["exaggerated"],ja:"誇張する",biz:"I can’t exaggerate how important this is.（どれほど重要か言い尽くせない）"},
+"take it amiss":{pos:"句",ja:"悪くとる、気を悪くする",biz:"今なら Please don’t take this the wrong way."},
+"capital":{ipa:"/ˈkæpɪtl/",pos:"形",ja:"重大な、致命的な",biz:"capital mistake は今も通じる。名詞の capital（資本）とつなげて覚える"},
+"theorise":{ipa:"/ˈθɪəraɪz/",pos:"動",ja:"理屈を立てる（米 theorize）"},
+"data":{ipa:"/ˈdeɪtə/",pos:"名",ja:"データ、資料",biz:"Let’s look at the data before we decide.（決める前にデータを見よう）"},
+"insensibly":{ipa:"/ɪnˈsensəbli/",pos:"副",ja:"知らず知らずのうちに"},
+"twist":{ipa:"/twɪst/",pos:"動",ja:"ねじ曲げる",biz:"Don’t twist my words.（私の言葉をねじ曲げないで）"}
+};
+
+/* SUPER洋書ノベル 第1話「ボヘミアの醜聞」（A Scandal in Bohemia, 1891）台本。
+   英文 t は原文のまま（書き換え・削除をしない。2026-11-15 経太さん「原文全文」）。ja は自作の和訳（直訳寄り）。
+   1行は1〜2文。dd:1 は推理の行（手がかりを選ぶ。IFは出さない）。座標は [経度,緯度] */
+const P={
+"Baker Street":[-0.1586,51.5238,"221B Baker Street"],
+"Odessa":[-0.06,51.55,"→ Odessa"],"Trincomalee":[-0.06,51.48,"→ Trincomalee"],"Holland":[0.0,51.55,"→ Holland"]
+};
+/* 登場人物。img は ch/ の画像（パジェットの挿絵の切り抜き、仕上げのPRで入れる）。無い人物は影 */
+const C={
+holmes:{n:"Holmes"},watson:{n:"Watson"},note:{n:"The note"}
+};
+const R={};
+const S0=[
+{scene:{y:1888,w:"",era:"ヴィクトリア朝ロンドン",e:"あの女性",m:{c:"Baker Street",r:120,pins:["Baker Street"],blink:"Baker Street"}}},
+{t:"To Sherlock Holmes she is always the woman. I have seldom heard him mention her under any other name.",ja:"シャーロック・ホームズにとって、彼女はいつも「あの女性」だ。彼がそれ以外の呼び名で彼女のことを口にするのを、私はほとんど聞いたことがない。",n:"原文では the が斜体。「女性というもの」の代表、特別なひとりという強調"},
+{t:"In his eyes she eclipses and predominates the whole of her sex. It was not that he felt any emotion akin to love for Irene Adler.",ja:"彼の目には、彼女はすべての女性を色あせさせ、その上に立つ存在だった。といっても、彼がアイリーン・アドラーに恋に近い感情を抱いていたわけではない。"},
+{t:"All emotions, and that one particularly, were abhorrent to his cold, precise but admirably balanced mind.",ja:"あらゆる感情、とりわけ恋は、冷たく正確で、しかし見事に釣り合いのとれた彼の頭脳にとって、忌まわしいものだった。"},
+{t:"He was, I take it, the most perfect reasoning and observing machine that the world has seen, but as a lover he would have placed himself in a false position.",ja:"思うに彼は、世界がこれまでに見た中で最も完璧な推理と観察の機械だった。だが恋をする男になれば、自分を場違いな立場に置いてしまっただろう。"},
+{t:"He never spoke of the softer passions, save with a gibe and a sneer. They were admirable things for the observer—excellent for drawing the veil from men’s motives and actions.",ja:"彼は恋や情けといったやわらかい感情を、からかいと冷笑を込めずに語ったことがない。それは観察する者にとっては結構なもの、人の動機や行動のベールをはぐのにうってつけのものだった。"},
+{t:"But for the trained reasoner to admit such intrusions into his own delicate and finely adjusted temperament was to introduce a distracting factor which might throw a doubt upon all his mental results.",ja:"しかし鍛えられた推理家が、自分の繊細で精密に調整された気質にそんなものの侵入を許せば、頭脳が出すすべての結論に疑いを投げかけかねない、気を散らす要素を持ち込むことになる。"},
+{t:"Grit in a sensitive instrument, or a crack in one of his own high-power lenses, would not be more disturbing than a strong emotion in a nature such as his.",ja:"精密な器械に入った砂粒も、彼自慢の高倍率レンズのひびも、彼のような人間にとっての強い感情ほどには邪魔にならないだろう。"},
+{t:"And yet there was but one woman to him, and that woman was the late Irene Adler, of dubious and questionable memory.",ja:"それでも彼にとって女性はただひとりであり、その女性とは、怪しげで、いわくつきの記憶とともに語られる、今は亡きアイリーン・アドラーだった。",n:"the late は「故〜」と訳されることが多いが、「前の（旧姓の）」とも読める。結末で意味がわかる"},
+{scene:{y:1888,w:"",era:"ヴィクトリア朝ロンドン",e:"221B、ふたたび",m:{c:"Baker Street",r:120,pins:["Baker Street","Odessa","Trincomalee","Holland"],blink:"Baker Street"}}},
+{t:"I had seen little of Holmes lately. My marriage had drifted us away from each other.",ja:"このところ、私はホームズとほとんど会っていなかった。私の結婚が、ふたりを遠ざけていたのだ。"},
+{t:"My own complete happiness, and the home-centred interests which rise up around the man who first finds himself master of his own establishment, were sufficient to absorb all my attention,",ja:"私自身の満ち足りた幸せと、初めて一家の主となった男のまわりに湧き上がる家庭中心の関心事で、私の注意はすっかり奪われていた。"},
+{t:"while Holmes, who loathed every form of society with his whole Bohemian soul, remained in our lodgings in Baker Street, buried among his old books,",ja:"一方ホームズは、ボヘミアン気質の魂のすべてであらゆる社交を嫌い、ベイカー街の私たちの下宿にとどまって、古い本に埋もれていた。"},
+{t:"and alternating from week to week between cocaine and ambition, the drowsiness of the drug, and the fierce energy of his own keen nature.",ja:"そして週ごとに、コカインと野心のあいだ、薬のもたらすまどろみと、鋭い気性の激しい活力とのあいだを行き来していた。",n:"当時コカインは合法で、薬として売られていた"},
+{t:"He was still, as ever, deeply attracted by the study of crime, and occupied his immense faculties and extraordinary powers of observation",ja:"彼は相変わらず犯罪の研究に強く惹かれ、その並外れた才能と驚くべき観察力を、"},
+{t:"in following out those clues, and clearing up those mysteries which had been abandoned as hopeless by the official police.",ja:"警察が見込みなしとして投げ出した手がかりをたどり、謎を解き明かすことに注いでいた。"},
+{t:"From time to time I heard some vague account of his doings: of his summons to Odessa in the case of the Trepoff murder,",ja:"ときおり彼の活動について漠然とした話が耳に入った。トレポフ殺人事件でオデッサに呼ばれたこと、",m:{blink:"Odessa"}},
+{t:"of his clearing up of the singular tragedy of the Atkinson brothers at Trincomalee, and finally of the mission which he had accomplished so delicately and successfully for the reigning family of Holland.",ja:"トリンコマリーでのアトキンソン兄弟の奇妙な悲劇を解決したこと、そして最後に、オランダ王家のために見事に、慎重に成し遂げた任務のこと。",m:{blink:"Holland"}},
+{t:"Beyond these signs of his activity, however, which I merely shared with all the readers of the daily press, I knew little of my former friend and companion.",ja:"けれども、日刊新聞の読者なら誰でも知っているこうした活躍の知らせのほかは、かつての友であり相棒だった男について、私はほとんど何も知らなかった。"},
+{scene:{y:1888,w:"3月20日",era:"ヴィクトリア朝ロンドン",e:"窓に映る影",m:{c:"Baker Street",r:60,pins:["Baker Street"],blink:"Baker Street",clear:1}}},
+{t:"One night—it was on the twentieth of March, 1888—I was returning from a journey to a patient (for I had now returned to civil practice), when my way led me through Baker Street.",ja:"ある晩、1888年3月20日のことだった。私は患者のもとへ往診した帰りで（そのころ私は開業医に戻っていた）、道がベイカー街を通っていた。"},
+{t:"As I passed the well-remembered door, which must always be associated in my mind with my wooing, and with the dark incidents of the Study in Scarlet,",ja:"よく覚えているあの扉の前を通りかかったとき、それは私の心の中で、妻への求婚と、あの『緋色の研究』の暗い事件にいつまでも結びついている扉なのだが、"},
+{t:"I was seized with a keen desire to see Holmes again, and to know how he was employing his extraordinary powers.",ja:"私はもう一度ホームズに会い、彼があの並外れた力を今どう使っているのか知りたいという強い思いにとらわれた。"},
+{t:"His rooms were brilliantly lit, and, even as I looked up, I saw his tall, spare figure pass twice in a dark silhouette against the blind.",ja:"彼の部屋には明々と灯りがついていた。見上げたちょうどそのとき、背の高いやせた姿が、黒い影となって日よけに二度映って横切った。"},
+{t:"He was pacing the room swiftly, eagerly, with his head sunk upon his chest and his hands clasped behind him.",ja:"彼は頭を胸に垂れ、両手を後ろで組んで、すばやく、熱心に部屋の中を歩き回っていた。"},
+{t:"To me, who knew his every mood and habit, his attitude and manner told their own story. He was at work again.",ja:"彼の気分も癖もすべて知っている私には、その姿勢と様子だけで事情がわかった。彼はまた仕事にかかっているのだ。"},
+{t:"He had risen out of his drug-created dreams and was hot upon the scent of some new problem.",ja:"薬の作る夢から抜け出し、何か新しい問題の匂いを熱心に追っているのだ。"},
+{t:"I rang the bell and was shown up to the chamber which had formerly been in part my own.",ja:"私は呼び鈴を鳴らし、かつては半分私の部屋でもあった部屋へと案内された。"},
+{scene:{y:1888,w:"3月20日",era:"ヴィクトリア朝ロンドン",e:"見ているが、観察していない",m:{c:"Baker Street",r:60,pins:["Baker Street"],blink:"Baker Street"}}},
+{t:"His manner was not effusive. It seldom was; but he was glad, I think, to see me.",ja:"彼の態度は大げさなものではなかった。めったにそうなることはない。だが、私に会えて喜んでいたと思う。"},
+{t:"With hardly a word spoken, but with a kindly eye, he waved me to an armchair, threw across his case of cigars, and indicated a spirit case and a gasogene in the corner.",ja:"ほとんど口はきかなかったが、優しい目で私に肘掛け椅子をすすめ、葉巻の箱を放ってよこし、隅の酒の入れ物とソーダ水製造器を指し示した。"},
+{t:"Then he stood before the fire and looked me over in his singular introspective fashion.",ja:"それから暖炉の前に立ち、彼独特の、内側をのぞき込むようなやり方で私をじろじろと見た。"},
+{sp:"holmes",t:"“Wedlock suits you,” he remarked. “I think, Watson, that you have put on seven and a half pounds since I saw you.”",ja:"「結婚は君に合っているようだね」と彼は言った。「ワトソン、前に会ったときから7ポンド半（約3.4キロ）太ったね」"},
+{sp:"watson",t:"“Seven!” I answered.",ja:"「7ポンドだよ！」と私は答えた。"},
+{sp:"holmes",t:"“Indeed, I should have thought a little more. Just a trifle more, I fancy, Watson. And in practice again, I observe. You did not tell me that you intended to go into harness.”",ja:"「いや、もう少し多いと思ったがね。ほんの少しだけ多いと思うよ、ワトソン。それに、また開業しているね。仕事に戻るつもりだとは聞いていなかったが」"},
+{sp:"watson",t:"“Then, how do you know?”",ja:"「じゃあ、どうしてわかるんだ？」"},
+{sp:"holmes",t:"“I see it, I deduce it. How do I know that you have been getting yourself very wet lately, and that you have a most clumsy and careless servant girl?”",ja:"「見て、推理するのさ。君が最近ずぶ濡れになったことや、とても不器用でそそっかしいお手伝いの娘を雇っていることが、なぜ僕にわかると思う？」"},
+{choice:"ホームズは何を見て、ワトソンが「最近ずぶ濡れになった」と見抜いたのだろう？",dd:1,a:0,
+ o:[{t:"Cuts on the inside of his left shoe",ja:"左の靴の内側の切り傷",h:1},{t:"Mud on the bottom of his trousers",ja:"ズボンのすその泥"},{t:"A cough and a red nose",ja:"せきと赤い鼻"}],
+ fb:"答え合わせは、このあとのホームズの説明で。"},
+{sp:"watson",t:"“My dear Holmes,” said I, “this is too much. You would certainly have been burned, had you lived a few centuries ago.",ja:"「おいおいホームズ」と私は言った。「それはやりすぎだ。何百年か前に生まれていたら、間違いなく魔女として火あぶりにされていたぞ。"},
+{sp:"watson",t:"It is true that I had a country walk on Thursday and came home in a dreadful mess, but as I have changed my clothes I can’t imagine how you deduce it.",ja:"たしかに木曜日に田舎を歩いて、ひどい格好で帰ってきた。でも服は着替えたんだから、どうして推理できたのか見当もつかない。"},
+{sp:"watson",t:"As to Mary Jane, she is incorrigible, and my wife has given her notice, but there, again, I fail to see how you work it out.”",ja:"メアリー・ジェーンのほうは、どうしようもない子で、妻が辞めてもらうことにした。でも、それもどうやって割り出したのかわからないよ」"},
+{t:"He chuckled to himself and rubbed his long, nervous hands together.",ja:"彼はひとりでくすくす笑い、長い神経質そうな両手をこすり合わせた。"},
+{sp:"holmes",t:"“It is simplicity itself,” said he; “my eyes tell me that on the inside of your left shoe, just where the firelight strikes it, the leather is scored by six almost parallel cuts.",ja:"「簡単そのものさ」と彼は言った。「君の左の靴の内側、ちょうど暖炉の光が当たっているところで、革にほとんど平行な6本の切り傷がついているのが見える。"},
+{sp:"holmes",t:"Obviously they have been caused by someone who has very carelessly scraped round the edges of the sole in order to remove crusted mud from it.",ja:"明らかに、こびりついた泥を落とそうとして、誰かが靴底のふちをひどくぞんざいにこそげたせいだ。"},
+{sp:"holmes",t:"Hence, you see, my double deduction that you had been out in vile weather, and that you had a particularly malignant boot-slitting specimen of the London slavey.",ja:"だから、わかるだろう、二重の推理になる。君がひどい天気の中を出歩いたこと、そして靴を切り裂くほどたちの悪いロンドンの下働き娘を雇っていることだ。"},
+{sp:"holmes",t:"As to your practice, if a gentleman walks into my rooms smelling of iodoform, with a black mark of nitrate of silver upon his right forefinger,",ja:"開業のほうはこうだ。ヨードホルムのにおいをさせ、右の人さし指に硝酸銀の黒いしみをつけ、"},
+{sp:"holmes",t:"and a bulge on the right side of his top-hat to show where he has secreted his stethoscope, I must be dull, indeed, if I do not pronounce him to be an active member of the medical profession.”",ja:"シルクハットの右側に聴診器を隠したふくらみがある紳士が部屋に入ってきたら、現役の医者だと言い当てられないようでは、僕はよほどの鈍物ということになる」"},
+{t:"I could not help laughing at the ease with which he explained his process of deduction.",ja:"彼が推理の筋道をいとも簡単に説明するので、私は笑わずにいられなかった。"},
+{sp:"watson",t:"“When I hear you give your reasons,” I remarked, “the thing always appears to me to be so ridiculously simple that I could easily do it myself,",ja:"「君が理由を話すのを聞くと」と私は言った。「いつもばかばかしいほど簡単に思えて、自分にも楽にできそうな気がする。"},
+{sp:"watson",t:"though at each successive instance of your reasoning I am baffled until you explain your process. And yet I believe that my eyes are as good as yours.”",ja:"それなのに、君が推理するたびに、説明してもらうまで私はさっぱりわからない。目は君と同じくらいいいはずなんだがね」"},
+{sp:"holmes",t:"“Quite so,” he answered, lighting a cigarette, and throwing himself down into an armchair. “You see, but you do not observe. The distinction is clear.",ja:"「そのとおり」と彼は紙巻きたばこに火をつけ、肘掛け椅子にどさりと座りながら答えた。「君は見ているが、観察していない。その違いははっきりしている。"},
+{sp:"holmes",t:"For example, you have frequently seen the steps which lead up from the hall to this room.”",ja:"たとえば、玄関からこの部屋へ上がる階段を、君は何度も見ているね」"},
+{sp:"watson",t:"“Frequently.”",ja:"「何度もね」"},
+{sp:"holmes",t:"“How often?”",ja:"「何回くらい？」"},
+{sp:"watson",t:"“Well, some hundreds of times.”",ja:"「そうだな、何百回か」"},
+{sp:"holmes",t:"“Then how many are there?”",ja:"「では、何段ある？」"},
+{sp:"watson",t:"“How many? I don’t know.”",ja:"「何段？知らないな」"},
+{sp:"holmes",t:"“Quite so! You have not observed. And yet you have seen. That is just my point. Now, I know that there are seventeen steps, because I have both seen and observed.",ja:"「そのとおり！君は観察していない。それでいて見てはいる。そこが肝心なところだ。僕は17段あると知っている。見て、しかも観察したからね。"},
+{t:"“You see, but you do not 〔？〕.”",recall:"observe",q:"ホームズの決めぜりふ。「見ているが、〇〇していない」",o:["observe","deduce","notice"]},
+{scene:{y:1888,w:"3月20日",era:"ヴィクトリア朝ロンドン",e:"差出人のない手紙",m:{c:"Baker Street",r:60,pins:["Baker Street"],blink:"Baker Street"}}},
+{sp:"holmes",t:"By the way, since you are interested in these little problems, and since you are good enough to chronicle one or two of my trifling experiences, you may be interested in this.”",ja:"ところで、君はこういうちょっとした問題に興味があるし、僕のささいな経験を一つ二つ記録してくれるほど親切だから、これにも興味がわくかもしれない」"},
+{t:"He threw over a sheet of thick, pink-tinted notepaper which had been lying open upon the table.",ja:"彼はテーブルの上に広げて置いてあった、厚手で薄いピンク色の便せんを一枚、こちらへ放ってよこした。"},
+{sp:"holmes",t:"“It came by the last post,” said he. “Read it aloud.”",ja:"「最後の配達で届いたんだ」と彼は言った。「声に出して読んでくれたまえ」"},
+{t:"The note was undated, and without either signature or address.",ja:"その手紙には日付がなく、署名も住所もなかった。"},
+{sp:"note",t:"“There will call upon you to-night, at a quarter to eight o’clock,” it said, “a gentleman who desires to consult you upon a matter of the very deepest moment.",ja:"「今夜8時15分前に」と手紙にはあった。「きわめて重大な件でご相談したいという紳士が、あなたを訪ねます。"},
+{sp:"note",t:"Your recent services to one of the royal houses of Europe have shown that you are one who may safely be trusted with matters which are of an importance which can hardly be exaggerated.",ja:"最近あなたがヨーロッパのある王家のために尽くされたことから、どれほど大げさに言っても言い足りないほど重要な事柄を、安心して任せられる方だとわかりました。"},
+{sp:"note",t:"This account of you we have from all quarters received. Be in your chamber then at that hour, and do not take it amiss if your visitor wear a mask.”",ja:"あなたについてのこの評判は、あらゆる方面から届いております。その時刻にはお部屋にいてください。訪問者が仮面をつけていても、悪く思わないでいただきたい」"},
+{sp:"watson",t:"“This is indeed a mystery,” I remarked. “What do you imagine that it means?”",ja:"「これは本当に謎だね」と私は言った。「どういう意味だと思う？」"},
+{sp:"holmes",t:"“I have no data yet. It is a capital mistake to theorise before one has data.",ja:"「まだデータがない。データを持たないうちに理屈を立てるのは、大きな間違いだ。"},
+{sp:"holmes",t:"Insensibly one begins to twist facts to suit theories, instead of theories to suit facts.",ja:"知らず知らずのうちに、事実に合うように理屈を立てるのではなく、理屈に合うように事実をねじ曲げはじめてしまうからね。"},
+{end:1}
+];
+const ORDER=["ワトソンが「あの女性」について語りはじめる","結婚したワトソンが、久しぶりにベイカー街を通る","ホームズがワトソンの靴の傷から推理する","「見ているが、観察していない」","差出人のない手紙が、仮面の客の来訪を告げる"];
+const S=S0;
+
+const PIC={};
+
+</script>
+<script src="../history-novel/hn-engine.js?v=892ac151"></script>

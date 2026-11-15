@@ -1,8 +1,12 @@
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const st={v:"title",i:0,sub:0,wait:false,seen:[],dug:new Set(),rec:[0,0],pre:[0,0],miss:[],ans:{},stack:[],sheet:null,
+const st={v:"title",i:0,sub:0,wait:false,seen:[],dug:new Set(),rec:[0,0],pre:[0,0],dd:[0,0],miss:[],ans:{},stack:[],sheet:null,
   perm:null,nd:0,om:0, role:"solo", ep:0, lastS:""};
 const isFollower=()=>st.role==="follow";
+/* SUPER洋書ノベル（2026-11-15）: CFG.lang==="en" の章だけ英語の行・和訳・読み上げ・英語辞書が働く。歴史ノベルの章は今までどおり */
+const EN=CFG.lang==="en";
+const LB=EN?{ok:"原作どおり",alt:"原作では",score:"原作",choose:"あなたならどうする"}:{ok:"史実どおり",alt:"史実で選ばれたのは",score:"史実",choose:"あなたの決断"};
+const LIB=window.HN_LIB||"";/* 共通素材（音・フォント）の置き場所。洋書ノベルは ../history-novel/ */
 
 /* ---------- sound (synthesized, off by default until first gesture) ---------- */
 let snd=true,vol=70,actx=null;
@@ -26,7 +30,12 @@ $("sndPop").addEventListener("click",e=>e.stopPropagation());
 /* 設定（歯車）: ノベルの文字の大きさ 小・中・大（端末に保存。2026-11-05 経太さん） */
 const ICO_CFG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/><circle cx="12" cy="12" r="6.6"/></svg>';
 let fsz=matchMedia("(min-width:900px)").matches?"l":"s";try{const v=localStorage.getItem("fs");if(v==="s"||v==="l"||v==="m")fsz=v;}catch(e){}
-function drawCfg(){document.documentElement.dataset.fs=fsz;document.querySelectorAll("#cfgPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fsz)));
+/* 和訳の出し方（tap=押したときだけ・on=いつも・off=出さない）と読み上げ（tap=押したとき・auto=自動）。端末に保存（2026-11-15 経太さん: 和訳は押したときだけが既定） */
+let jaMode="tap",sayMode="tap";try{const v=localStorage.getItem("yn-ja");if(v==="on"||v==="off"||v==="tap")jaMode=v;const w=localStorage.getItem("yn-say");if(w==="auto"||w==="tap")sayMode=w;}catch(e){}
+if(EN){$("repRow").insertAdjacentHTML("beforebegin",`<div class="cfg-row"><span>和訳</span><div class="seg" role="radiogroup" aria-label="和訳"><button data-ja="tap" role="radio">押したとき</button><button data-ja="on" role="radio">いつも</button><button data-ja="off" role="radio">出さない</button></div></div><div class="cfg-row"><span>読み上げ</span><div class="seg" role="radiogroup" aria-label="読み上げ"><button data-say="tap" role="radio">押したとき</button><button data-say="auto" role="radio">自動</button></div></div>`);}
+function drawCfg(){document.documentElement.dataset.fs=fsz;document.documentElement.dataset.ja=jaMode;
+  document.querySelectorAll("#cfgPop [data-ja]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.ja===jaMode)));
+  document.querySelectorAll("#cfgPop [data-say]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.say===sayMode)));document.querySelectorAll("#cfgPop [data-fs]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.fs===fsz)));
   const sk=document.documentElement.dataset.skin;$("skins").innerHTML=Object.entries(window.HN_SKINS||{}).map(([k,v])=>`<button data-skin="${k}" role="radio" aria-checked="${k===sk}"><i style="background:${v.c}"></i>${v.n}</button>`).join("");
   const fk=document.documentElement.dataset.font;$("fonts").innerHTML=Object.entries(window.HN_FONTS||{}).map(([k,v])=>`<button data-font="${k}" role="radio" aria-checked="${k===fk}" style="font-family:${v.fam?`'${v.fam}'`:"var(--h)"},serif">${v.n}</button>`).join("");}
 function setFont(k){k=window.hnFont(k);try{localStorage.setItem("hn-font",k);}catch(x){}drawCfg();}
@@ -36,7 +45,7 @@ function setSkin(k){const was=isDark();k=window.hnSkin(k);try{localStorage.setIt
 function cfgPop(open){$("cfgPop").hidden=!open;$("repRow").hidden=!(SBR.on&&st.v==="play");$("bCfg").setAttribute("aria-expanded",String(open));}
 $("bCfg").innerHTML=ICO_CFG;
 $("bCfg").onclick=e=>{e.stopPropagation();if(!$("sndPop").hidden)sndPop(false);cfgPop($("cfgPop").hidden);};
-$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const sk=e.target.closest("button[data-skin]");if(sk){setSkin(sk.dataset.skin);return;}const fo=e.target.closest("button[data-font]");if(fo){setFont(fo.dataset.font);return;}const b=e.target.closest("button[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
+$("cfgPop").addEventListener("click",e=>{e.stopPropagation();const sk=e.target.closest("button[data-skin]");if(sk){setSkin(sk.dataset.skin);return;}const fo=e.target.closest("button[data-font]");if(fo){setFont(fo.dataset.font);return;}const ja=e.target.closest("button[data-ja]");if(ja){jaMode=ja.dataset.ja;try{localStorage.setItem("yn-ja",jaMode);}catch(x){}drawCfg();return;}const sy=e.target.closest("button[data-say]");if(sy){sayMode=sy.dataset.say;try{localStorage.setItem("yn-say",sayMode);}catch(x){}drawCfg();return;}const b=e.target.closest("button[data-fs]");if(!b)return;fsz=b.dataset.fs;try{localStorage.setItem("fs",fsz);}catch(x){}drawCfg();});
 drawCfg();
 $("sndVol").oninput=e=>{vol=+e.target.value;if(vol>0&&!snd)snd=true;saveSnd();drawSnd();if(bgmEl)bgmEl.volume=.35*vol/100;bgm(bgmWant);};
 $("sndVol").onchange=()=>{if(audible())SE.page();};
@@ -44,7 +53,7 @@ $("sndMute").onclick=()=>{snd=!snd;if(snd&&!vol)vol=70;saveSnd();drawSnd();if(au
 
 /* ---------- map ---------- */
 /* 地図の基準（章ごとに CFG で決める。章の設定は cfg.js） */
-const LON0=CFG.lon0,LAT0=CFG.lat0,K=100,CS=Math.cos(LAT0*Math.PI/180);
+const LON0=CFG.lon0,LAT0=CFG.lat0,K=CFG.k||100,CS=Math.cos(LAT0*Math.PI/180);
 const HOME=()=>({c:CFG.init.c,r:CFG.init.r,pins:[],blink:null,ar:[]});
 const pj=([lon,lat])=>[(lon-LON0)*CS*K,-(lat-LAT0)*K];
 const pt=k=>Array.isArray(k)?k:P[k];
@@ -256,7 +265,7 @@ $("pics").addEventListener("click",e=>{e.stopPropagation();openLB();});
 
 /* ---------- header ---------- */
 /* ---------- BGM＝環境音（2026-11-06 音楽は入れず、チャプターごとに環境音。素材は snd/amb/、出典は snd/SOURCES.md） ---------- */
-const BGM=Object.fromEntries("satoyama_night temple_garden court_quiet battle_far waterbirds sea_battle town_japan winter_night army_march harbor_river harbor_china harbor_lisbon rough_sea siege_far storm_sea calm_ocean tropical_market lake_city highland_wind island_beach mine port_market".split(" ").map(k=>[k,"snd/amb/"+k+".mp3"]));let bgmEl=null,bgmKey=null,bgmWant=null;
+const BGM=Object.fromEntries("satoyama_night temple_garden court_quiet battle_far waterbirds sea_battle town_japan winter_night army_march harbor_river harbor_china harbor_lisbon rough_sea siege_far storm_sea calm_ocean tropical_market lake_city highland_wind island_beach mine port_market".split(" ").map(k=>[k,LIB+"snd/amb/"+k+".mp3"]));let bgmEl=null,bgmKey=null,bgmWant=null;
 function bgm(key){
   bgmWant=key;const k=audible()?key:null;
   if(k===bgmKey)return;bgmKey=k;
@@ -265,18 +274,23 @@ function bgm(key){
   try{const a=new Audio(BGM[k]);a.loop=true;a.volume=0;a.play().catch(()=>{});bgmEl=a;fadeA(a,.35*vol/100);}catch(e){}
 }
 function fadeA(a,to,done){const from=a.volume,t0=performance.now();(function f(){const k=Math.min(1,(performance.now()-t0)/1200);a.volume=from+(to-from)*k;if(k<1)requestAnimationFrame(f);else done&&done();})();}
-function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").innerHTML=esc(sc.w||"").replace(AUTO_RE,w=>ruby(w,w));$("hEra").textContent=sc.era;$("hEv").textContent=sc.e;
+function setScene(sc){bgm(sc.bgm);$("hY").textContent=sc.y;$("hW").innerHTML=EN?esc(sc.w||""):esc(sc.w||"").replace(AUTO_RE,w=>ruby(w,w));$("hEra").textContent=sc.era;$("hEv").textContent=sc.e;
   $("prog").style.width=(100*Math.min(1,st.i/(S.length-1))).toFixed(1)+"%";}
 function sceneAt(i){let a=i;while(a>0&&!S[a].scene)a--;return S[a].scene;}
 
 /* ---------- novel ---------- */
 /* 本文の語: {語} と、辞書にある語（2文字以上）の各行で最初の1回を押せるようにする。
    用語（概念）は太字、人物・土地は点線だけ（2026-11-05 経太さん「重要語句は太字」「人名・地名も辞書」） */
-const AUTO_RE=new RegExp(Object.keys(G).filter(k=>k.length>=2).sort((a,b)=>b.length-a.length).join("|"),"g");
+/* 英語の章: 単語の切れ目で、大文字小文字と活用形（G[語].forms）を区別せずに拾う */
+const FORM={};if(EN)for(const k in G){FORM[k.toLowerCase()]=k;(G[k].forms||[]).forEach(f=>{FORM[f.toLowerCase()]=k;});}
+const reEsc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+const AUTO_RE=EN?new RegExp("\\b(?:"+Object.keys(FORM).sort((a,b)=>b.length-a.length).map(reEsc).join("|")+")\\b","gi")
+  :new RegExp(Object.keys(G).filter(k=>k.length>=2).sort((a,b)=>b.length-a.length).join("|"),"g");
+const keyOf=w=>EN?FORM[w.toLowerCase()]:w;
 /* 漢字の語には読み仮名を上に振る（各行の最初の1回＝押せる語だけ。2026-11-06 経太さん「名前や地名が読めない」） */
 const KANJI=/[\u4e00-\u9fff々]/;
 function ruby(a,k){const r=G[k]&&G[k].r;return r&&a===esc(k)&&KANJI.test(k)?`<ruby>${a}<rt>${esc(r)}</rt></ruby>`:a;}
-function termBtn(a,k){return `<button class="term${G[k].t?"":" imp"}" data-k="${esc(k)}">${ruby(a,k)}</button>`;}
+function termBtn(a,k){return `<button class="term${G[k].t?"":EN?" env":" imp"}" data-k="${esc(k)}">${ruby(a,k)}</button>`;}
 function md(t,see,self){
   const src=String(t),parts=[],used=new Set(self?[self]:[]);let last=0;
   src.replace(/\{([^}|]+)(?:\|([^}]+))?\}/g,(m,a,b,off)=>{parts.push([src.slice(last,off),null]);parts.push([a,b||a]);last=off+m.length;return m;});
@@ -284,7 +298,7 @@ function md(t,see,self){
   const mark=k=>{used.add(k);if(see&&!st.seen.includes(k))st.seen.push(k);};
   return parts.map(([x,k])=>{
     if(k){if(!G[k]||k===self)return esc(x);mark(k);return termBtn(esc(x),k);}
-    return esc(x).replace(AUTO_RE,w=>{if(used.has(w))return w;mark(w);return termBtn(w,w);});
+    return esc(x).replace(AUTO_RE,w=>{const k=keyOf(w);if(!k||used.has(k))return w;mark(k);return termBtn(w,k);});
   }).join("").replace("〔？〕",'<span class="blank" id="blank">？</span>');
 }
 
@@ -293,20 +307,36 @@ function faceHTML(id,cls){const c=C[id];if(!c)return "";
   /* ドット顔（Retro Diffusion で肖像画から作ったもの）があればそれを優先。2026-11-06 試験導入: 頼朝・清盛 */
   if(c.dot)return `<img class="${cls} dot" src="ch/dot/${c.dot}.png" alt="${esc(c.n)}" loading="lazy">`;
   /* 肖像画が無い人物は共通の黒い影（128×160ドット、2026-11-06 経太さん作の形） */
-  return (c.img&&PIC["ch_"+c.img])?`<img class="${cls}" src="ch/${c.img}.jpg" alt="${esc(c.n)}" loading="lazy">`:`<img class="${cls} dot mob" src="ch/dot/mob.png" alt="" aria-hidden="true">`;}
+  return (c.img&&PIC["ch_"+c.img])?`<img class="${cls}" src="ch/${c.img}.jpg" alt="${esc(c.n)}" loading="lazy">`:`<img class="${cls} dot mob" src="${LIB}ch/dot/mob.png" alt="" aria-hidden="true">`;}
 /* 地の文は句点で改行（かっこの中は除く） */
-function brk(s){let d=0,o="";for(let i=0;i<s.length;i++){const c=s[i];o+=c;if("「『（(".includes(c))d++;else if("」』）)".includes(c))d=Math.max(0,d-1);else if(c==="。"&&d===0&&i<s.length-1)o+="\n";}return o;}
+function brkEn(s){return s.replace(/(?<!\b(?:Mr|Mrs|Dr|St|Messrs|Mme))([.!?][”’"]?)\s+(?=[“"‘A-Z])/g,"$1\n");}
+function brk(s){if(EN)return brkEn(s);let d=0,o="";for(let i=0;i<s.length;i++){const c=s[i];o+=c;if("「『（(".includes(c))d++;else if("」』）)".includes(c))d=Math.max(0,d-1);else if(c==="。"&&d===0&&i<s.length-1)o+="\n";}return o;}
 function lineHTML(s,cur){
   const note=s.n?`<span class="note">※ ${esc(s.n)}</span>`:"";
   if(s.sp){const c=C[s.sp]||{n:s.sp};
-    return `<div class="txt said"><span class="spn">${esc(c.n)}</span>${md(s.t.replace(/\n/g,""),true)}</div>`;}
-  if(s.who)return `<div class="who">${esc(s.who)}</div><div class="txt${s.q?" quote":""}">${md(s.t,true)}${note}</div>`;
-  return `<div class="txt nar">${md(brk(s.t),true)}${note}</div>`;
+    return `<div class="txt said"><span class="spn">${esc(c.n)}</span>${md(s.t.replace(/\n/g,""),true)}</div>${jaHTML(s)}`;}
+  if(s.who)return `<div class="who">${esc(s.who)}</div><div class="txt${s.q?" quote":""}">${md(s.t,true)}${note}</div>${jaHTML(s)}`;
+  return `<div class="txt nar">${md(brk(s.t),true)}${note}</div>${jaHTML(s)}`;
 }
+/* 和訳（自分の画面だけ）。「訳」で開閉。いつも出す設定なら最初から開く。読み上げボタンも同じ列に置く */
+const ICO_SAY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>';
+function jaHTML(s){if(!EN||!s.t)return "";
+  const ja=s.ja&&jaMode!=="off"?`<button class="jab" type="button" aria-expanded="${jaMode==="on"}">訳</button>`:"";
+  return `<div class="enx"><button class="sayb" type="button" data-say="${esc(plain(s.t))}"${s.au?` data-au="${esc(s.au)}"`:""} aria-label="読み上げる">${ICO_SAY}</button>${ja}</div>${s.ja&&jaMode!=="off"?`<div class="ja"${jaMode==="on"?"":" hidden"}>${esc(s.ja)}</div>`:""}`;}
+const plain=t=>String(t).replace(/\{([^}|]+)(?:\|[^}]+)?\}/g,"$1").replace(/\n/g," ");
+/* 読み上げ: 行に録音（au）があればそれを流し、無ければブラウザの音声合成（英国英語の声を優先）。後から良い音声に差し替えられるように（2026-11-15 経太さん） */
+let sayA=null,enVoice=null;
+function pickVoice(){if(!("speechSynthesis" in window))return;const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
+  enVoice=vs.find(v=>/en[-_]GB/i.test(v.lang)&&/Daniel|Arthur|Google UK English Male|Male/i.test(v.name))||vs.find(v=>/en[-_]GB/i.test(v.lang))||vs[0]||null;}
+if(EN&&"speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function sayStop(){if(sayA){sayA.pause();sayA=null;}if("speechSynthesis" in window)speechSynthesis.cancel();}
+function say(text,au){sayStop();if(!audible()||!text)return;
+  if(au){try{sayA=new Audio(au);sayA.volume=Math.min(1,vol/100);sayA.play().catch(()=>{});}catch(e){}return;}
+  if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.lang=enVoice?enVoice.lang:"en-GB";if(enVoice)u.voice=enVoice;u.rate=.92;u.volume=Math.min(1,vol/100);speechSynthesis.speak(u);}
 
 /* 台詞は地図の上の窓に出す（顔・名前・台詞） */
 function showTalk(s){const c=C[s.sp]||{n:s.sp},el=$("talk");
-  el.innerHTML=`<div class="tk-f">${faceHTML(s.sp,"face")}<div class="tk-n">${esc(c.n)}</div></div><div class="tk-b"><div class="txt">${md(s.t,true)}</div></div>`;
+  el.innerHTML=`<div class="tk-f">${faceHTML(s.sp,"face")}<div class="tk-n">${esc(c.n)}</div></div><div class="tk-b"><div class="txt">${md(s.t,true)}</div>${jaHTML(s)}</div>`;
   el.hidden=false;el.classList.remove("on");void el.offsetWidth;el.classList.add("on");
   talkH=talkSpan();/* 文字を打ち始める前（全文が入った状態）の高さを覚えておく。カメラ合わせに使う */
   typeIn(el.querySelector(".txt"));}
@@ -321,8 +351,8 @@ function setWho(w){const e=$("who");e.hidden=!w;e.textContent=w||"";}
 function nxText(){$("nx").textContent=isFollower()?"ホストが進めます":"タップで次へ";}
 function staticHTML(k){
   const s=S[k],a=st.ans[k];
-  if(s.choice)return `<div class="past"><div class="who">${esc(s.who||"あなたの決断")}</div><div class="txt">${md(s.choice,true)}</div>${a!=null?`<div class="said">${esc(s.o[a].t)}</div>`+choiceHTML(s,a,99):""}</div>`;
-  if(s.recall){const t=a!=null?s.t.replace("〔？〕","{"+s.recall+"}"):s.t.replace("〔？〕","（？）");return `<div class="past"><div class="txt">${md(t,true)}</div></div>`;}
+  if(s.choice)return `<div class="past"><div class="who">${esc(s.who||(s.dd?"推理してみる":LB.choose))}</div><div class="txt">${md(s.choice,true)}</div>${a!=null?`<div class="said">${esc(s.o[a].t)}</div>`+choiceHTML(s,a,99):""}</div>`;
+  if(s.recall){const t=a!=null?s.t.replace("〔？〕","{"+(s.rw?s.rw+"|":"")+s.recall+"}"):s.t.replace("〔？〕","（？）");return `<div class="past"><div class="txt">${md(t,true)}</div></div>`;}
   if(s.t)return `<div class="past">${lineHTML(s)}</div>`;
   return "";
 }
@@ -339,9 +369,9 @@ function run(){
   $("bk").style.visibility=isFollower()||prevIndex()<0?"hidden":"";
   if(s.end){hideTalk();updateMap();showEnd();return;}
   if(s.choice){
-    st.wait=true;setWho(s.who||"あなたの決断");
+    st.wait=true;setWho(s.who||(s.dd?"推理してみる":LB.choose));
     $("content").innerHTML=`<div class="txt">${md(s.choice,true)}</div>`;
-    s.o.forEach((o,j)=>{const b=document.createElement("button");b.className="opt";b.innerHTML=`<span class="num">${"一二三四"[j]}</span><span>${esc(o.t)}</span>`;b.dataset.t=o.t;b.disabled=isFollower();
+    s.o.forEach((o,j)=>{const b=document.createElement("button");b.className="opt";b.innerHTML=`<span class="num">${"一二三四"[j]}</span><span>${esc(o.t)}${o.ja&&jaMode==="on"?`<small class="oja">${esc(o.ja)}</small>`:""}</span>`;b.dataset.t=o.t;b.disabled=isFollower();
       b.onclick=e=>{e.stopPropagation();answerChoice(s,j);};$("choices").appendChild(b);});
     $("choices").style.visibility="hidden";typeIn($("content").querySelector(".txt"),()=>{$("choices").style.visibility="";});
   }else if(s.recall){
@@ -353,15 +383,16 @@ function run(){
     if(isFollower())$("content").insertAdjacentHTML("beforeend",'<span class="note">ホストの答えを待っています。口に出して答えてみてください。</span>');
   }else{
     setWho(null);
-    if(s.sp){$("content").innerHTML="";showTalk(s);updateMap();if(sceneChange){SE.scene();sceneCard();}push();toBottom();return;}
+    if(s.sp){$("content").innerHTML="";showTalk(s);updateMap();if(sceneChange){SE.scene();sceneCard();}autoSay(s);push();toBottom();return;}
     hideTalk();
     $("content").innerHTML=lineHTML(s,true);
     const sr=$("content").querySelector(".src");if(sr)sr.style.visibility="hidden";
     typeIn($("content").querySelector(".txt"),()=>{if(sr)sr.style.visibility="";});
   }
   updateMap();if(sceneChange){SE.scene();sceneCard();}
-  push();toBottom();
+  autoSay(s);push();toBottom();
 }
+function autoSay(s){if(!EN)return;sayStop();if(sayMode==="auto"&&s&&s.t&&!s.recall&&!st.cardHold)say(plain(s.t),s.au);}
 let typer=null;
 function typeIn(el,done){
   if(typer)typer.finish(true);
@@ -379,30 +410,31 @@ function typeIn(el,done){
     const ch=full[ni][ci-1];if(cnt%2===0&&ch&&!/[\s、。「」]/.test(ch))tone(1150,.02,.012,"square");
     if(ci>=full[ni].length){ni++;ci=0;}
     if(cnt%8===0)toBottom();
-  },42);
+  },EN?16:42);
   const t={finish(silent){clearInterval(id);nodes.forEach((x,i)=>x.nodeValue=full[i]);typer=null;fin();}};
   typer=t;
 }
 function lockOpts(){document.querySelectorAll("#choices .opt").forEach(b=>b.disabled=true);}
 function choiceHTML(s,j,sub){
   const o=s.o[j];
-  if(o.h)return `<div class="fb"><span class="tag ok">史実どおり</span>${md(s.fb,true)}</div>`;
+  if(s.dd)return `<div class="fb"><span class="tag ${o.h?"ok":"rt"}">${o.h?"名推理":"ホームズの答え"}</span>${o.h?"":esc(s.o[s.a].t)+"。"}${md(s.fb,true)}${s.fbja&&jaMode!=="off"?`<div class="ja"${jaMode==="on"?"":" hidden"}>${esc(s.fbja)}</div><div class="enx"><button class="jab" type="button">訳</button></div>`:""}</div>`;
+  if(o.h)return `<div class="fb"><span class="tag ok">${LB.ok}</span>${md(s.fb,true)}</div>`;
   const n=o.ifr.length;let h=`<div class="ifr"><div class="ifh">IFルート</div>${o.ifr.slice(0,Math.min(sub+1,n)).map(l=>`<p>${md(l,true)}</p>`).join("")}</div>`;
-  if(sub>=n)h+=`<div class="fb"><span class="tag rt">本筋へ</span>史実で選ばれたのは${esc(s.o[s.a].t)}。${md(s.fb,true)}</div>`;
+  if(sub>=n)h+=`<div class="fb"><span class="tag rt">本筋へ</span>${LB.alt}${EN?"「"+esc(s.o[s.a].t)+"」":esc(s.o[s.a].t)}。${md(s.fb,true)}</div>`;
   return h;
 }
 function drawChoice(s){
   const j=st.ans[st.i],o=s.o[j],bs=document.querySelectorAll("#choices .opt");
   bs.forEach(b=>b.classList.remove("ok","ifp"));
-  if(o.h)bs[j].classList.add("ok");else{bs[j].classList.add("ifp");if(st.sub>=o.ifr.length)bs[s.a].classList.add("ok");}
+  if(o.h)bs[j].classList.add("ok");else if(s.dd){bs[j].classList.add("ng");bs[s.a].classList.add("ok");}else{bs[j].classList.add("ifp");if(st.sub>=o.ifr.length)bs[s.a].classList.add("ok");}
   $("fbx").innerHTML=choiceHTML(s,j,st.sub);refreshDug();updateMap();
-  const n=o.h?0:o.ifr.length;const nw=(o.h||st.sub>=n)?$("fbx").querySelector(".fb"):[...$("fbx").querySelectorAll(".ifr p")].pop();
+  const n=(o.h||s.dd)?0:o.ifr.length;const nw=(o.h||st.sub>=n)?$("fbx").querySelector(".fb"):[...$("fbx").querySelectorAll(".ifr p")].pop();
   typeIn(nw);
 }
 function answerChoice(s,j,sub,quiet){
   if(!st.wait)return;lockOpts();st.ans[st.i]=j;st.sub=sub||0;
-  st.pre[1]++;if(s.o[j].h)st.pre[0]++;
-  st.wait=false;drawChoice(s);if(!quiet)(s.o[j].h?SE.ok:SE.ifr)();
+  if(s.dd){st.dd[1]++;if(s.o[j].h)st.dd[0]++;}else{st.pre[1]++;if(s.o[j].h)st.pre[0]++;}
+  st.wait=false;drawChoice(s);if(!quiet)(s.o[j].h?SE.ok:s.dd?SE.ng:SE.ifr)();
   push();toBottom();
 }
 function answerRecall(s,j,quiet){
@@ -412,17 +444,17 @@ function answerRecall(s,j,quiet){
   if(!hit)bs[j].classList.add("ng");
   if(!quiet)(hit?SE.ok:SE.ng)();
   $("content").querySelectorAll(".note").forEach(n=>n.remove());
-  const bl=$("blank");bl.className="blank "+(hit?"ok":"ng");bl.innerHTML=`<button class="term" data-k="${esc(s.recall)}">${esc(s.recall)}</button>`;
-  const first=G[s.recall].d.split("。")[0]+"。";
+  const bl=$("blank");bl.className="blank "+(hit?"ok":"ng");bl.innerHTML=`<button class="term" data-k="${esc(s.recall)}">${esc(s.rw||s.recall)}</button>`;
+  const first=EN&&G[s.recall].ja?G[s.recall].ja:G[s.recall].d.split("。")[0]+"。";
   st.wait=false;const fbe=$("content").querySelector(".fb");fbe.innerHTML=`<span class="tag ${hit?"ok":"ng"}">${hit?"正解":"復習へ"}</span>${md(first,false)}${hit?"":"<span class=\"note\">章末の「次の扉」にもう一度並びます。</span>"}`;
   typeIn(fbe);push();toBottom();
 }
-function releaseCard(){st.cardHold=false;$("card").innerHTML="";const f=st.pend;st.pend=null;if(f)f();push();}
+function releaseCard(){st.cardHold=false;$("card").innerHTML="";const f=st.pend;st.pend=null;if(f)f();autoSay(S[st.i]);push();}
 function advance(){if(st.cardHold&&!st.sheet&&st.v==="play"){releaseCard();return;}if(typer&&!st.sheet){typer.finish();return;}
   if(isFollower()||st.wait||st.sheet||st.v!=="play")return;
   if(room&&st.role==="host"&&others().some(p=>p.presence&&p.presence.look)){st.lookPoke=Date.now();drawLook();setTimeout(drawLook,3100);}
   const s=S[st.i];
-  if(s&&s.choice&&st.ans[st.i]!=null){const o=s.o[st.ans[st.i]];if(!o.h&&st.sub<o.ifr.length){st.sub++;drawChoice(s);SE.page();push();toBottom();return;}}
+  if(s&&s.choice&&!s.dd&&st.ans[st.i]!=null){const o=s.o[st.ans[st.i]];if(!o.h&&st.sub<o.ifr.length){st.sub++;drawChoice(s);SE.page();push();toBottom();return;}}
   st.i++;SE.page();run();}
 function prevIndex(){let j=st.i-1;while(j>=0&&S[j].scene)j--;return j;}
 function goTo(i,ans,sub){
@@ -432,20 +464,20 @@ function goTo(i,ans,sub){
 }
 function back(){
   if(isFollower()||st.sheet)return;
-  const c=S[st.i];if(st.v==="play"&&c&&c.choice&&st.ans[st.i]!=null&&st.sub>0){st.sub--;drawChoice(c);push();return;}
+  const c=S[st.i];if(st.v==="play"&&c&&c.choice&&!c.dd&&st.ans[st.i]!=null&&st.sub>0){st.sub--;drawChoice(c);push();return;}
   const j=prevIndex();if(j<0)return;
   const ans={};for(const k in st.ans)if(+k<=j)ans[k]=st.ans[k];
-  const pj2=S[j];const sub=(pj2.choice&&ans[j]!=null&&!pj2.o[ans[j]].h)?pj2.o[ans[j]].ifr.length:0;
+  const pj2=S[j];const sub=(pj2.choice&&!pj2.dd&&ans[j]!=null&&!pj2.o[ans[j]].h)?pj2.o[ans[j]].ifr.length:0;
   $("ovRoot").innerHTML="";goTo(j,ans,sub);
 }
 $("bk").addEventListener("click",e=>{e.stopPropagation();back();});
-function resetProgress(){Object.assign(st,{i:0,sub:0,seen:[],rec:[0,0],pre:[0,0],miss:[],ans:{},perm:null,nd:0,om:0});}
+function resetProgress(){Object.assign(st,{i:0,sub:0,seen:[],rec:[0,0],pre:[0,0],dd:[0,0],miss:[],ans:{},perm:null,nd:0,om:0});}
 function startReading(){$("ovRoot").innerHTML="";resetProgress();run();}
 function rebuild(i,ans){
   const keepDug=st.dug;resetProgress();st.dug=keepDug;st.ans={};
   for(let k=0;k<i&&k<S.length;k++){const s=S[k];
     if(s.scene)continue;
-    else if(s.choice){md(s.choice,true);if(ans[k]!=null){st.ans[k]=ans[k];st.pre[1]++;if(s.o[ans[k]].h)st.pre[0]++;md(s.fb,true);}}
+    else if(s.choice){md(s.choice,true);if(ans[k]!=null){st.ans[k]=ans[k];const hh=s.o[ans[k]].h;if(s.dd){st.dd[1]++;if(hh)st.dd[0]++;}else{st.pre[1]++;if(hh)st.pre[0]++;}md(s.fb,true);}}
     else if(s.recall){md(s.t,true);if(ans[k]!=null){st.ans[k]=ans[k];st.rec[1]++;if(s.o[ans[k]]===s.recall)st.rec[0]++;else if(!st.miss.includes(s.recall))st.miss.push(s.recall);}}
     else if(s.t)md(s.t,true);
   }
@@ -465,15 +497,15 @@ function renderSheet(){
   let body;
   if(st.sheet==="gloss"){
     body=`<div class="crumb"><span>用語帳</span></div><div class="sh-body"><h2>この章で出会った言葉</h2>
-    <div class="score"><span>記憶 <b>${st.rec.join("/")}</b></span><span>史実 <b>${st.pre.join("/")}</b></span><span>深掘り <b>${st.dug.size}</b></span></div>
-    <div class="glist">${st.seen.map(k=>`<button data-k="${esc(k)}"><span>${esc(k)} <small>${G[k].r}</small></span><span>${st.dug.has(k)?"●":"○"}</span></button>`).join("")||'<p class="muted">まだありません。</p>'}</div></div>`;
+    <div class="score"><span>記憶 <b>${st.rec.join("/")}</b></span><span>${LB.score} <b>${st.pre.join("/")}</b></span>${EN&&st.dd[1]?`<span>推理 <b>${st.dd.join("/")}</b></span>`:""}<span>深掘り <b>${st.dug.size}</b></span></div>
+    <div class="glist">${st.seen.map(k=>`<button data-k="${esc(k)}"><span>${esc(k)} <small>${esc(EN?(G[k].ja||G[k].r||""):G[k].r)}</small></span><span>${st.dug.has(k)?"●":"○"}</span></button>`).join("")||'<p class="muted">まだありません。</p>'}</div></div>`;
   }else if(st.sheet==="room"){
     body=roomSheet();
   }else{
     const k=st.stack[st.stack.length-1],g=G[k];
     const crumbs=st.stack.map((c,j)=>j===st.stack.length-1?`<span>${esc(c)}</span>`:`<button data-crumb="${j}">${esc(c)}</button> ›`).join(" ");
     body=`<div class="crumb"><button data-crumb="-1">物語</button> › ${crumbs}</div>
-    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2><div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div><p>${md(g.d,false,k)}</p>${termPics(k)}</div>`;/* 「点線の言葉からさらに潜れます…」の案内は不要（2026-11-05 経太さん） */
+    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2>${EN?enHead(k,g):`<div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div>`}${g.d?`<p>${md(g.d,false,k)}</p>`:""}${EN&&g.biz?`<div class="biz"><b>今の仕事で言うなら</b>${esc(g.biz)}</div>`:""}${termPics(k)}</div>`;/* 「点線の言葉からさらに潜れます…」の案内は不要（2026-11-05 経太さん） */
   }
   root.innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true">${body}<button class="close" data-close="1">物語に戻る</button></div>`;
   lookPres();
@@ -497,7 +529,9 @@ function lookPres(){const v=st.sheet&&st.sheet!=="room"&&st.v==="play"?1:0;if(v!
 function drawLook(){const el=$("lookNote");if(!el)return;const n=room?others().filter(p=>p.presence&&p.presence.look).length:0;
   /* ほかの人が資料を見ていて、自分がホストで次へを押したときだけ、3秒出す（2026-11-06 経太さん） */
   el.hidden=!(n&&st.v==="play"&&st.role==="host"&&Date.now()-(st.lookPoke||0)<3000);}
-function termHead(k){const g=G[k];if(g.t!=="人")return g.t==="地"?'<div class="kind">土地</div>':g.t==="年"?'<div class="kind">年号</div>':'<div class="kind">用語</div>';
+/* 英語の辞書: 発音・品詞・意味（と読み上げ） */
+function enHead(k,g){return `<div class="rd">${g.ipa?`<span class="ipa">${esc(g.ipa)}</span>`:""}${g.pos?`<span class="yr">${esc(g.pos)}</span>`:""}${g.r?`<span class="yr">${esc(g.r)}</span>`:""}<button class="sayb" type="button" data-say="${esc(k)}" aria-label="発音を聞く">${ICO_SAY}</button></div>${g.ja?`<div class="enja">${esc(g.ja)}</div>`:""}`;}
+function termHead(k){const g=G[k];if(g.t!=="人")return g.t==="地"?'<div class="kind">土地</div>':g.t==="年"?'<div class="kind">年号</div>':g.t==="俗"?'<div class="kind">当時の暮らし</div>':EN?'<div class="kind">英語</div>':'<div class="kind">用語</div>';
   const id=Object.keys(C).find(i=>C[i].n===k);return `<div class="kind">人物</div>${id?`<div class="t-face">${faceHTML(id,"face")}</div>`:""}`;}
 function termPics(k){const ks=(R[k]||[]).filter(x=>PIC[x]);if(!ks.length)return "";
   return `<div class="tpics">${ks.map((x,j)=>`<button data-tpic="${j}" data-tk="${esc(k)}"><img src="pic/${x}.jpg" alt=""><span>${esc(PIC[x].cap)}</span></button>`).join("")}</div>`;}
@@ -506,6 +540,7 @@ $("sheetRoot").addEventListener("click",e=>{
   if(st.sheet==="pic"){const b=e.target.closest("[data-lb]");
     if(b&&b.dataset.lb!=="x"){picI=(picI+ +b.dataset.lb+lbKeys.length)%lbKeys.length;$("sheetRoot").innerHTML=lbHTML();return;}
     if(b||!e.target.closest("figure")){if(st.lbBack){const bk=st.lbBack;st.lbBack=null;st.sheet="term";st.stack=bk;renderSheet();}else closeSheet();}return;}
+  const sb=e.target.closest(".sayb");if(sb){e.stopPropagation();say(sb.dataset.say,sb.dataset.au);return;}
   const tp=e.target.closest("[data-tpic]");if(tp){const k=tp.dataset.tk;return openLB((R[k]||[]).filter(x=>PIC[x]),+tp.dataset.tpic,st.stack.slice());}
   const c=e.target.closest("[data-close]");if(c)return closeSheet();
   const cr=e.target.closest("[data-crumb]");if(cr){const j=+cr.dataset.crumb;if(j<0)return closeSheet();st.stack=st.stack.slice(0,j+1);return renderSheet();}
@@ -515,7 +550,10 @@ $("sheetRoot").addEventListener("click",e=>{
 $("bGl").onclick=e=>{e.stopPropagation();st.sheet="gloss";st.stack=[];renderSheet();};
 $("bRoom").onclick=e=>{e.stopPropagation();st.sheet="room";st.stack=[];renderSheet();};
 $("bEnd").onclick=e=>{e.stopPropagation();if(isFollower()){roomAction("solo");}else if(SBR.on&&st.role==="host")SBR.clear();st.dug=new Set();resetProgress();showTitle();};
-$("novel").addEventListener("click",e=>{
+function enClick(e){const sb=e.target.closest(".sayb");if(sb){e.stopPropagation();say(sb.dataset.say,sb.dataset.au);return true;}
+  const jb=e.target.closest(".jab");if(jb){e.stopPropagation();const box=jb.closest(".tk-b,#content,.past,.fb")||jb.parentElement.parentElement;const ja=box&&box.querySelector(".ja");if(ja){ja.hidden=!ja.hidden;jb.setAttribute("aria-expanded",String(!ja.hidden));}return true;}return false;}
+$("talk").addEventListener("click",e=>{enClick(e);});
+$("novel").addEventListener("click",e=>{if(enClick(e))return;
   const t=e.target.closest(".term");if(t){e.stopPropagation();return openTerm(t.dataset.k,true);}
   if(e.target.closest(".opt")||e.target.closest(".back"))return;advance();
 });
@@ -529,7 +567,7 @@ document.addEventListener("keydown",e=>{
 /* ---------- overlays ---------- */
 function ov(html){$("ovRoot").innerHTML=`<div class="ov"><div class="ov-in">${html}</div></div>`;}
 /* タイトルの本棚。章ができたら page を足す（2026-11-05 世界史を追加） */
-const SHELF=[
+const SHELF=CFG.shelves||[
  {id:"jp",name:"日本史",eras:[["飛鳥","592–710"],["奈良","710–794"],["平安","794–1185"],["鎌倉","1185–1333","武士の天下へ","index.html","平安〜鎌倉"],["室町","1336–1573"],["安土桃山","1573–1603"],["江戸","1603–1868"],["明治","1868–1912"]]},
  {id:"w",name:"世界史",eras:[["古代オリエント","前3000–前330"],["ギリシア・ローマ","前800–476"],["イスラーム世界","610–1258"],["中世ヨーロッパ","476–1453"],["モンゴル帝国","1206–1368"],["大航海時代","1405–1571","世界がつながる","daikokai.html","大航海時代"],["宗教改革","1517–1648"],["市民革命","1640–1815"],["産業革命","1760–1850"],["帝国主義","1870–1914"],["二つの世界大戦","1914–1945"]]}];
 let shelfOn=CFG.shelf;
@@ -541,7 +579,7 @@ function showTitle(){
   st.v="title";st.cardHold=false;st.pend=null;document.documentElement.classList.add("title-mode");$("card").innerHTML="";bgm(null);hideTalk();picKeys=[];$("pics").classList.remove("on");$("hY").textContent="";$("hW").textContent="";$("hEra").textContent="";$("hEv").textContent="";$("prog").style.width="0";
   st.i=0;mstate=Object.assign(HOME(),{c:CFG.home.c,r:CFG.home.r});buildOverlay();setTarget(false);userView(false);
   $("ovRoot").innerHTML=`<div class="ov sel"><div class="sel-in">
-   <h1 class="app-name"><b>SUPER</b>歴史ノベル</h1>
+   <h1 class="app-name"><b>SUPER</b>${esc(CFG.app||"歴史ノベル")}</h1>
    <div class="shelf" role="tablist">${SHELF.map(x=>`<button role="tab" data-shelf="${x.id}" aria-selected="${x.id===shelfOn}">${x.name}</button>`).join("")}</div>
    <div id="titleRoom"></div>
    <ol class="eras" id="eras">${erasHTML()}</ol>
@@ -579,11 +617,16 @@ function showOrder(){
     if(+b.dataset.j===st.nd){b.classList.add("done");b.querySelector(".n").textContent=++st.nd;SE.page();push();if(st.nd===ORDER.length){SE.ok();setTimeout(()=>showEnd(),700);}}
     else{st.om++;SE.ng();b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");push();}};
 }
+/* 章末の瞬間英作文（トライアル、2026-11-15 経太さん）。日本語→口で言う→めくると英文。採点しない・飛ばせる */
+function flashHTML(){if(!CFG.flash||!CFG.flash.length)return "";
+  return `<h3>瞬間英作文 <small class="muted">日本語を見て英語で言ってから、めくる</small></h3><ol class="flash">${CFG.flash.map((f,j)=>`<li><button type="button" class="fl" data-fl="${j}"><span class="fj">${esc(f.ja)}</span><span class="fe" hidden>${esc(f.en)}</span></button></li>`).join("")}</ol>`;}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("button.fl");if(!b)return;const fe=b.querySelector(".fe");if(fe.hidden){fe.hidden=false;b.classList.add("open");if(EN)say(fe.textContent);}});
 function showEnd(){
   st.v="end";$("nx").hidden=true;
   ov(`<div class="sub">${esc(CFG.endSub)}</div><h1>${esc(CFG.endTitle)}</h1>
   <h3>この章の流れ</h3>
   <ol class="flow">${ORDER.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
+  ${flashHTML()}
   <h3>次の章</h3>
   <div class="door"><small>試作では未制作</small><b>${esc(CFG.next.t)}</b><p>${esc(CFG.next.d)}</p></div>
   <details class="cred"><summary>画像の出典</summary><ul>${Object.keys(C).filter(k=>C[k].img&&PIC["ch_"+C[k].img]).map(k=>`<li>${esc(C[k].n)}：${esc(PIC["ch_"+C[k].img].cr)}</li>`).join("")}${Object.keys(PIC).filter(k=>!k.startsWith("ch_")).map(k=>`<li>${esc(PIC[k].cap)}：${esc(PIC[k].cr)}</li>`).join("")}<li>${esc(CFG.credit)}</li><li>環境音：効果音ラボ／OtoLogic（CC BY 4.0）。詳細は snd/SOURCES.md</li></ul></details>
