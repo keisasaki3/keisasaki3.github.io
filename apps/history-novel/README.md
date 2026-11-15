@@ -4,6 +4,8 @@
 - 日本史 第1話「武士の天下へ（平安～鎌倉）」（1156 保元の乱〜1232 御成敗式目）… `index.html`
 - 世界史 第1話「世界がつながる（大航海時代）」（1405 鄭和〜1571 マニラ）… `daikokai.html`（2026-11-05 経太さん依頼「クオリティは鎌倉編並みに」）
 
+**SUPER洋書ノベル（apps/yosho-novel/）もこのエンジン（engine2.js・hn.css・tpl.html・build.py）を共有している。CFG.lang:"en" の章だけ英語の機能が働く。共通部分を変えたら洋書ノベルも通し読みする（2026-11-15）。**
+
 **新しい章を作るときは、先に `CHAPTER_GUIDE.md`（章づくりの基準）を読む。**
 公開: なつめポータル /history-novel/（2026-11-05〜）。Artifact版 https://claude.ai/artifact/Bhr6XrETWeC5qKs7brXnBf は「一緒に読む」が使える
 
