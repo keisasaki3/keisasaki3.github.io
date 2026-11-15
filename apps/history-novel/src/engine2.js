@@ -338,6 +338,7 @@ function run(){
   $("choices").innerHTML="";$("fbx").innerHTML="";$("nx").hidden=true;st.wait=false;nxText();renderPast();
   $("bk").style.visibility=isFollower()||prevIndex()<0?"hidden":"";
   if(s.end){hideTalk();updateMap();showEnd();return;}
+  if(s.choice||s.recall)hideTalk();/* 選択肢・想起では直前の台詞窓を残さない（2026-11-11） */
   if(s.choice){
     st.wait=true;setWho(s.who||"あなたの決断");
     $("content").innerHTML=`<div class="txt">${md(s.choice,true)}</div>`;
@@ -465,7 +466,7 @@ function renderSheet(){
   let body;
   if(st.sheet==="gloss"){
     body=`<div class="crumb"><span>用語帳</span></div><div class="sh-body"><h2>この章で出会った言葉</h2>
-    <div class="score"><span>記憶 <b>${st.rec.join("/")}</b></span><span>史実 <b>${st.pre.join("/")}</b></span><span>深掘り <b>${st.dug.size}</b></span></div>
+    <div class="score">${S.some(x=>x.recall)?`<span>記憶 <b>${st.rec.join("/")}</b></span>`:""}<span>史実 <b>${st.pre.join("/")}</b></span><span>深掘り <b>${st.dug.size}</b></span></div>
     <div class="glist">${st.seen.map(k=>`<button data-k="${esc(k)}"><span>${esc(k)} <small>${G[k].r}</small></span><span>${st.dug.has(k)?"●":"○"}</span></button>`).join("")||'<p class="muted">まだありません。</p>'}</div></div>`;
   }else if(st.sheet==="room"){
     body=roomSheet();
@@ -581,7 +582,7 @@ function showOrder(){
 }
 function showEnd(){
   st.v="end";$("nx").hidden=true;
-  ov(`<div class="sub">${esc(CFG.endSub)}</div><h1>${esc(CFG.endTitle)}</h1>
+  ov(`<div class="sub">${esc(CFG.endSub)}</div><h1>${CFG.endTitle.split(/(?<=、)/).map(p=>`<span style="display:inline-block">${esc(p)}</span>`).join("")}</h1>
   <h3>この章の流れ</h3>
   <ol class="flow">${ORDER.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
   <h3>次の章</h3>
