@@ -33,7 +33,7 @@ dm=json.load(open(W+"hk/dmedia.json")) if os.path.exists(W+"hk/dmedia.json") els
 import glob as _g, os as _o
 _cdir="/mnt/project-files/mekuri-battle/concepts/"
 _o.makedirs(W+"site/data",exist_ok=True)
-_subj=re.findall(r'\{id:"(\w)",f:"(\w+)",name:"[^"]*"(,en:1)?(?:,k:1)?\}',s[s.index("const SUBJ=["):s.index("];",s.index("const SUBJ=["))])
+_subj=re.findall(r'\{id:"(\w)",f:"(\w+)",name:"[^"]*"(,en:1)?(?:,k:1)?(?:,tr:1)?\}',s[s.index("const SUBJ=["):s.index("];",s.index("const SUBJ=["))])
 _cman={}; _didx={}; _tps={}
 def _wd(name,arr):
     open(W+"site/data/"+name+".json","w").write(json.dumps(arr,ensure_ascii=False,separators=(",",":")))
@@ -50,7 +50,7 @@ for _id,_f,_en in _subj:
     for _c in _a:
         if _c["t"] in _vis: _c["v"]=1
     _wd(_f,_a); _cman[_f]=len(_a)
-    if _f not in ("math","boki3"):   # 問題形式の科目は答えが式・仕訳なので辞書リンクにしない
+    if _f not in ("math","boki3","wabun"):   # 問題形式の科目は答えが式・仕訳なので辞書リンクにしない
         for _c in _a: _didx.setdefault(_c["t"],[_f,1 if _en else 0])
     for _c in _a:
         if _c.get("tp"): _tps[_c["tp"]]=_tps.get(_c["tp"],0)+1

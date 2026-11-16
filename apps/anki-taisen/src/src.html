@@ -194,6 +194,9 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .credit{font-size:11px;line-height:1.55;color:var(--card-muted);margin-top:6px}
 .credit a{color:inherit}
 .bname{font-size:34px;font-weight:800;color:var(--brand);line-height:1.2}
+.bname.sent{font-size:22px;line-height:1.4}
+.fr.altsay{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.fr.altsay b{font-size:12px;color:var(--card-muted)}
 .bsub{font-size:13px;color:var(--card-muted)}
 .arow .v.vs{font-size:14px;font-family:var(--body);font-weight:700}
 .volw{display:flex;align-items:center;gap:10px;font-size:13px}.volw span{flex:none}.volr{flex:1;min-width:0;accent-color:var(--acc,#6b8f3a)}
@@ -395,6 +398,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
           <label class="rk"><input type="checkbox" id="rkOther"> その他の間違い・リクエスト</label>
           <textarea id="reportText" maxlength="300" rows="2" placeholder="くわしく（任意。例：年号が違う、写真が別の鳥、こんな札がほしい）"></textarea>
         <div style="display:flex;gap:8px;align-items:center"><button class="btn ghost" id="reportSend" type="button" style="padding:6px 14px;width:auto">送る</button></div></div><span class="small muted" id="reportMsg"></span></div>
+      <button class="btn ghost" id="selfBtn" type="button" hidden>言い方ちがいで合ってた（自己判定で正解）</button>
       <div class="answers" id="answers"></div>
       <div class="stamps" id="stamps"></div>
       <button class="btn" id="nextBtn" type="button">次へ</button>
@@ -1149,11 +1153,11 @@ const LOADED={}, LOADING={};
 const CIMG = {/*CIMG*/};
 // 音で出題する札（クラシックの名曲など）。科目 → 用語 → [音源, 演奏, ライセンス, 出典ページ, 部分]
 const CSND = {/*CSND*/};
-const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"h",f:"math",name:"数学"},{id:"j",f:"boki3",name:"簿記3級"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
+const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"h",f:"math",name:"数学"},{id:"j",f:"boki3",name:"簿記3級"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"k",f:"wabun",name:"和文英訳",tr:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
 SUBJ.forEach(sj=>{ ALL[sj.id]=[]; });
 const subjByF=f=>SUBJ.find(x=>x.f===f);
-function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,snd:(CSND[sj.f]||{})[c.t]||null,tp:c.tp||"",vis:!!c.v,w:Array.isArray(c.w)?c.w:null,key:sj.id+":"+(c.k||c.t)}));
-  ALL[sj.id].forEach(c=>{ if(c.snd) c.m={snd:c.snd}; BYKEY[c.key]=c; if(DICT[c.name]) return; DICT[c.name]= sj.en ? {t:c.name,en:c.en,d:c.def.replace("____",c.name),x:c.ex,r:c.rel,s:"英語・"+c.sg,l:1} : {t:c.name,en:c.en,d:c.def,x:c.ex,r:c.rel,s:sj.name+"・"+c.sg}; }); }
+function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.t]||null,snd:(CSND[sj.f]||{})[c.t]||null,tp:c.tp||"",vis:!!c.v,w:Array.isArray(c.w)?c.w:null,p:Array.isArray(c.p)?c.p:null,alt:c.o||null,key:sj.id+":"+(c.k||c.t)}));
+  ALL[sj.id].forEach(c=>{ if(c.snd) c.m={snd:c.snd}; BYKEY[c.key]=c; if(sj.tr||DICT[c.name]) return; DICT[c.name]= sj.en ? {t:c.name,en:c.en,d:c.def.replace("____",c.name),x:c.ex,r:c.rel,s:"英語・"+c.sg,l:1} : {t:c.name,en:c.en,d:c.def,x:c.ex,r:c.rel,s:sj.name+"・"+c.sg}; }); }
 function addDictX(arr){ arr.forEach(e=>{ if(e&&e.t&&!DICT[e.t]) DICT[e.t]={t:e.t,en:e.en||"",d:e.d,x:e.x,r:e.r||[],s:e.s||(e.l?"英語・"+(e.g||""):""),l:e.l?1:0}; }); }
 // f: 科目ファイル名（econ など）か辞書ファイル（dx-history など）。読み込み済みなら即座に解決
 function loadData(f){ if(LOADED[f]) return Promise.resolve(); if(LOADING[f]) return LOADING[f];
@@ -1168,9 +1172,9 @@ function inSeason(c,m){ if(c.mon){ const [a,b]=c.mon; return a<=b? (m>=a&&m<=b) 
 const GENRES=[{id:"H",name:"歴史",cat:"K"},...SUBJ.map(x=>({id:x.id,name:x.name,cat:"K"})),{id:"B",name:"関東の鳥",cat:"Z"},{id:"D",name:"北海道の鳥",cat:"Z"},{id:"T",name:"関東の木",cat:"Z"}];
 // ジャンルの木（葉は id を持つ。中身のない葉・枝は表示しない）
 const GTREE={name:"すべて",kids:[
-  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"2"},{id:"A"},{id:"j"},{id:"h"},{id:"1"},{id:"F"},{id:"4"},{id:"Y"},{id:"O"},{id:"Z"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"X"},{id:"U"},{id:"S"},{id:"3"},{id:"N"},{id:"5"},{id:"6"},{id:"7"},{name:"英語",ic:"english",kids:[{id:"V"},{id:"I"},{id:"8"}]}]},
+  {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"2"},{id:"A"},{id:"j"},{id:"h"},{id:"1"},{id:"F"},{id:"4"},{id:"Y"},{id:"O"},{id:"Z"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"X"},{id:"U"},{id:"S"},{id:"3"},{id:"N"},{id:"5"},{id:"6"},{id:"7"},{name:"英語",ic:"english",kids:[{id:"k"},{id:"V"},{id:"I"},{id:"8"}]}]},
   {name:"教養",ic:"culture",kids:[{name:"鳥",ic:"bird",kids:[{id:"B"},{id:"D"}]},{name:"木",ic:"tree",kids:[{id:"T"}]},{id:"9"},{id:"a"},{id:"b"},{id:"f"},{id:"c"},{id:"e"},{id:"d"},{id:"g"}]}]};
-const GICON={h:"math",j:"assets",H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",1:"math",2:"business-administration",3:"medicine",4:"religious-studies",5:"art",6:"literature",V:"business-english",I:"idioms",7:"linguistics-languages",8:"business-english",9:"heritage",a:"architecture",b:"art",c:"cuisine",d:"drink",e:"season",f:"classical",g:"constellation",B:"bird",D:"bird",T:"tree"};
+const GICON={k:"english",h:"math",j:"assets",H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",1:"math",2:"business-administration",3:"medicine",4:"religious-studies",5:"art",6:"literature",V:"business-english",I:"idioms",7:"linguistics-languages",8:"business-english",9:"heritage",a:"architecture",b:"art",c:"cuisine",d:"drink",e:"season",f:"classical",g:"constellation",B:"bird",D:"bird",T:"tree"};
 const ICONS="../../shared/icons/";
 const gName=id=>(GENRES.find(g=>g.id===id)||{}).name||id;
 const gCount=id=>{ const sj=SUBJ.find(x=>x.id===id); return sj?(CMAN[sj.f]||0):(ALL[id]||[]).length; };
@@ -1180,6 +1184,7 @@ function gPathTo(id,n=GTREE,acc=[]){ if(!n.kids) return null; for(const k of n.k
 let gNav=null;
 const isCon=g=>SUBJ.some(x=>x.id===g);
 const isProb=g=>g==="h"||g==="j";   // 問題を解いて4択で答える科目（数学・簿記3級）
+const isTr=g=>g==="k";   // 和文英訳: 日本語を見て英文を入力。言い方パターン(p)に合えば自動で正解、合わなければ自己判定（2026-11-16 Keita依頼）
 const subjTop=g=>(SUBJ.find(x=>x.id===g)||{}).k?"教養":"学問";
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
 const isPick=g=>g==="B"||g==="T"||g==="D"||isCon(g); const hasVoice=g=>g==="B"||g==="D";
@@ -1369,7 +1374,7 @@ function preloadNext(){
 }
 function creditFor(c){ return creditLink(c.key); }
 function creditLink(key){ const b=el("button","clink reveal-x","写真・鳴き声の出典"); b.type="button"; b.onclick=()=>openCredits(key); return b; }
-const CRGENRES=[["B","関東の鳥"],["D","北海道の鳥"],["T","関東の木"],["J","歴史の資料画像（日本史）"],["W","歴史の資料画像（世界史）"],...SUBJ.filter(sj=>!sj.en).map(sj=>[sj.id,"学問の資料画像（"+sj.name+"）"])];
+const CRGENRES=[["B","関東の鳥"],["D","北海道の鳥"],["T","関東の木"],["J","歴史の資料画像（日本史）"],["W","歴史の資料画像（世界史）"],...SUBJ.filter(sj=>!sj.en&&!sj.tr).map(sj=>[sj.id,"学問の資料画像（"+sj.name+"）"])];
 function crLine(label,who,lic,url,extra){ const d=el("div"); d.append(label+"："+who+(extra?"（"+extra+"）":"")+"／"+lic+"／"); const a=document.createElement("a"); a.href=url; a.target="_blank"; a.rel="noopener"; a.textContent=label==="鳴き声"?"xeno-canto":"Wikimedia Commons"; d.append(a); return d; }
 let creditsBuilt=false;
 function buildCredits(){ if(creditsBuilt) return; creditsBuilt=true; const box=$("creditList");
@@ -1465,7 +1470,7 @@ function renderPickers(){
   seg("greens", [{key:"wakakusa",name:"若草"},{key:"tokiwa",name:"常磐"}], S.green, null, k=>{S.green=k; store.set("nb-green",k); document.documentElement.dataset.green=k; renderPickers();});
   seg("tones", [{key:"mint",name:"明るい"},{key:"chestnut",name:"暗い"}], S.tone, null, k=>{S.tone=k; store.set("nb-tone",k); applyTone(k); renderPickers();});
   renderGenreTree();
-  { const hist=S.genre==="H"||isProb(S.genre); $("amodesBox").style.display=hist?"none":"flex";
+  { const hist=S.genre==="H"||isProb(S.genre)||isTr(S.genre); $("amodesBox").style.display=hist?"none":"flex";
     seg("amodes", [{key:"T",name:"入力"},{key:"C",name:"4択"}], S.amode, null, k=>{S.amode=k; store.set("nb-amode",k); renderPickers();}); }
   const isB=isPick(S.genre);
   $("modesLabel").textContent=isB?"出題のしかた":"出題範囲";
@@ -1483,6 +1488,7 @@ function renderPickers(){
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
   if(S.genre==="j"){ $("rangeNote").textContent=["","日商簿記3級の基本（勘定科目の区分・日常の取引の仕訳）","3級の決算と帳簿（決算整理・消費税・貸倒れ・固定資産の売却・補助簿と財務諸表）","基礎と応用ぜんぶ"][S.lv]+"。取引を読んで、正しい仕訳を4択から選びます（「借方 / 貸方」の順）。答え合わせで考え方を確認できます。"; return; }
+  if(isTr(S.genre)){ $("rangeNote").textContent=["","中学〜高校初級の文法で言える、仕事でよく使う短い文","会議・メール・交渉で使う丁寧な言い回し（依頼・断り・提案など）","基礎と応用ぜんぶ"][S.lv]+"。日本語を読んで英語で入力します。登録してある言い方のどれかに合えば正解。合わなくても、答え合わせで模範解答と比べて「合ってた」を押せば正解にできます。"; return; }
   if(S.genre==="h"){ $("rangeNote").textContent=["","中3〜高校の基本（方程式・関数・三角比・指数対数・数列・微積・確率）","数III・大学教養・実務（極限・微積の発展・線形代数・統計・お金の計算）","基礎と応用ぜんぶ"][S.lv]+"。問題を解いて、正しい答えを4択から選びます。答え合わせで解き方を確認できます。"; return; }
   if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?(hasSndQ(S.genre)?"画像を見て、または曲を聞いて、あてはまる用語を入力します（画像・音のある札だけ）":"画像を見て、あてはまる用語を入力します（画像のある札だけ）"):hasSndQ(S.genre)?"名曲は音、見た目で覚える札は画像、ほかは説明文で出題します":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
@@ -1506,7 +1512,7 @@ function chip(name, opts={}){
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
 function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
-function lvName(lv,g){ if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
+function lvName(lv,g){ if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)||isTr(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
   $("soloBtn").hidden=!others().length;
@@ -1675,7 +1681,7 @@ function beginAsk(){
   card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
   $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
   $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
-  const isC=c.kind==="choice", typing=isC&&S.amode!=="C"&&!c.w; $("slots").hidden=isC; $("yhint").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
+  const isC=c.kind==="choice", typing=isC&&(S.amode!=="C"||!!c.p)&&!c.w; $("selfBtn").hidden=true; $("typeIn").placeholder=c.p?"英語で入力（大文字・記号は気にしなくてOK）":"答えを入力"; $("slots").hidden=isC; $("yhint").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
   if(typing){ const ti=$("typeIn"); ti.value=""; ti.disabled=!!S.ans; } else if(isC) renderChoices();
   $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
   renderSlots(); renderGamePlayers(); push();
@@ -1706,7 +1712,19 @@ function press(k){
 }
 // 入力でも4択でも同じ判定: 全角半角・大文字小文字・ひらがなカタカナ・空白や中黒・かっこ書きの違いは無視する
 function normAns(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/\^/g,"").replace(/[（(][^）)]*[）)]/g,"").replace(/[\u3041-\u3096]/g,ch=>String.fromCharCode(ch.charCodeAt(0)+96)).replace(/[\s・･,，、。.'’"“”「」『』~〜-]/g,"").replace(/ー+$/,""); }   // ^（べき乗）と語末の長音（コンデンサ／コンデンサー）は無視
-function typedOk(v,c){ if(c.w&&c.w.length) return String(v)===c.name;   // 問題形式（数学・簿記）は選んだ選択肢そのもので判定。式のかっこを消すと正誤が逆になるため（2026-11-11）
+// 英語の答え: 大文字小文字・記号・空白・短縮形（I'm＝I am など）の違いは無視
+function normEn(t){ return String(t||"").normalize("NFKC").toLowerCase().replace(/[’‘`´]/g,"'").replace(/%/g," percent ")
+  .replace(/\bcan't\b/g,"can not").replace(/\bwon't\b/g,"will not").replace(/\bcannot\b/g,"can not").replace(/\blet's\b/g,"let us").replace(/\bain't\b/g,"is not")
+  .replace(/n't\b/g," not").replace(/'re\b/g," are").replace(/'m\b/g," am").replace(/'ll\b/g," will").replace(/'ve\b/g," have").replace(/'d\b/g," would").replace(/'s\b/g," is")
+  .replace(/\balright\b/g,"all right").replace(/\bok\b/g,"okay").replace(/[^a-z0-9]+/g,""); }
+// 言い方パターン {a|b|} （空は省略可）を正規表現にする
+function patRe(p){ let i=0; const alt=()=>{ const opts=[]; let cur=""; for(;i<p.length;i++){ const ch=p[i];
+    if(ch==="{"){ i++; cur+="(?:"+alt().join("|")+")"; } else if(ch==="|"){ opts.push(cur); cur=""; } else if(ch==="}"){ break; } else { let j=i; while(j<p.length&&!"{|}".includes(p[j])) j++; cur+=normEn(p.slice(i,j)); i=j-1; } }
+    opts.push(cur); return opts; };
+  let out=""; while(i<p.length){ if(p[i]==="{"){ i++; out+="(?:"+alt().join("|")+")"; i++; } else { let j=i; while(j<p.length&&p[j]!=="{") j++; out+=normEn(p.slice(i,j)); i=j; } }
+  return new RegExp("^"+out+"$"); }
+function typedOk(v,c){ if(c.w&&c.w.length) return String(v)===c.name;
+  if(c.p){ const a=normEn(v); if(!a) return false; c.re=c.re||c.p.map(patRe); return a===normEn(c.name)||c.re.some(r=>r.test(a))||(c.alias||[]).some(x=>a===normEn(x)); }   // 問題形式（数学・簿記）は選んだ選択肢そのもので判定。式のかっこを消すと正誤が逆になるため（2026-11-11）
   const a=normAns(v); if(!a) return false; return a===normAns(c.name) || (c.alias||[]).some(x=>a===normAns(x)) || (!!c.en && !!c.cc && !c.def.includes("____") && a===normAns(c.en)); }
 // 年まで覚えるのは「やさしい」（lv1）の札だけ。ほかは同じ世紀か±10年で正解（2026-11-04 Keita決定）
 const roughCard=c=>c.kind==="year"&&c.lv>1;
@@ -1724,7 +1742,7 @@ function answer(v){
   S.ans={q:S.qi, v:v==null?"":String(v), ok, pt}; if(ap) S.ans.ap=1;
   S.score+=pt; S.hist+=ok?"1":near?"h":"0";
   S.prevLearn=LEARN[c.key]?{...LEARN[c.key]}:null;
-  S.log.push({c, ok, pt}); learnRecord(c, ok, c.kind==="choice"&&S.amode==="C"&&!c.w);
+  S.log.push({c, ok, pt}); learnRecord(c, ok, c.kind==="choice"&&S.amode==="C"&&!c.w&&!c.p);
   $("waitAsk").textContent="ほかの人の回答を待っています…";
   push(); check();
 }
@@ -1775,6 +1793,8 @@ function reveal(){
     if(c.def.includes("____")){ const q=el("div","fr ensent"); const [a,b2]=c.def.split("____"); const sa=el("span"), sb=el("span"); fillLinked(sa,a,c.name); fillLinked(sb,b2,c.name); q.append(sa, el("b","fill",c.name), sb); flow.append(q); }
     const exs=c.ex&&c.def.includes("____")?splitNote(c.ex):[c.ex];
     [c.def.includes("____")?"":c.def,...exs].filter(Boolean).forEach((v,i)=>{ const r=el("div",/^〔/.test(v)?"fr ennote":"fr"+(i?" arrow cz":"")); fillLinked(r,/[。〕]$/.test(v)?v:v+"。",c.name); flow.append(r); });
+    if(c.alt&&c.alt.length){ const r=el("div","fr altsay"); r.append(el("b",null,"ほかの言い方")); c.alt.forEach(t=>r.append(el("span",null,t))); flow.insertBefore(r,flow.children[1]||null); }
+    if(c.p) card.querySelector(".bname.reveal-x").classList.add("sent");
     card.append(flow);
     if(c.doc){ const f=docFor(c); if(f) card.append(f); }
     if(c.rel&&c.rel.length){ const g=el("p","goro reveal-x"); g.append(el("b",null,"関連 ")); c.rel.forEach((t,i)=>{ if(i) g.append("・"); const k=dkey(t); g.append(k?dlink(t,k):document.createTextNode(t)); }); card.append(g); }
@@ -1783,6 +1803,7 @@ function reveal(){
       playVoice(c,false); }
     if(c.doc) card.append(creditLink(c.key));
     $("askArea").hidden=true; $("revealArea").hidden=false; $("waitAsk").textContent="";
+    $("selfBtn").hidden=!(c.p&&canSelfOk());
     renderAnswers(); push(); return;
   }
   if(c.kind==="choice"){
@@ -1921,6 +1942,7 @@ function selfOk(){ const c=S.deck[S.qi], a=S.ans; if(!a||a.ok||a.v===""||S.phase
   const l=S.log[S.log.length-1]; if(l&&l.c===c){ l.ok=true; l.pt=pt; }
   if(S.prevLearn) LEARN[c.key]=S.prevLearn; else delete LEARN[c.key]; learnRecord(c,true);
   ansSig=""; showLearnLine(c); renderAnswers(); renderGamePlayers(); push(); }
+$("selfBtn").onclick=()=>{ $("selfBtn").hidden=true; selfOk(); };
 $("passBtn").onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(null); if(S.deck[S.qi].kind==="choice") renderChoices(); } };
 $("skipBtn").onclick=()=>{ S.skip=S.qi; push(); check(); };
 function show(v){ ["lobby","game","result","credits"].forEach(id=>$(id).hidden=(id!==v)); $("gearBtn").hidden=v!=="lobby"; const gp=$("gearPop"); if(gp&&v!=="lobby") gp.remove(); window.scrollTo(0,0); }   // 歯車はロビーだけ（対戦中は「ゲームをやめる」と重なるため）
@@ -1960,7 +1982,7 @@ $("startBtn").onclick=()=>{
   $("startBtn").textContent="OK！（押すと取り消し）"; push(); check(); };
 // 学問ランダム／教養ランダム（2026-11-06 Keita依頼）: やさしい・10問は固定、ジャンル・出題のしかた・鳥の出題形式はランダムで、そのまま「対戦をはじめる」。歴史（通しで遊ぶ年号）は除く。答え方（入力/4択）は各自の設定のまま
 function randGo(top){
-  const node=GTREE.kids.find(n=>n.name===top); const ids=gLeaves(node).filter(g=>g!=="H"); if(!ids.length) return;
+  const node=GTREE.kids.find(n=>n.name===top); const ids=gLeaves(node).filter(g=>g!=="H"&&!isTr(g)); if(!ids.length) return;
   const g=ids[Math.floor(Math.random()*ids.length)]; const rnd=a=>a[Math.floor(Math.random()*a.length)];
   if(S.wait){ S.wait=null; push(); }
   ensureGenre(g).then(()=>{
