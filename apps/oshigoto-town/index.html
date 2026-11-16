@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>英語おしごとタウン</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap">
+<style>
+:root{--pg:#f1f3ec;--card:#fff;--ink:#33382f;--muted:#737a6b;--line:#d7ddce;--head:#3f5a3a;--acc:#55734d;--soft:#e6eddd;--sel:#55734d;--selink:#fff;--ok:#3f7a4a;--ng:#8a5a5a;
+  --font:"DotGothic16",-apple-system,BlinkMacSystemFont,"Hiragino Sans","Noto Sans JP",sans-serif}
+@media (prefers-color-scheme:dark){:root{--pg:#1f2a22;--card:#2b382e;--ink:#edf2ea;--muted:#b3bfae;--line:#4a5a4b;--head:#cfe3c4;--acc:#a8c29a;--soft:#34453a;--sel:#a8c29a;--selink:#1f2a22;--ok:#9fd3a6;--ng:#e0b0b0}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--pg);color:var(--ink);font-family:var(--font);line-height:1.6;-webkit-text-size-adjust:100%}
+main{max-width:640px;margin:0 auto;padding:16px 16px 48px}
+h1{font-weight:400;font-size:26px;color:var(--head);margin:8px 0 2px;letter-spacing:.02em}
+h2{font-weight:400;font-size:19px;color:var(--head);margin:0 0 8px}
+p{margin:0 0 10px}
+.muted{color:var(--muted);font-size:14px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px}
+button{font-family:var(--font);font-size:16px;color:var(--ink);background:var(--card);border:2px solid var(--line);border-radius:10px;padding:8px 12px;cursor:pointer;touch-action:manipulation}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.45;cursor:default}
+button.pri{background:var(--acc);border-color:var(--acc);color:var(--selink)}
+button.sel{background:var(--sel);border-color:var(--sel);color:var(--selink)}
+button.small{font-size:14px;padding:4px 10px}
+button.on{border-color:var(--acc);color:var(--acc)}
+button.wide{width:100%;padding:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.back{border:none;background:none;color:var(--muted);padding:4px 0;font-size:14px}
+.rank{display:grid;grid-template-columns:1fr auto;gap:4px 10px;align-items:center;text-align:left;width:100%;margin-bottom:10px;padding:12px 14px}
+.rank .nm{font-size:18px;color:var(--head)}
+.rank .ds{grid-column:1/-1;color:var(--muted);font-size:13px}
+.stars{color:var(--acc);letter-spacing:2px}
+/* 客 */
+.cust{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:start}
+.av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-size:24px;color:#fff}
+.who{font-size:15px;color:var(--head)}
+.mood{font-size:13px;color:var(--muted)}
+.bubble{margin-top:6px;background:var(--soft);border-radius:10px;padding:8px 10px;min-height:42px}
+.bubble .en{font-size:17px}
+.bubble .ja{font-size:13px;color:var(--muted);margin-top:2px}
+.bubble .hidden{color:var(--muted);letter-spacing:3px}
+.tools{margin-top:8px}
+/* 注文パッド */
+.pad .lab{font-size:13px;color:var(--muted);margin:10px 0 4px}
+.pad .lab:first-child{margin-top:0}
+.pad button{font-size:15px;padding:6px 10px}
+.ask{border-style:dashed}
+.menuboard{font-size:14px;display:grid;grid-template-columns:1fr auto;gap:0 12px;margin-top:6px}
+.menuboard .h{grid-column:1/-1;color:var(--muted);margin-top:6px}
+/* 話す */
+.say .sit{font-size:15px;color:var(--head);margin-bottom:8px}
+.say .opt{display:block;width:100%;text-align:left;margin-bottom:8px;font-size:17px}
+.tiles{display:flex;flex-wrap:wrap;gap:6px;min-height:44px;padding:6px;border:2px dashed var(--line);border-radius:10px;margin-bottom:8px}
+.tile{font-size:17px;padding:4px 10px}
+input[type=text]{width:100%;font-family:var(--font);font-size:17px;padding:10px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);margin-bottom:8px}
+.model{background:var(--soft);border-radius:10px;padding:8px 10px;margin:8px 0}
+.res-ok{color:var(--ok)}
+.res-ng{color:var(--ng)}
+.log{font-size:14px;color:var(--muted);margin-top:6px}
+.line{padding:8px 0;border-bottom:1px solid var(--line)}
+.line:last-child{border-bottom:none}
+.line .sp{font-size:13px;color:var(--muted)}
+.notice{border-color:var(--acc)}
+.prog{font-size:14px;color:var(--muted)}
+.big{font-size:28px;color:var(--head)}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+"use strict";
+/* 英語おしごとタウン（仮）たたき台。設計は README.md。2026-11-16 経太さん「たたき台作ってなつめポータルにおいてみて」 */
+
+// ---------- データ ----------
+const DRINKS={coffee:{en:"coffee",ja:"コーヒー",p:2.5},latte:{en:"latte",ja:"ラテ",p:3.5},cappuccino:{en:"cappuccino",ja:"カプチーノ",p:3.5},tea:{en:"tea",ja:"紅茶",p:2},mocha:{en:"mocha",ja:"モカ",p:4}};
+const SIZES={small:{en:"small",ja:"S",p:0},medium:{en:"medium",ja:"M",p:.5},large:{en:"large",ja:"L",p:1}};
+const TEMPS={hot:{en:"hot",ja:"ホット"},iced:{en:"iced",ja:"アイス"}};
+const FOODS={none:{en:"",ja:"なし",p:0},"blueberry muffin":{en:"blueberry muffin",pl:"blueberry muffins",ja:"ブルーベリーマフィン",p:2.5},"chocolate muffin":{en:"chocolate muffin",pl:"chocolate muffins",ja:"チョコマフィン",p:2.5},croissant:{en:"croissant",pl:"croissants",ja:"クロワッサン",p:2.5},bagel:{en:"bagel",pl:"bagels",ja:"ベーグル",p:2},cookie:{en:"cookie",pl:"cookies",ja:"クッキー",p:1.5}};
+const PLACES={here:{en:"for here",ja:"店内"},togo:{en:"to go",ja:"持ち帰り"}};
+const SOLDOUT_ALT={"blueberry muffin":"chocolate muffin",croissant:"bagel",cookie:"chocolate muffin"};
+const FIELD_JA={size:"サイズ",temp:"ホット／アイス",place:"店内／持ち帰り"};
+
+const RANKS=[
+  {id:"trainee",nm:"見習い",en:"Trainee",ds:"聞き取って作るのが中心。返事は3つから選ぶ。",rate:.85},
+  {id:"staff",nm:"一人前",en:"Staff",ds:"返事は単語を並べて文を組み立てる。",rate:.95},
+  {id:"manager",nm:"店長",en:"Manager",ds:"返事は声に出す（または打ち込む）。客の英語も速め。",rate:1.05}
+];
+
+const PHRASES={
+  ask_size:{en:"What size would you like?",ja:"サイズはいかがなさいますか？",sit:"サイズを聞こう",acc:[/what size/]},
+  ask_temp:{en:"Hot or iced?",ja:"ホットとアイス、どちらにしますか？",sit:"ホットかアイスかを聞こう",acc:[/(hot or iced|iced or hot)/]},
+  ask_place:{en:"For here or to go?",ja:"店内でお召し上がりですか、お持ち帰りですか？",sit:"店内か持ち帰りかを聞こう",acc:[/(here or to go|to go or (for )?here)/]},
+  change:{en:"Sure, no problem.",ja:"かしこまりました（問題ありません）。",sit:"変更を快く引き受けよう",acc:[/(no problem|sure|of course|certainly)/]},
+  complaint:{en:"I'm so sorry. I'll make you a new one right away.",ja:"大変申し訳ありません。すぐに新しいものをお作りします。",sit:"謝って、作り直すと伝えよう",acc:[/sorry/,/(new one|remake|right away)/]},
+  smalltalk:{en:"Pretty good, thanks. How about you?",ja:"いい感じです、ありがとう。あなたは？",sit:"調子を聞かれた。返して、聞き返そう",acc:[/(good|great|fine|not bad)/]}
+};
+const DISTRACT=["What do you want?","How much is it?","Where are you from?","Do you like coffee?","Are you ready?","What time is it?","Can you wait?"];
+const DECOYS=["do","want","is","the","much","are","it","you"];
+
+const REGULARS={
+  grant:{name:"Mr. Grant",ja:"グラントさん（常連・毎朝来る）",col:"#6d7f8f",ini:"G",pitch:.8,usual:{drink:"coffee",size:"medium",temp:"hot",food:"none",place:"here"}},
+  lily:{name:"Lily",ja:"リリー（常連・おしゃべりな学生）",col:"#7f6d8f",ini:"L",pitch:1.25,rateAdd:.1},
+  patel:{name:"Mrs. Patel",ja:"パテルさん（常連・ていねい）",col:"#8f7f5d",ini:"P",pitch:1.05,rateAdd:-.1}
+};
+const WALKINS=[["Tom","#5d8f7a"],["Emma","#8f5d6d"],["Jake","#5d6d8f"],["Sofia","#7a8f5d"],["Noah","#6d5d8f"],["Ava","#8f6d5d"],["Ben","#5d8f8f"],["Chloe","#8f5d8f"]];
+
+// ---------- 保存 ----------
+const SKEY="oshigoto-town-v1";
+function load(){try{return JSON.parse(localStorage.getItem(SKEY))||{}}catch(e){return{}}}
+let S=Object.assign({best:{},met:{},notebook:{},shifts:0,money:0},load());
+function save(){try{localStorage.setItem(SKEY,JSON.stringify(S))}catch(e){}}
+
+// ---------- 道具 ----------
+const $=s=>document.querySelector(s);
+const app=$("#app");
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const art=w=>/^[aeiou]/i.test(w)?"an":"a";
+const cap=s=>s.charAt(0).toUpperCase()+s.slice(1);
+const money=n=>"$"+n.toFixed(2);
+const NUMW=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen","twenty"];
+function priceWords(n){const d=Math.floor(n+1e-9),c=Math.round((n-d)*100);return c?`${NUMW[d]} fifty`:`${NUMW[d]} dollars`}
+function norm(t){return t.toLowerCase().replace(/[’`]/g,"'").replace(/that'll/g,"that will").replace(/i'm/g,"i am").replace(/i'll/g,"i will").replace(/we're/g,"we are").replace(/[^a-z0-9'.$ ]/g," ").replace(/\s+/g," ").trim()}
+
+// 音声合成（あとで良い音声に差し替えられるよう、ここだけで鳴らす）
+let VOICES=[];
+function loadVoices(){if(!("speechSynthesis" in window))return;VOICES=speechSynthesis.getVoices().filter(v=>/^en[-_]US/i.test(v.lang));if(!VOICES.length)VOICES=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang))}
+if("speechSynthesis" in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
+function speak(text,opt={}){return new Promise(res=>{
+  if(!("speechSynthesis" in window)){res();return}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);u.lang="en-US";
+  if(VOICES.length)u.voice=VOICES[(opt.voice||0)%VOICES.length];
+  u.rate=Math.max(.6,Math.min(1.3,opt.rate||1));u.pitch=opt.pitch||1;
+  let done=false;const fin=()=>{if(!done){done=true;res()}};
+  u.onend=fin;u.onerror=fin;setTimeout(fin,8000+text.length*120);
+  try{speechSynthesis.speak(u)}catch(e){fin()}
+})}
+
+// ---------- 画面: タイトル ----------
+function starStr(n){return "★".repeat(n)+"☆".repeat(3-n)}
+function title(){
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  const nb=Object.keys(S.notebook).length;
+  app.innerHTML=`
+  <div class="top"><a class="back" href="/">‹ なつめポータル</a><span class="muted">β たたき台</span></div>
+  <h1>英語おしごとタウン</h1>
+  <p class="muted">英語で働いて、英語で稼ぐ。いまはカフェ「Corner Cafe」だけが開いています。</p>
+  <div class="card">
+    <h2>Corner Cafe</h2>
+    <p class="muted">1回のシフトで客5人。先輩の手本 → 本番 → ハプニング → 手帳に持ち帰り。</p>
+    ${RANKS.map((r,i)=>`<button class="rank" data-r="${i}"><span class="nm">${r.nm} <span class="muted">${r.en}</span></span><span class="stars">${starStr(S.best[r.id]||0)}</span><span class="ds">${r.ds}</span></button>`).join("")}
+  </div>
+  <div class="row">
+    <button id="nb">手帳${nb?`（${nb}）`:""}</button>
+    <span class="muted">これまで ${S.shifts} シフト・稼ぎ ${money(S.money)}</span>
+  </div>
+  ${"speechSynthesis" in window?"":`<p class="muted" style="margin-top:12px">この端末では英語の読み上げが使えません。字幕を使って遊べます。</p>`}`;
+  app.querySelectorAll(".rank").forEach(b=>b.onclick=()=>demo(+b.dataset.r));
+  $("#nb").onclick=notebook;
+}
+
+// ---------- 画面: 先輩の手本 ----------
+const DEMO=[
+  ["c","Hi! Can I get a latte, please?","ラテをください。"],
+  ["s","Sure. What size would you like?","かしこまりました。サイズはいかがなさいますか？"],
+  ["c","Medium, please.","Mでお願いします。"],
+  ["s","Hot or iced?","ホットとアイス、どちらにしますか？"],
+  ["c","Iced, please.","アイスで。"],
+  ["s","For here or to go?","店内ですか、お持ち帰りですか？"],
+  ["c","To go.","持ち帰りで。"],
+  ["s","That'll be four dollars, please.","4ドルになります。"],
+  ["c","Here you go.","はい、どうぞ。"],
+  ["s","Thank you! Have a nice day.","ありがとうございます。良い一日を。"]
+];
+function demo(ri){
+  const rank=RANKS[ri];let i=0,showJa=ri===0;
+  const draw=()=>{
+    app.innerHTML=`
+    <div class="top"><button class="back" id="bk">‹ もどる</button><span class="prog">先輩の手本</span></div>
+    <div class="card">
+      <p class="muted">先輩の Sam が客をさばくのを横で見ます。今日使う言い回しを耳に入れておきましょう。</p>
+      <div id="lines">${DEMO.slice(0,i+1).map(l=>`<div class="line"><div class="sp">${l[0]==="s"?"先輩 Sam":"客"}</div><div>${esc(l[1])}</div>${showJa?`<div class="muted">${esc(l[2])}</div>`:""}</div>`).join("")}</div>
+      <div class="row" style="margin-top:10px">
+        ${i<DEMO.length-1?`<button class="pri" id="nx">次へ</button>`:`<button class="pri" id="go">シフトに入る</button>`}
+        <button id="ag">もう一度聞く</button>
+        <button id="ja" class="${showJa?"on":""}">訳${showJa?"を隠す":""}</button>
+        ${i<DEMO.length-1?`<button id="sk" class="small">飛ばす</button>`:""}
+      </div>
+    </div>`;
+    $("#bk").onclick=title;
+    const say=()=>{const l=DEMO[i];speak(l[1],{rate:rank.rate,pitch:l[0]==="s"?1.1:.9,voice:l[0]==="s"?1:0})};
+    $("#ag").onclick=say;
+    $("#ja").onclick=()=>{showJa=!showJa;draw()};
+    if($("#nx"))$("#nx").onclick=()=>{i++;draw();say()};
+    if($("#sk"))$("#sk").onclick=()=>startShift(ri);
+    if($("#go"))$("#go").onclick=()=>startShift(ri);
+  };
+  draw();speak(DEMO[0][1],{rate:rank.rate,pitch:.9});
+}
+
+// ---------- シフトの組み立て ----------
+function makeOrder(force={}){
+  const o={drink:rnd(Object.keys(DRINKS)),size:rnd(Object.keys(SIZES)),temp:rnd(Object.keys(TEMPS)),food:Math.random()<.5?"none":rnd(Object.keys(FOODS).filter(k=>k!=="none")),place:rnd(Object.keys(PLACES))};
+  return Object.assign(o,force);
+}
+function orderPhrase(o,omit){
+  const w=[];if(!omit.size)w.push(SIZES[o.size].en);if(!omit.temp)w.push(TEMPS[o.temp].en);w.push(DRINKS[o.drink].en);
+  let s=`${art(w[0])} ${w.join(" ")}`;
+  if(o.food!=="none")s+=` and ${art(FOODS[o.food].en)} ${FOODS[o.food].en}`;
+  return s;
+}
+function orderJa(o,omit){
+  let s=(omit.size?"":SIZES[o.size].ja+"の")+(omit.temp?"":TEMPS[o.temp].ja)+DRINKS[o.drink].ja;
+  if(o.food!=="none")s+="と"+FOODS[o.food].ja;
+  return s;
+}
+function buildShift(ri){
+  const nb=S.notebook;
+  // 手帳にある苦手を優先して出す
+  const weakAsk=["size","temp","place"].filter(f=>nb["ask_"+f]);
+  const weakHap=["soldout","change","complaint"].filter(h=>nb[h]);
+  const hapType=weakHap.length?rnd(weakHap):rnd(["soldout","change","complaint"]);
+  const hapAt=1+Math.floor(Math.random()*4);
+  const custs=[];
+  // 1人目はグラントさん（毎朝来る）
+  custs.push({reg:"grant"});
+  const others=shuffle(["lily","patel",null,null]);
+  others.forEach(r=>custs.push(r?{reg:r}:{}));
+  custs.forEach((c,i)=>{
+    const p=c.reg?REGULARS[c.reg]:null;
+    if(!p){const w=WALKINS[(S.shifts*3+i)%WALKINS.length];c.name=w[0];c.col=w[1];c.ini=w[0][0];c.pitch=.85+Math.random()*.4;c.voice=i+2;c.ja="通りすがりの客"}
+    else{c.name=p.name;c.col=p.col;c.ini=p.ini;c.pitch=p.pitch;c.voice=i;c.ja=p.ja;c.rateAdd=p.rateAdd||0}
+    c.hap=i===hapAt?hapType:null;
+    if(c.reg==="grant"){
+      c.order=Object.assign({},REGULARS.grant.usual);
+      c.usual=!!S.met.grant;
+      c.omit=c.usual?{size:1,temp:1,place:1}:{};
+    }else{
+      const force={};
+      if(c.hap==="soldout")force.food=rnd(Object.keys(SOLDOUT_ALT));
+      c.order=makeOrder(force);
+      c.omit={};
+      ["size","temp","place"].forEach(f=>{if(Math.random()<.35)c.omit[f]=1});
+      if(i<=2&&weakAsk.length)c.omit[weakAsk[i%weakAsk.length]]=1;
+    }
+  });
+  return custs;
+}
+function custLine(c,rank){
+  const o=c.order,om=c.omit;
+  if(c.reg==="grant"&&c.usual)return{en:"Morning. The usual, please.",ja:"おはよう。いつものを頼むよ。"};
+  if(c.reg==="grant")return{en:"Morning. A medium hot coffee, for here. That's my usual.",ja:"おはよう。Mのホットコーヒー、店内で。これがいつものやつだ。"};
+  const ph=orderPhrase(o,om),pj=orderJa(o,om);
+  const place=om.place?"":(o.place==="here"?", for here":", to go");
+  const placeJa=om.place?"":(o.place==="here"?"、店内で":"、持ち帰りで");
+  if(c.reg==="lily")return{en:`Let me get ${ph}${place}!`,ja:`${pj}${placeJa}ちょうだい！`};
+  if(c.reg==="patel")return{en:`Good afternoon. Could I please have ${ph}${place}?`,ja:`こんにちは。${pj}${placeJa}をいただけますか？`};
+  return rnd([
+    {en:`Hi! Can I get ${ph}${place}, please?`,ja:`${pj}${placeJa}をください。`},
+    {en:`I'd like ${ph}${place}.`,ja:`${pj}${placeJa}をお願いします。`},
+    {en:`Could I have ${ph}${place}?`,ja:`${pj}${placeJa}をいただけますか？`}
+  ]);
+}
+function answerLine(c,f){
+  const o=c.order,like=c.reg==="grant"?", like always":"";
+  if(f==="size")return{en:`${cap(SIZES[o.size].en)}${like}, please.`,ja:`${SIZES[o.size].ja}で${like?"、いつもどおり":""}。`};
+  if(f==="temp")return{en:`${cap(TEMPS[o.temp].en)}${like}, please.`,ja:`${TEMPS[o.temp].ja}で${like?"、いつもどおり":""}。`};
+  return{en:o.place==="here"?`For here${like}.`:`To go${like}.`,ja:o.place==="here"?"店内で。":"持ち帰りで。"};
+}
+function totalOf(o){return DRINKS[o.drink].p+SIZES[o.size].p+FOODS[o.food].p}
+
+// ---------- シフト本体 ----------
+let SH=null;
+function startShift(ri){
+  SH={ri,rank:RANKS[ri],custs:buildShift(ri),idx:0,wage:10,tips:0,sats:[],missed:[],said:0,saidOk:0};
+  nextCustomer();
+}
+function nextCustomer(){
+  if(SH.idx>=SH.custs.length){result();return}
+  const c=SH.custs[SH.idx];
+  c.sat=3;c.known={};c.pad={drink:null,size:null,temp:null,food:null,place:null};c.showEn=false;c.showJa=false;c.stage="order";
+  ["size","temp","place"].forEach(f=>{if(!c.omit[f])c.known[f]=1});
+  c.cur=custLine(c,SH.rank);
+  if(c.reg==="lily"){c.stage="smalltalk";c.cur={en:"Hi! How's your day going?",ja:"やあ！今日の調子はどう？"}}
+  drawShift();
+  setTimeout(()=>sayCust(),300);
+  if(c.stage==="smalltalk")setTimeout(()=>askSay("smalltalk").then(()=>{c.stage="order";c.cur=custLine(c,SH.rank);drawShift();sayCust()}),400);
+}
+function cust(){return SH.custs[SH.idx]}
+function sayCust(){const c=cust();return speak(c.cur.en,{rate:SH.rank.rate+(c.rateAdd||0),pitch:c.pitch,voice:c.voice})}
+function custSays(en,ja){const c=cust();c.cur={en,ja};c.showEn=false;drawShift();return sayCust()}
+function hurt(why){const c=cust();c.sat=Math.max(0,c.sat-1);c.log=why}
+
+function drawShift(extra){
+  const c=cust(),R=SH.rank;
+  const moods=["不機嫌","ちょっと不満","ふつう","上機嫌"];
+  app.innerHTML=`
+  <div class="top"><button class="back" id="bk">‹ やめる</button><span class="prog">${R.nm}｜客 ${SH.idx+1}/${SH.custs.length}｜チップ ${money(SH.tips)}</span></div>
+  <div class="card">
+    <div class="cust">
+      <div class="av" style="background:${c.col}">${c.ini}</div>
+      <div>
+        <div class="who">${esc(c.name)} <span class="mood">${esc(c.ja)}・${moods[c.sat]}</span></div>
+        <div class="bubble">${c.showEn?`<div class="en">${esc(c.cur.en)}</div>`:`<div class="hidden">♪ ……</div>`}${c.showJa?`<div class="ja">${esc(c.cur.ja)}</div>`:""}</div>
+        <div class="row tools">
+          <button class="small" id="again">もう一度聞く</button>
+          <button class="small ${c.showEn?"on":""}" id="sub">字幕</button>
+          <button class="small ${c.showJa?"on":""}" id="tr">訳</button>
+        </div>
+        ${c.log?`<div class="log">${esc(c.log)}</div>`:""}
+      </div>
+    </div>
+  </div>
+  <div id="act"></div>`;
+  $("#bk").onclick=()=>{if(confirmQuit())title()};
+  $("#again").onclick=()=>sayCust();
+  $("#sub").onclick=()=>{c.showEn=!c.showEn;drawShift(extra)};
+  $("#tr").onclick=()=>{c.showJa=!c.showJa;drawShift(extra)};
+  if(c.stage==="order"||c.stage==="fix")drawPad();
+  if(extra)extra();
+}
+let quitArm=0;
+function confirmQuit(){const b=$("#bk");if(quitArm&&Date.now()-quitArm<3000)return true;quitArm=Date.now();b.textContent="‹ もう一度押すとやめる";return false}
+
+function drawPad(){
+  const c=cust(),p=c.pad;
+  const chips=(f,obj,lab)=>Object.keys(obj).map(k=>`<button data-f="${f}" data-v="${k}" class="${p[f]===k?"sel":""}">${esc(lab(k))}</button>`).join("");
+  const askBtn=f=>`<button class="ask small" data-ask="${f}">聞く</button>`;
+  $("#act").innerHTML=`
+  <div class="card pad">
+    <div class="lab">drink</div><div class="row">${chips("drink",DRINKS,k=>DRINKS[k].en)}</div>
+    <div class="lab">size</div><div class="row">${chips("size",SIZES,k=>SIZES[k].en)}${askBtn("size")}</div>
+    <div class="lab">hot / iced</div><div class="row">${chips("temp",TEMPS,k=>TEMPS[k].en)}${askBtn("temp")}</div>
+    <div class="lab">food</div><div class="row">${chips("food",FOODS,k=>k==="none"?"none":FOODS[k].en)}</div>
+    <div class="lab">for here / to go</div><div class="row">${chips("place",PLACES,k=>PLACES[k].en)}${askBtn("place")}</div>
+    <div class="row" style="margin-top:14px"><button class="pri" id="serve">出す</button><button class="small" id="mb">メニュー表</button></div>
+    <div id="mbx"></div>
+  </div>`;
+  $("#act").querySelectorAll("[data-f]").forEach(b=>b.onclick=()=>{p[b.dataset.f]=b.dataset.v;drawPad()});
+  $("#act").querySelectorAll("[data-ask]").forEach(b=>b.onclick=()=>askField(b.dataset.ask));
+  $("#serve").onclick=serve;
+  $("#mb").onclick=()=>{const x=$("#mbx");x.innerHTML=x.innerHTML?"":menuBoard()};
+}
+function menuBoard(){
+  return `<div class="menuboard"><div class="h">drinks（small の値段）</div>${Object.values(DRINKS).map(d=>`<span>${d.en}</span><span>${money(d.p)}</span>`).join("")}
+  <div class="h">size</div><span>medium</span><span>+$0.50</span><span>large</span><span>+$1.00</span>
+  <div class="h">food</div>${Object.keys(FOODS).filter(k=>k!=="none").map(k=>`<span>${FOODS[k].en}</span><span>${money(FOODS[k].p)}</span>`).join("")}</div>`;
+}
+
+async function askField(f){
+  const c=cust();
+  const ok=await askSay("ask_"+f);
+  if(c.known[f]){
+    hurt(`さっき言ったのに、ともう一度聞かれて少し不満そう（${FIELD_JA[f]}）`);
+    const a=answerLine(c,f);
+    await custSays(`I said ${a.en.replace(/, please\.|\.$/,"").replace(/^For here/,"for here").replace(/^To go/,"to go").toLowerCase()}.`,`さっき言ったよ。${a.ja}`);
+  }else{
+    c.known[f]=1;const a=answerLine(c,f);await custSays(a.en,a.ja);
+  }
+  if(!ok)hurt("言い方が伝わりにくかった");
+  c.stage="order";drawShift();
+}
+
+async function serve(){
+  const c=cust(),p=c.pad,o=c.order;
+  const miss=["drink","size","temp","food","place"].filter(f=>p[f]!==o[f]);
+  if(["drink","size","temp","place"].some(f=>!p[f])||!p.food){c.log="まだ選んでいない欄があります（食べ物が無いときは none）";drawShift();return}
+  // 売り切れハプニング：注文を聞いた直後ではなく、作る段で気づく
+  if(c.hap==="soldout"&&!c.hapDone){
+    c.hapDone=1;const item=o.food,alt=SOLDOUT_ALT[item];
+    c.stage="hap";drawShift();
+    const ok=await askSay("soldout",{item});
+    if(!ok)hurt("売り切れの伝え方がぎこちなかった");
+    o.food=alt;p.food=null;
+    await custSays(`Oh, okay. Then I'll have ${art(FOODS[alt].en)} ${FOODS[alt].en}.`,`あら、じゃあ${FOODS[alt].ja}にするわ。`);
+    c.stage="order";drawShift();return;
+  }
+  if(miss.length){
+    hurt("注文と違うものを出してしまった");
+    const f=miss[0];let en,ja;
+    if(!c.known[f]&&f!=="drink"&&f!=="food"){en=`Hmm, I didn't say ${f==="size"?"a size":f==="temp"?"hot or iced":"for here or to go"}. You could ask me.`;ja=`${FIELD_JA[f]}は言ってないよ。聞いてくれればいいのに。`}
+    else if(f==="drink"){en=`Sorry, I ordered ${art(DRINKS[o.drink].en)} ${DRINKS[o.drink].en}.`;ja=`${DRINKS[o.drink].ja}を頼んだんだけど。`}
+    else if(f==="food"){en=o.food==="none"?"I didn't order any food.":`I also ordered ${art(FOODS[o.food].en)} ${FOODS[o.food].en}.`;ja=o.food==="none"?"食べ物は頼んでないよ。":`${FOODS[o.food].ja}も頼んだよ。`}
+    else{const a=answerLine(c,f);en=`Excuse me, I said ${a.en.replace(/, please\.|\.$/,"").toLowerCase()}.`;ja=`${FIELD_JA[f]}が違うよ。${a.ja}`}
+    if(c.reg==="grant"&&c.usual){en="That's not my usual. Medium hot coffee, for here.";ja="いつものと違うな。Mのホットコーヒー、店内で。";c.known={size:1,temp:1,place:1}}
+    await custSays(en,ja);c.stage="fix";drawShift();return;
+  }
+  // 正しく出せた
+  if(c.reg==="grant")S.met.grant=1;
+  if(c.hap==="change"&&!c.hapDone){
+    c.hapDone=1;
+    const f=rnd(["size","temp"]);let en,ja;
+    if(f==="size"){const nv=o.size==="large"?"small":"large";o.size=nv;en=`Oh, wait. Can I change it to a ${nv}?`;ja=`あ、待って。${SIZES[nv].ja}に変えてもいい？`}
+    else{const nv=o.temp==="hot"?"iced":"hot";o.temp=nv;en=`Oh, wait. Can I get it ${nv} instead?`;ja=`あ、やっぱり${TEMPS[nv].ja}にできる？`}
+    c.stage="hap";await custSays(en,ja);
+    const ok=await askSay("change");if(!ok)hurt("変更への返事がぎこちなかった");
+    c.stage="fix";drawShift();return;
+  }
+  if(c.hap==="complaint"&&!c.hapDone){
+    c.hapDone=1;c.stage="hap";
+    await custSays("Excuse me, I think this is cold.","すみません、これ冷めてるみたいです。");
+    const ok=await askSay("complaint");if(!ok)hurt("謝り方がぎこちなかった");
+    await custSays("Thank you.","ありがとう。");
+  }
+  await payStep();
+}
+
+async function payStep(){
+  const c=cust(),t=totalOf(c.order);c.stage="pay";drawShift();
+  const ok=await askSay("total",{total:t});
+  if(!ok)hurt("お会計がうまく伝わらなかった");
+  const tip=c.sat*.5;SH.tips+=tip;SH.sats.push(c.sat);
+  await custSays(c.sat>=2?"Thanks! See you.":"Thanks.",c.sat>=2?"ありがとう、またね。":"どうも。");
+  SH.idx++;setTimeout(nextCustomer,400);
+}
+
+// ---------- 話す場面（ランクで答え方が変わる） ----------
+function phraseFor(key,ctx){
+  if(key==="total"){const t=ctx.total,w=priceWords(t);return{key,en:`That'll be ${w}, please.`,ja:`${money(t)}になります。`,sit:`お会計を伝えよう（メニュー表で計算できます）`,check:txt=>totalOk(txt,t),wrong:[t+.5,t-.5>0?t-.5:t+1,t+1.5].slice(0,2).map(x=>`That'll be ${priceWords(x)}, please.`)}}
+  if(key==="soldout"){const f=FOODS[ctx.item];return{key,en:`I'm sorry, we're out of ${f.pl}.`,ja:`申し訳ありません、${f.ja}は売り切れです。`,sit:`ハプニング！${f.ja}が売り切れ。謝って伝えよう`,check:txt=>/sorry/.test(txt)&&/out of/.test(txt),wrong:[`I'm sorry, we have ${f.pl}.`,`We are ${f.pl}.`]}}
+  const P=PHRASES[key];return{key,en:P.en,ja:P.ja,sit:P.sit,check:txt=>P.acc.every(r=>r.test(txt))};
+}
+function totalOk(txt,t){
+  const d=Math.floor(t+1e-9),c=Math.round((t-d)*100);txt=txt.replace(/\$/g,"");
+  if(c){return new RegExp(`\\b${d}[. ]?50\\b`).test(txt)||new RegExp(`\\b${NUMW[d]} (dollars? (and )?)?fifty\\b`).test(txt)}
+  return new RegExp(`\\b${d}(\\.00)?\\b`).test(txt)||new RegExp(`\\b${NUMW[d]}\\b`).test(txt);
+}
+function askSay(key,ctx={}){
+  const ph=phraseFor(key,ctx),mode=SH.ri;
+  return new Promise(resolve=>{
+    const finish=async(ok,how)=>{
+      SH.said++;if(ok)SH.saidOk++;
+      if(!ok){if(!SH.missed.some(m=>m.key===key))SH.missed.push({key,en:ph.en,ja:ph.ja});S.notebook[key]={en:ph.en,ja:ph.ja,miss:((S.notebook[key]||{}).miss||0)+1}}
+      else if(S.notebook[key]){S.notebook[key].ok=(S.notebook[key].ok||0)+1;if(S.notebook[key].ok>=2)delete S.notebook[key]}
+      save();
+      const box=$("#sayres");if(box)box.innerHTML=`<div class="model"><span class="${ok?"res-ok":"res-ng"}">${ok?"○ 伝わった":"△ こう言うと伝わる"}</span><div>${esc(ph.en)}</div><div class="muted">${esc(ph.ja)}</div></div><button class="pri" id="sayok">つづける</button>`;
+      await speak(ph.en,{rate:SH.rank.rate,pitch:1.1,voice:1});
+      const b=$("#sayok");if(b)b.onclick=()=>resolve(ok);else resolve(ok);
+    };
+    const act=()=>$("#act");
+    let html=`<div class="card say"><div class="sit">${esc(ph.sit)}</div>${key==="total"?`<div style="margin-bottom:8px"><button class="small" id="mb2">メニュー表</button><div id="mbx2"></div></div>`:""}<div id="sayin"></div><div id="sayres"></div></div>`;
+    act().innerHTML=html;
+    if($("#mb2"))$("#mb2").onclick=()=>{const x=$("#mbx2");x.innerHTML=x.innerHTML?"":menuBoard()};
+    const inn=$("#sayin");
+    if(mode===0){
+      const wrong=(ph.wrong||shuffle(DISTRACT.concat(["What size would you like?","Hot or iced?","For here or to go?"]).filter(s=>s!==ph.en))).slice(0,2);
+      const opts=shuffle([ph.en].concat(wrong));
+      inn.innerHTML=opts.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("");
+      inn.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+        inn.querySelectorAll(".opt").forEach(x=>x.disabled=true);
+        const ok=opts[+b.dataset.i]===ph.en;b.classList.add(ok?"sel":"on");finish(ok);
+      });
+    }else if(mode===1){
+      const words=ph.en.split(" "),decoy=shuffle(DECOYS.filter(d=>!words.map(w=>w.toLowerCase().replace(/[^a-z']/g,"")).includes(d))).slice(0,2);
+      const pool=shuffle(words.concat(decoy).map((w,i)=>({w,i}))),picked=[];
+      const draw=()=>{
+        inn.innerHTML=`<div class="tiles" id="ans">${picked.map((t,j)=>`<button class="tile sel" data-j="${j}">${esc(t.w)}</button>`).join("")||`<span class="muted">下の単語を順にタップ</span>`}</div>
+        <div class="row" style="margin-bottom:10px">${pool.filter(t=>!picked.includes(t)).map(t=>`<button class="tile" data-i="${t.i}">${esc(t.w)}</button>`).join("")}</div>
+        <div class="row"><button class="pri" id="dec" ${picked.length?"":"disabled"}>言う</button><button class="small" id="clr">やり直す</button></div>`;
+        inn.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{picked.push(pool.find(t=>t.i===+b.dataset.i));draw()});
+        inn.querySelectorAll("[data-j]").forEach(b=>b.onclick=()=>{picked.splice(+b.dataset.j,1);draw()});
+        $("#clr").onclick=()=>{picked.length=0;draw()};
+        $("#dec").onclick=()=>{const s=picked.map(t=>t.w).join(" ");inn.innerHTML=`<div class="tiles">${esc(s)}</div>`;finish(norm(s)===norm(ph.en))};
+      };
+      draw();
+    }else{
+      const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+      inn.innerHTML=`${SR?`<div class="row" style="margin-bottom:8px"><button id="mic">🎤 話す</button><span class="muted" id="micst"></span></div>`:""}
+        <input type="text" id="tx" placeholder="英語で返事を入力" autocomplete="off" autocapitalize="off">
+        <div class="row"><button class="pri" id="dec">言う</button><button class="small" id="giveup">わからない</button></div>`;
+      const tx=$("#tx");
+      const judge=()=>{
+        const said=tx.value.trim();if(!said)return;const ok=ph.check(norm(said));
+        if(ok){inn.innerHTML=`<div class="tiles">${esc(said)}</div>`;finish(true);return}
+        // パターン外れ：自己判定
+        inn.innerHTML=`<div class="tiles">${esc(said)}</div><p class="muted">想定の言い方と違いました。お手本と比べて、伝わる言い方だったか自分で判定してください。</p><div class="model"><div>${esc(ph.en)}</div><div class="muted">${esc(ph.ja)}</div></div><div class="row"><button id="selfok">伝わる言い方だった</button><button id="selfng">言えていなかった</button></div>`;
+        $("#selfok").onclick=()=>{inn.innerHTML="";finish(true)};
+        $("#selfng").onclick=()=>{inn.innerHTML="";finish(false)};
+      };
+      $("#dec").onclick=judge;tx.onkeydown=e=>{if(e.key==="Enter")judge()};
+      $("#giveup").onclick=()=>{inn.innerHTML="";finish(false)};
+      if(SR){
+        const mic=$("#mic"),st=$("#micst");let rec=null;
+        mic.onclick=()=>{
+          if(rec){rec.stop();return}
+          rec=new SR();rec.lang="en-US";rec.interimResults=false;rec.maxAlternatives=3;
+          mic.textContent="● 聞いています";mic.classList.add("on");
+          rec.onresult=e=>{const alts=[...e.results[0]].map(a=>a.transcript);const hit=alts.find(a=>ph.check(norm(a)));tx.value=hit||alts[0];};
+          rec.onerror=e=>{st.textContent="うまく聞き取れませんでした。入力でもOK。"};
+          rec.onend=()=>{rec=null;mic.textContent="🎤 話す";mic.classList.remove("on");if(tx.value)judge()};
+          try{rec.start()}catch(e){rec=null;st.textContent="マイクが使えません。入力してください。"}
+        };
+      }else setTimeout(()=>tx.focus(),50);
+    }
+  });
+}
+
+// ---------- 結果 ----------
+function result(){
+  const avg=SH.sats.reduce((a,b)=>a+b,0)/SH.sats.length;
+  const stars=avg>=2.6?3:avg>=1.8?2:1;
+  const pay=SH.wage+SH.tips;
+  S.shifts++;S.money+=pay;const id=SH.rank.id;S.best[id]=Math.max(S.best[id]||0,stars);save();
+  app.innerHTML=`
+  <div class="top"><span class="prog">シフト終了</span><span class="prog">${SH.rank.nm}</span></div>
+  <div class="card">
+    <div class="big stars">${starStr(stars)}</div>
+    <p>給料 ${money(SH.wage)} ＋ チップ ${money(SH.tips)} ＝ <b>${money(pay)}</b></p>
+    <p class="muted">返事 ${SH.saidOk}/${SH.said} 回伝わった</p>
+  </div>
+  <div class="card">
+    <h2>持ち帰り</h2>
+    ${SH.missed.length?`<p class="muted">うまく言えなかった言い回しを手帳に入れました。次のシフトで同じ場面がまた来ます（2回言えたら手帳から消えます）。</p>${SH.missed.map(m=>`<div class="line"><button class="small" data-say="${esc(m.en)}">▶</button> ${esc(m.en)}<div class="muted">${esc(m.ja)}</div></div>`).join("")}`:`<p class="muted">今日は全部伝わりました。</p>`}
+  </div>
+  <div class="row"><button class="pri" id="again">もう1シフト</button><button id="home">街へもどる</button></div>`;
+  app.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say,{rate:.9,pitch:1.1,voice:1}));
+  $("#again").onclick=()=>startShift(SH.ri);
+  $("#home").onclick=title;
+}
+
+// ---------- 手帳 ----------
+function notebook(){
+  const ks=Object.keys(S.notebook);
+  app.innerHTML=`
+  <div class="top"><button class="back" id="bk">‹ もどる</button><span class="prog">手帳</span></div>
+  <div class="card">
+    <h2>手帳</h2>
+    ${ks.length?ks.map(k=>`<div class="line"><button class="small" data-say="${esc(S.notebook[k].en)}">▶</button> ${esc(S.notebook[k].en)}<div class="muted">${esc(S.notebook[k].ja)}</div></div>`).join(""):`<p class="muted">まだ何もありません。シフトでうまく言えなかった言い回しがここに入ります。</p>`}
+  </div>
+  ${S.met.grant?`<div class="card"><h2>常連メモ</h2><p>Mr. Grant の「いつもの」＝ medium・hot・coffee・for here</p></div>`:""}`;
+  $("#bk").onclick=title;
+  app.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say,{rate:.9,pitch:1.1,voice:1}));
+}
+
+title();
+</script>
+</body>
+</html>
