@@ -1409,7 +1409,8 @@ const hasSndQ=g=>(ALL[g]||[]).some(canSndQ);
 const BMODES=[{id:"V",name:"写真＋鳴き声"},{id:"S",name:"鳴き声のみ"}];
 const LEVELS=[{lv:1,name:"やさしい"},{lv:2,name:"ふつう"},{lv:3,name:"むずかしい"},{lv:4,name:"今月の鳥"}];
 function sortYears(d){ return d.slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1)); }
-function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>({...c,q:(bmode==="S"&&c.m.snd)?"V":(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P",pi:(c.m.imgs&&c.m.imgs.length>1)?Math.floor(rng(gid+":img:"+c.key)()*c.m.imgs.length):0,si:(c.m.snds&&c.m.snds.length>1)?Math.floor(rng(gid+":snd:"+c.key)()*c.m.snds.length):0})); }
+// 写真・音声の欄(m)が無い札（歴史など）は並べ替えだけして出題形式は付けない。今日の復習に歴史札が混ざると落ちていた（2026-11-16 Keita指摘）
+function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(d,r); return sd.map(c=>!c.m?c:({...c,q:(bmode==="S"&&c.m.snd)?"V":(bmode==="V"&&c.m.snd&&r()<0.5)?"V":"P",pi:(c.m.imgs&&c.m.imgs.length>1)?Math.floor(rng(gid+":img:"+c.key)()*c.m.imgs.length):0,si:(c.m.snds&&c.m.snds.length>1)?Math.floor(rng(gid+":snd:"+c.key)()*c.m.snds.length):0})); }
 const sndOf=c=>(c.m.snds&&c.m.snds.length)?c.m.snds[Math.min(c.si||0,c.m.snds.length-1)]:c.m.snd;
 const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.length-1)]:c.m.img;
 function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
