@@ -1,6 +1,6 @@
 #!/bin/sh
 # なつめポータル（Render の静的サイト natsume-portal）に出すファイルを dist/ にまとめる（2026-11-04 Keita決定）。
-# 入口は / （apps/portal/index.html、2026-11-05 Keita依頼の仮ランディング）。並びは /life-quest/ /anki-taisen/ /history-novel/ /yosho-novel/ /oshigoto-town/ /shared/。アプリ側は相対パス（../anki-taisen/ や ../../shared/）で互いを参照する。
+# 入口は / （apps/portal/index.html、2026-11-05 Keita依頼の仮ランディング）。並びは /life-quest/ /anki-taisen/ /history-novel/ /yosho-novel/ /oshigoto-town/ /eigo-escape/ /shared/。アプリ側は相対パス（../anki-taisen/ や ../../shared/）で互いを参照する。
 set -e
 rm -rf dist
 mkdir -p dist
@@ -12,5 +12,6 @@ rm -rf dist/history-novel/src dist/history-novel/faces dist/history-novel/faces-
 cp -r apps/yosho-novel dist/yosho-novel
 rm -rf dist/yosho-novel/src
 cp -r apps/oshigoto-town dist/oshigoto-town
+cp -r apps/eigo-escape dist/eigo-escape
 cp -r shared dist/shared
 cp apps/portal/index.html dist/index.html
