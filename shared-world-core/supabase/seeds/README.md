@@ -38,6 +38,7 @@ python shared-world-core/scripts/generate_math_seed.py
 10. `007_curriculum_review.sql` — 29学問の見直し（大きすぎるトピックの分割、数学の大学一般教養、名前変更、言語学への絞り込み）
 11. `../migrations/006_field_topic_name_en.sql` → `008_field_topic_name_en.sql` — 分野・トピックの英語名（本番の有効な分野499・トピック4677件、2026-09-27時点）
 12. `009_assets_preset.sql` — 資産の単独プリセット（総資産・万円の入力型、006 の後）
+13. `010_kyoyo_presets.sql` — 教養プリセット8科目（SUPER暗記大戦の教養ジャンルと対応。2026-11-17 本番適用済み）
 
 本番の現状の一覧は `../../curriculum/prod_curriculum.csv`（`../../scripts/export_prod_curriculum.py` で作る）。
 
