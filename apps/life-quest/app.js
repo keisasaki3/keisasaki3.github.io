@@ -50,7 +50,7 @@ let fields = [];
 let topics = [];
 let prerequisites = [];
 let mastery = new Set();
-// 激突！暗記大戦の札の定着度から出すトピックの習得度（%）。quest_card_progress と ../anki-taisen/data/topics.json（トピック→札の枚数）から計算。2026-11-03 Keita依頼
+// SUPER暗記大戦の札の定着度から出すトピックの習得度（%）。quest_card_progress と ../anki-taisen/data/topics.json（トピック→札の枚数）から計算。2026-11-03 Keita依頼
 let quizMastery = new Map();
 let topicById = new Map();
 let fieldById = new Map();
@@ -595,7 +595,7 @@ async function maybeOfferLegacyMigration() {
 
 let activeUserId = null;
 
-// 他のアプリ（暗記大戦など）から ?back=アプリ名 で来たときは、ログインできたらそのアプリへ戻す（2026-11-03 Keita依頼）
+// 他のアプリ（SUPER暗記大戦など）から ?back=アプリ名 で来たときは、ログインできたらそのアプリへ戻す（2026-11-03 Keita依頼）
 // Googleログインは往復でクエリが消えるので、タブのsessionStorageにも覚えておく
 const BACK_APP = (() => {
   let b = new URLSearchParams(location.search).get('back') || '';
@@ -667,7 +667,7 @@ document.addEventListener('DOMContentLoaded', async function boot() {
   await handleSession(data.session);
 });
 
-// 暗記大戦の札の定着度（0〜3、最後に見てから30日ごとに1下がる）を、トピックごとに「合計 ÷ (3 × 札の枚数)」で習得度にする
+// SUPER暗記大戦の札の定着度（0〜3、最後に見てから30日ごとに1下がる）を、トピックごとに「合計 ÷ (3 × 札の枚数)」で習得度にする
 async function loadQuizMastery(user) {
   const [rowsRes, cntRes] = await Promise.all([
     fetchAllRows(opts => sb.from('quest_card_progress').select('topic_id,stage,last_seen_at', opts).eq('user_id', user.id).not('topic_id', 'is', null).order('card_key')),
