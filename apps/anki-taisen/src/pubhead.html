@@ -19,7 +19,7 @@ document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)r
   if(t.closest("[data-open-room]")){var q2=new URLSearchParams(location.search);q2.delete("room");var s=q2.toString();location.href=location.pathname+(s?"?"+s:"");return;}
   var b=t.closest("[data-share-room]");if(!b)return;
   var open=window.ANKI_SB.room==="open",url=location.origin+location.pathname+(open?"":"?room="+window.ANKI_SB.room);
-  if(navigator.share){navigator.share({title:"激突！暗記大戦",text:open?"オープンルームで対戦しよう":"部屋No."+window.ANKI_SB.room+" で対戦しよう",url:url}).catch(function(){});}
+  if(navigator.share){navigator.share({title:"SUPER暗記大戦",text:open?"オープンルームで対戦しよう":"部屋No."+window.ANKI_SB.room+" で対戦しよう",url:url}).catch(function(){});}
   else if(navigator.clipboard){navigator.clipboard.writeText(url).then(function(){b.textContent="コピーしました";setTimeout(function(){b.textContent="この部屋のURLをシェア";},2000);});}});
 document.addEventListener("DOMContentLoaded",function(){var open=window.ANKI_SB.room==="open",l=document.getElementById("roomLabel"),n=document.getElementById("roomNo");
   if(open&&l)l.innerHTML="<b style=\"font-size:1.1em\">オープンルーム</b>（誰でも入れます）";else if(n)n.textContent=window.ANKI_SB.room;

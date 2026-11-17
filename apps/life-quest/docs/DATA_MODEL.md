@@ -73,10 +73,10 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 ### quest_card_progress
 
-激突！暗記大戦（`apps/anki-taisen/`）の札ごとの学習記録（migration 013、2026-11-03 Keita依頼）。1行 = 1人 × 札1枚。
+SUPER暗記大戦（`apps/anki-taisen/`）の札ごとの学習記録（migration 013、2026-11-03 Keita依頼）。1行 = 1人 × 札1枚。
 
 - user_id: uuid FK -> profiles.user_id
-- card_key: text（暗記大戦の札の番号。例 `E:機会費用`）
+- card_key: text（SUPER暗記大戦の札の番号。例 `E:機会費用`）
 - topic_id: text nullable FK -> quest_topics.topic_id（札が属するトピック）
 - correct_days: 正解した日数（1日1回まで）
 - stage: 定着度 0〜3（前回と別の日に正解で+1、不正解で-1）
@@ -88,7 +88,7 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 ### quest_card_reports
 
-暗記大戦の「資料がおかしい」報告。anon/authenticated は insert のみ、読むのは service_role だけ。card_key・comment（300字まで）・user_id（ログイン時）・resolved・created_at。
+SUPER暗記大戦の「資料がおかしい」報告。anon/authenticated は insert のみ、読むのは service_role だけ。card_key・comment（300字まで）・user_id（ログイン時）・resolved・created_at。
 
 ### quest_user_settings
 
