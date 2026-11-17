@@ -17,6 +17,7 @@ html,body{margin:0;background:var(--pg);color:var(--ink);font-family:var(--font)
 main{max-width:680px;margin:0 auto;padding:16px 16px 48px}
 h1{font-weight:400;font-size:26px;color:var(--head);margin:8px 0 2px}
 h2{font-weight:400;font-size:18px;color:var(--head);margin:0 0 8px}
+h3{font-weight:400;font-size:15px;color:var(--muted);margin:12px 0 2px}
 p{margin:0 0 10px}
 .muted{color:var(--muted);font-size:14px}
 .card{background:var(--card);border:2px solid var(--line);border-radius:12px;padding:14px;margin:0 0 12px}
@@ -35,7 +36,11 @@ button.wide{width:100%;padding:12px}
 .obj{text-align:left;padding:10px;font-size:15px;line-height:1.35}
 .obj small{display:block;color:var(--muted);font-size:12px}
 .obj.sel small{color:inherit;opacity:.8}
-.doc{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:16px;white-space:pre-wrap}
+.doc{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0 4px;font-size:16px;white-space:pre-wrap}
+.doc.torn{border-bottom:none;border-radius:8px 8px 0 0;padding-bottom:18px;clip-path:polygon(0 0,100% 0,100% 100%,94% calc(100% - 9px),88% 100%,81% calc(100% - 7px),74% 100%,66% calc(100% - 10px),58% 100%,50% calc(100% - 6px),42% 100%,34% calc(100% - 9px),26% 100%,18% calc(100% - 7px),10% 100%,4% calc(100% - 8px),0 100%)}
+.tear{border-top:2px dashed var(--line);margin:8px -12px;position:relative}
+.tear span{position:absolute;right:8px;top:-11px;background:var(--paper);font-size:11px;color:var(--muted);padding:0 4px}
+.tornnote{font-size:12px;color:var(--muted);margin-bottom:6px}
 .ja{color:var(--muted);font-size:14px;margin-top:6px;white-space:pre-wrap}
 .w{border-bottom:1px dotted var(--muted);cursor:pointer}
 .wbox{font-size:14px;color:var(--head);min-height:20px}
@@ -43,9 +48,9 @@ button.wide{width:100%;padding:12px}
 .dig{font-size:22px;letter-spacing:6px;min-width:120px;text-align:center;padding:6px 10px;border:2px solid var(--line);border-radius:8px;background:var(--soft)}
 .keys{display:grid;grid-template-columns:repeat(3,56px);gap:6px}
 .keys button{padding:8px 0}
-.panel{display:grid;gap:10px}
-.lamp{display:inline-block;width:16px;height:16px;border-radius:50%;background:#555;vertical-align:-3px;margin-right:6px;border:2px solid var(--line)}
-.lamp.on{background:#5fd46a}
+.dial{display:flex;align-items:center;gap:6px;margin:6px 0}
+.dial .lab{min-width:84px;font-size:14px;color:var(--muted)}
+.dial .val{font-size:22px;min-width:44px;text-align:center;border:2px solid var(--line);border-radius:8px;background:var(--soft);padding:2px 6px}
 .msg{font-size:14px;color:var(--head);margin-top:6px}
 .res-ok{color:var(--ok)}
 .res-ng{color:var(--ng)}
@@ -53,23 +58,35 @@ button.wide{width:100%;padding:12px}
 .note{padding:4px 0;border-bottom:1px dashed var(--line);font-size:15px}
 .note:last-child{border-bottom:none}
 .note .who{font-size:12px;color:var(--muted)}
+.note.sys{color:var(--muted);font-size:14px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
 .chips button{font-size:13px;padding:3px 8px}
 input[type=text]{width:100%;font-family:var(--font);font-size:16px;padding:10px;border:2px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink)}
 .stat{font-size:13px;color:var(--muted)}
 .prog{font-size:14px;color:var(--muted)}
 .big{font-size:30px;color:var(--head)}
-.clock{display:block;margin:6px auto}
-.npc{background:var(--soft);border-radius:10px;padding:8px 10px;margin:8px 0;min-height:40px}
+.inv{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.key{display:inline-flex;align-items:center;gap:6px;border:2px dashed var(--line);border-radius:10px;padding:4px 8px;font-size:14px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px;margin:8px 0;font-size:13px}
+.cal div{min-height:38px;padding:2px 3px;border:1px solid var(--line);border-radius:3px;line-height:1.15}
+.cal .hd{min-height:0;border:none;text-align:center;color:var(--muted);font-size:11px}
+.cal .bl{border:none}
+.cal i{display:block;font-style:normal;font-size:9px;color:var(--head);margin-top:2px}
+.cal .ttl{grid-column:1/-1;border:none;min-height:0;text-align:center;color:var(--head);font-size:15px;letter-spacing:2px}
+table.shelf{border-collapse:collapse;width:100%;font-size:15px}
+table.shelf td{border-bottom:1px dashed var(--line);padding:3px 6px}
+table.shelf td:first-child{width:56px;color:var(--muted)}
 </style>
 </head>
 <body>
 <main id="app"></main>
 <script>
 "use strict";
-/* 英語脱出 ステージ1「The Hotel Rooms」（仮）。設計は README.md と Claude Doc。2026-11-16 経太さん「作ってみてなつめポータルにおいて」
-   2人プレイのつなぎ役は Supabase Realtime の broadcast と presence（暗記大戦と同じ。DBの表は使わない）。publishable key は公開してよい値。 */
+/* 英語脱出 ステージ1「The Letter Rooms」。2人用。
+   シナリオ・謎・英文の正本は Claude Doc「英語脱出 ステージ1 シナリオと謎解き設計（改訂版）」。設計書は README.md。
+   2人のつなぎ役は Supabase Realtime の broadcast と presence（DBの表は使わない）。publishable key は公開してよい値。 */
 const SB={url:"https://rjydvhpqfhmlvpsykwzf.supabase.co",key:"sb_publishable_NAVKQxtEtS1zPFj59iXIEQ_Y_RztuSx"};
+const VER="s1v2"; // 旧版（タオル・ミニバー）の保存データ・チャンネルと混ざらないように
 
 // ---------- 小道具 ----------
 const $=s=>document.querySelector(s);
@@ -78,161 +95,196 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",
 const rid=()=>Math.random().toString(36).slice(2,10);
 function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+let uid=0;const nid=()=>"x"+(++uid);
 
-// 音声合成（ここだけで鳴らす。後で良い音声に差し替えられる）
+// ---------- 音声（ここだけで鳴らす。後で良い音声に差し替えられる） ----------
 let VOICES=[];
-function loadVoices(){if(!window.speechSynthesis)return;VOICES=speechSynthesis.getVoices().filter(v=>/^en[-_]US/i.test(v.lang));if(!VOICES.length)VOICES=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang))}
+function loadVoices(){if(!window.speechSynthesis)return;const all=speechSynthesis.getVoices();VOICES=all.filter(v=>/^en[-_](US|GB)/i.test(v.lang));if(!VOICES.length)VOICES=all.filter(v=>/^en/i.test(v.lang))}
 if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}
-function speak(text,opt={}){return new Promise(res=>{
-  if(!window.speechSynthesis){res();return}
+const MALE=/\b(male|david|guy|daniel|alex|fred|aaron|arthur|tom|mark|james|ryan|christopher|eric|roger|brian|george|oliver|rishi|reed|ralph)\b/i;
+const FEMALE=/\b(female|samantha|zira|aria|jenny|karen|moira|tessa|victoria|susan|allison|ava|serena|kate|libby|sonia|emma|michelle|joanna|salli|kimberly|martha|fiona|catherine)\b/i;
+function pickVoice(kind){
+  if(!VOICES.length)return null;
+  const re=kind==="m"?MALE:FEMALE;
+  return VOICES.find(v=>re.test(v.name)&&/US/i.test(v.lang))||VOICES.find(v=>re.test(v.name))||null;
+}
+const SPK={mia:{kind:"f",rate:.9,pitch:1.1},james:{kind:"m",rate:.86,pitch:.85},plain:{kind:"",rate:.85,pitch:1}};
+let spkTok=0;
+// 長い文は端末によって途中で切れるので、文ごとに順に読む
+function speak(text,who){
+  const sp=SPK[who]||SPK.plain;const tok=++spkTok;
+  if(!window.speechSynthesis)return;
   try{speechSynthesis.cancel()}catch(e){}
-  const u=new SpeechSynthesisUtterance(text);u.lang="en-US";
-  if(VOICES.length)u.voice=VOICES[(opt.voice||0)%VOICES.length];
-  u.rate=opt.rate||.9;u.pitch=opt.pitch||1;
-  let done=false;const fin=()=>{if(!done){done=true;res()}};
-  u.onend=fin;u.onerror=fin;setTimeout(fin,6000+text.length*110);
-  try{speechSynthesis.speak(u)}catch(e){fin()}
-})}
+  const parts=String(text).replace(/\n+/g," ").match(/[^.!?]+[.!?]+["”]?|[^.!?]+$/g)||[text];
+  const v=sp.kind?pickVoice(sp.kind):null;
+  // 男性の声が無い端末では高さを下げて区別する
+  const pitch=sp.kind==="m"&&!v?.7:sp.pitch;
+  let i=0;
+  const next=()=>{
+    if(tok!==spkTok||i>=parts.length)return;
+    const u=new SpeechSynthesisUtterance(parts[i++].trim());u.lang="en-US";
+    if(v)u.voice=v;else if(VOICES.length)u.voice=VOICES[0];
+    u.rate=sp.rate;u.pitch=pitch;
+    let done=false;const fin=()=>{if(!done){done=true;setTimeout(next,120)}};
+    u.onend=fin;u.onerror=fin;setTimeout(fin,5000+u.text.length*120);
+    try{speechSynthesis.speak(u)}catch(e){fin()}
+  };
+  next();
+}
+function hush(){spkTok++;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}}
 
 // ---------- 辞書（文書の単語をタップすると意味が出る） ----------
-const DICT={storm:"嵐",power:"電気・電源",electronic:"電子の",locks:"錠",lock:"錠",floor:"階",calm:"落ち着いた",restore:"元に戻す",emergency:"非常の",procedure:"手順",safe:"金庫",guest:"客",reach:"手が届く",breaker:"ブレーカー",panel:"盤",connecting:"つながっている",previous:"前の",housekeeping:"客室清掃係",towels:"タオル",towel:"タオル",washcloth:"小さな手ぬぐい（いちばん小さいタオル）",largest:"いちばん大きい",smallest:"いちばん小さい",minibar:"客室の冷蔵庫（有料の飲み物など）",bottles:"びん",bottle:"びん・ボトル",cans:"缶",can:"缶",bags:"袋",bag:"袋",bar:"板（チョコレート1枚）",total:"合計",amount:"金額",without:"〜なしで",dot:"点（小数点）",dial:"ダイヤル",flip:"（スイッチを）切り替える・上げる",switch:"スイッチ",main:"主な・メインの",press:"押す",until:"〜まで",comes:"（on で）点く",once:"1回",wait:"待つ",touch:"触る",hangers:"ハンガー",hanger:"ハンガー",stopped:"止まった",quarter:"4分の1（15分）",past:"〜過ぎ",digit:"桁・数字",pillows:"枕",pillow:"枕",cushion:"クッション",rail:"棒（ハンガー掛け）",drawer:"引き出し",code:"暗証番号",colors:"色",price:"値段",list:"表",took:"取った（take の過去）",whatever:"何でも",count:"数える",inside:"中に",before:"〜の前に",after:"〜の後に",trips:"（ブレーカーが）落ちる",enter:"入力する",hour:"時（何時の）",closet:"クローゼット",front:"正面（front desk＝フロント）",desk:"机・受付",nuts:"ナッツ",soda:"炭酸飲料",chocolate:"チョコレート",water:"水",missing:"足りない・無くなった",inventory:"在庫表",rest:"残り",sticky:"べたつく（sticky note＝付箋）",note:"メモ",notepad:"メモ帳",shower:"シャワー",lights:"明かり",light:"明かり・ランプ",green:"緑",red:"赤",button:"ボタン",again:"もう一度",check:"確認する",keypad:"数字キー",exit:"出口"};
+const DICT={storm:"嵐",power:"電気・電源",electronic:"電子の",locks:"錠",lock:"錠",emergency:"非常の",keypad:"数字キー",battery:"電池",runs:"（機械が）動く",code:"暗証番号",owner:"持ち主・オーナー",chose:"選んだ（choose の過去）",lines:"線（phone lines＝電話線）",down:"（線が）切れて",opened:"開いた",month:"月",connecting:"つながっている",slide:"滑らせる",sliding:"滑らせている",thin:"薄い",downstairs:"下の階に",autumn:"秋",strangers:"見知らぬ人たち",passed:"渡した（pass の過去）",received:"受け取った",locked:"鍵のかかった",finish:"終える",free:"無料の",breakfast:"朝食",lighthouse:"灯台",radio:"無線",station:"局",enough:"十分な",teach:"教える",practice:"練習する",typewriter:"タイプライター",deal:"取り決め・約束",type:"（タイプライターで）打つ",noise:"音・騒音",hour:"時（何時の）",harbor:"港",postcard:"絵はがき",dark:"暗い",lamp:"明かり・ランプ",quarter:"4分の1（15分）",asleep:"眠って",quietly:"静かに",weather:"天気",reports:"報告・予報",report:"報告・予報",tide:"潮",romantic:"ロマンチックな",exactly:"ちょうど",wall:"壁",beautiful:"美しい",miss:"恋しく思う",footsteps:"足音",drop:"落とす",drops:"落とす",dropped:"落とした",folder:"楽譜ばさみ・フォルダー",diary:"日記",neighbor:"隣人",neighbors:"隣人たち",awake:"目が覚めて",count:"数える",steps:"歩数・足音",stairs:"階段",seventeen:"17",single:"ひとつの（every single day＝毎日欠かさず）",sound:"音",question:"問い",tape:"テープ",special:"特別な",south:"南",calm:"穏やかな",moon:"月",rises:"昇る",logbook:"業務日誌",numbers:"数",over:"（無線で）以上",company:"会社",north:"北",goodbyes:"別れ",worse:"もっと下手な",knock:"ノックする",finally:"ついに",understand:"わかる",front:"正面の（front hall＝玄関ホール）",hall:"ホール",hears:"聞こえる",borrowed:"借りた",wedding:"結婚式",photo:"写真",rain:"雨",hitting:"打っている",slowly:"ゆっくり",calendar:"カレンダー",concert:"演奏会",last:"最後の",sheet:"1枚（の紙）",visibility:"視界",force:"風力",finished:"終わった",dish:"皿",keys:"鍵（複数）",key:"鍵",tag:"札",fits:"合う",gap:"隙間",narrow:"細い",carved:"彫った",edge:"縁",letters:"手紙・文字",letter:"手紙",secret:"秘密",grandparents:"祖父母",candles:"ろうそく",years:"年",story:"物語",card:"カード",trunk:"トランク",shelf:"棚",piano:"ピアノ",bench:"（ピアノの）椅子",plaque:"銘板・案内板",brass:"真ちゅう",framed:"額に入った",note:"メモ",notes:"メモ",guest:"客",guests:"客たち",room:"部屋",rooms:"部屋",before:"〜より前に",after:"〜より後に",midnight:"真夜中",morning:"朝",evening:"夕方・夜",spell:"つづりを言う",date:"日付",wrote:"書いた（write の過去）",line:"行",sorry:"すまなく思う",cut:"切った",working:"動いている",still:"まだ",keep:"保つ",keeps:"保つ",window:"窓",light:"光・明かり",across:"〜を横切って",sea:"海",turns:"回る",wind:"風",sky:"空",home:"故郷・家",face:"顔",never:"一度も〜ない",swan:"白鳥",mood:"気分",waltz:"ワルツ",sonata:"ソナタ",through:"〜を通して",hear:"聞こえる",heard:"聞こえた（hear の過去）",watch:"見る・見守る",watched:"見ていた",town:"町",always:"いつも",then:"それから",very:"とても",ends:"終わる",sending:"送る",bad:"下手な",again:"もう一度",saturday:"土曜日",thursday:"木曜日",wednesday:"水曜日",tuesday:"火曜日",monday:"月曜日",friday:"金曜日",sunday:"日曜日",september:"9月",october:"10月",june:"6月",ninth:"9日・9番目",grandson:"孫",tea:"紅茶",meet:"会う",lobby:"ロビー",sent:"送った",open:"開ける・開いている",anything:"何か",dial:"ダイヤル",dials:"ダイヤル",set:"合わせる",hint:"ヒント",until:"〜まで",unfinished:"書きかけの",music:"音楽",teacher:"先生",school:"学校",number:"番号・数",nothing:"何も〜ない",sleep:"睡眠",stop:"やめる",playing:"弾くこと",play:"弾く",slow:"ゆっくりした",shows:"写している",where:"どこ",whatever:"何でも",wakes:"起こす",everything:"すべて"};
 function tw(text){return esc(text).replace(/[A-Za-z]+/g,w=>DICT[w.toLowerCase()]?`<span class="w" data-w="${w.toLowerCase()}">${w}</span>`:w)}
 function bindWords(root,box){root.querySelectorAll(".w").forEach(s=>s.onclick=()=>{const b=$(box);if(b)b.textContent=`${s.dataset.w}：${DICT[s.dataset.w]}`})}
 
-// ---------- ステージ1のデータ ----------
-const ANS={p1:["blue","white","yellow"],p2:"1225",p4:"4793"};
-const COLORS=["red","blue","white","yellow","green","gray","brown"];
-const VM1={en:"Hello, this is the front desk. Because of the storm, we lost power, and the electronic locks on the fourth floor are not working. Please stay calm. To restore the power, you need the emergency procedure in the safe of Room 401. The guest in Room 402 can reach the breaker panel. The previous guests left some notes, so please start with the note on the desk in Room 402. You can pass notes under the connecting door. We will call you again when the power is back.",
-  ja:"こちらフロントです。嵐のため停電し、4階の電子錠が動いていません。落ち着いてください。電源を戻すには、401号室の金庫にある非常用の手順書が必要です。402号室のお客様はブレーカー盤に手が届きます。前のお客様がメモを残しているので、まず402号室の机のメモから始めてください。連絡用ドアの下からメモを渡せます。電源が戻ったら、また電話します。"};
-const VM2={en:"Hello again, this is the front desk. The power is back. Thank you! But the door locks need a new four-digit code. The first digit is your floor number. The second digit is the number of hangers in the closet of Room 402. The third digit is the hour on the stopped clock in Room 402. The last digit is the number of pillows on the bed in Room 401. Enter the code on the keypad by your door.",
-  ja:"またフロントです。電源が戻りました、ありがとうございます。ただ、ドアの錠には新しい4桁の番号が必要です。1桁目はあなたの階の数字。2桁目は402号室のクローゼットのハンガーの数。3桁目は402号室の止まった時計の『時』。最後の桁は401号室のベッドの枕の数です。ドアの横の数字キーに入力してください。"};
-const PROC={en:"EMERGENCY POWER PROCEDURE\n1. Before you flip the main switch, turn the dial to OFF.\n2. Do not press the red button until the green light comes on.\n3. After the green light comes on, turn the dial to 2, not 3.\n4. Press the red button once. Then wait. Do not touch anything else.",
-  ja:"非常用電源の手順\n1. メインスイッチを上げる前に、ダイヤルをOFFにする。\n2. 緑のランプが点くまで赤いボタンを押さない。\n3. 緑のランプが点いたら、ダイヤルを2にする（3ではない）。\n4. 赤いボタンを1回押す。そして待つ。他には何も触らない。"};
-const PRICE={en:"MINIBAR PRICE LIST\nBottle of water ... $2.50\nCan of soda ... $3.75\nBag of nuts ... $4.25\nChocolate bar ... $3.50",ja:"ミニバー料金表\n水1本 2.50ドル／炭酸1缶 3.75ドル／ナッツ1袋 4.25ドル／チョコ1枚 3.50ドル"};
+// ---------- ステージ1の英文（Claude Doc の「英語の本文」が正。答えに関わる語は変えない） ----------
+const T={
+ vm:{en:"Hello, this is Mia at the front desk. I'm very sorry. The storm has cut the power, and the electronic locks on your doors are not working. There is an emergency keypad next to each door. It runs on a battery, so it still works. But I don't know the code. Mr. Hale, the owner, chose it many years ago, and the phone lines outside the hotel are down, so I can't call him. He always says the same thing: \"The code is the day the door opened. Month first, then day.\" You are in Rooms 401 and 402. We call them the Letter Rooms. The story of Mr. and Mrs. Hale is in those two rooms. If you read it, you will find the day. One more thing. There is a connecting door between your rooms. It is locked, but you can slide thin things under it, like notes. Good luck. I'll be downstairs.",
+  ja:"もしもし、フロントのミアです。本当に申し訳ありません。嵐で停電して、お部屋のドアの電子錠が動いていません。各ドアの横に非常用のキーパッドがあります。電池で動くので、まだ使えます。でも、私は番号を知りません。オーナーのヘイルさんが何年も前に決めたもので、ホテルの外の電話線が切れているので、電話もできません。ヘイルさんはいつも同じことを言います。「番号はドアが開いた日。月が先、日が後」。お二人は401号室と402号室にいます。私たちは「手紙の部屋」と呼んでいます。ヘイル夫妻の物語が、その二つの部屋にあります。それを読めば、その日がわかります。もうひとつ。お二人の部屋の間には連絡用ドアがあります。鍵がかかっていますが、メモのような薄い物なら下から滑らせて渡せます。幸運を。私は下の階にいます。"},
+ plaque:{en:"THE LETTER ROOMS\n\nIn the autumn of 1976, two strangers lived in these two rooms. They never saw each other. They only passed notes under the connecting door.\n\nTheir letters are still here. Each room keeps the letters that its guest RECEIVED.\n\nSome letters are locked away. The cards will help you.\n\nGuests who finish the story get a free breakfast.",
+  ja:"手紙の部屋\n\n1976年の秋、見知らぬ二人がこの二つの部屋に住んでいた。二人は一度も顔を合わせなかった。連絡用ドアの下からメモを渡し合っただけだった。\n\n二人の手紙は今もここにある。それぞれの部屋には、その部屋の客が「受け取った」手紙が置いてある。\n\n鍵のかかった手紙もある。カードが助けてくれる。\n\n物語を読み終えたお客様には、朝食を無料でご用意します。"},
+ J1:{en:"Monday, September 6\n\nTo the guest in Room 401,\n\nPlease stop playing the piano at six in the morning. I work all night at the lighthouse radio station, and I go to bed at five. One hour of sleep is not enough.\n\nRoom 402",
+  ja:"9月6日 月曜日\n\n401号室の方へ\n\n朝6時にピアノを弾くのをやめてください。私は灯台の無線局で夜通し働いていて、5時に寝ます。1時間の睡眠では足りません。\n\n402号室"},
+ E1:{en:"Tuesday, September 7\n\nTo Room 402,\n\nI am sorry about the piano. I teach music at the school, and early morning is my only time to practice. But your typewriter wakes me up at midnight!\n\nLet's make a deal. I will not play before eight. You will not type after eleven.\n\nRoom 401\n\nP.S. What do you type every night?",
+  ja:"9月7日 火曜日\n\n402号室の方へ\n\nピアノのことはごめんなさい。私は学校で音楽を教えていて、朝早くしか練習する時間がないのです。でも、あなたのタイプライターで、私は真夜中に目が覚めます！\n\n取り決めをしましょう。私は8時より前には弾きません。あなたは11時より後には打たない。\n\n401号室\n\n追伸　毎晩、何を打っているの？"},
+ card1:{en:"CARD 1: THE DEAL\n\nThey made a deal about noise. Set her hour first, then his hour.",ja:"カード1：取り決め\n\n二人は音について取り決めをした。まず彼女の時刻、次に彼の時刻を合わせよ。"},
+ postFront:{en:"A postcard of a white lighthouse above the harbor.",ja:"港を見下ろす白い灯台の絵はがき。"},
+ postcard:{en:"For the piano teacher.\n\nFrom the top of the lighthouse, I watch the town go dark, window by window. Your lamp is always the last. It goes out at a quarter to twelve. Then I know you are asleep, and I type very quietly.\n\nJ.",
+  ja:"ピアノの先生へ。\n\n灯台のてっぺんから、町が窓ひとつずつ暗くなっていくのを見ています。あなたの明かりはいつも最後です。12時15分前に消えます。それで、あなたが眠ったとわかって、私はとても静かにタイプを打つのです。\n\nJ."},
+ card2:{en:"CARD 2: THE LAST LIGHT\n\nEvery night he watched the town go dark. What time did the last light go out? (Four numbers.)",ja:"カード2：最後の明かり\n\n彼は毎晩、町が暗くなるのを見ていた。最後の明かりが消えたのは何時か？（数字4つ）"},
+ J2:{en:"Tuesday, September 14\n\nDear 401,\n\nIt's a deal. I type weather reports for the ships: wind, rain, and tide. It is not very romantic.\n\nThis morning, at eight exactly, I heard you play something slow through the wall. It was beautiful. What was it?\n\nI am sliding a postcard under the door. It shows where I work.\n\nJ.",
+  ja:"9月14日 火曜日\n\n401さんへ\n\n取り決め成立です。私は船のための天気予報を打っています。風、雨、潮。あまりロマンチックではありません。\n\n今朝ちょうど8時に、壁越しにあなたがゆっくりした曲を弾くのが聞こえました。美しかった。あれは何という曲？\n\nドアの下から絵はがきを滑らせます。私の職場が写っています。\n\nJ."},
+ E2:{en:"Tuesday, September 21\n\nDear J.,\n\nIt was \"Clair de Lune.\" I play it when I miss home. Thank you for the postcard. It is on my piano now.\n\nI have never seen your face, but I know your footsteps. You come home when the sky is still dark, and you always drop your keys at your door.\n\nE.",
+  ja:"9月21日 火曜日\n\nJ.さんへ\n\nあれは「Clair de Lune（月の光）」です。故郷が恋しいときに弾きます。絵はがきをありがとう。今は私のピアノの上にあります。\n\nあなたの顔を見たことはないけれど、足音は知っています。あなたはまだ空が暗いうちに帰ってきて、いつも自分のドアの前で鍵を落とします。\n\nE."},
+ card3:{en:"CARD 3: THE SONG THROUGH THE WALL\n\nFind the song he heard through the wall. The number on its folder opens this diary.",ja:"カード3：壁越しの曲\n\n彼が壁越しに聞いた曲を探せ。その楽譜の番号で、この日記が開く。"},
+ shelf:{en:"Eight music folders stand on the shelf. Each one has a number.",ja:"棚に8冊の楽譜が立っている。それぞれに番号がある。"},
+ diary:{en:"September 20\n\nMy neighbor comes home at five every morning. I am always awake by then. I count his steps on the stairs: seventeen. Then he drops his keys. Every single day!\n\nI have started to wait for that sound.",
+  ja:"9月20日\n\nお隣さんは毎朝5時に帰ってくる。私はその頃いつも起きている。階段の足音を数える。17歩。それから鍵を落とす。毎日欠かさず！\n\nその音を待つようになってしまった。"},
+ card4:{en:"CARD 4: HIS FOOTSTEPS\n\nThe question is on his tape.",ja:"カード4：彼の足音\n\n問いは彼のテープにある。"},
+ tape:{en:"Lighthouse radio. This is a special report, for Room 401 only. Wind: from the south, light. Sea: calm. Tonight, the moon rises at nine o'clock. And one more report. The radio man cannot stop thinking about the piano teacher. E., you say you know my footsteps. Then you know the numbers for my logbook. First, my steps on the stairs. Then, the hour I come home. Over.",
+  ja:"灯台無線です。これは401号室だけに向けた特別放送です。風、南から弱く。海、穏やか。今夜、月は9時に昇ります。そして、もうひとつの報告。無線係の男は、ピアノの先生のことを考えずにいられません。E.、あなたは私の足音を知っていると言いましたね。それなら、私の業務日誌の番号もわかるはずです。まず、階段の私の歩数。次に、私が帰ってくる時刻。以上。"},
+ J3a:{en:"Wednesday night\n\nDear E.,\n\nMy work here ends this month, and the company is sending me north. I am bad at letters, and worse at goodbyes. So I will not write to you again.",
+  ja:"水曜日の夜\n\nE.さんへ\n\nここでの仕事は今月で終わり、会社は私を北へ送ります。私は手紙が下手で、別れはもっと下手です。だから、もうあなたに手紙は書きません。"},
+ J3b:{en:"On Saturday, at eight in the evening, I will knock three times on this door. If you open it, I will finally see who plays that song. If you don't, I will understand.\n\nJames",
+  ja:"土曜日の夜8時に、このドアを3回ノックします。あなたが開けてくれたら、あの曲を弾くのが誰なのか、やっと見られます。開けてくれなくても、わかっています。\n\nジェームズ"},
+ E3a:{en:"Dear James,\n\nPlease do not knock",ja:"ジェームズへ\n\nどうか、ノックしないで"},
+ E3b:{en:"at eight. Mrs. Park locks the front hall at eight, and she hears everything. Knock at nine, when the moon is up. I will open the door. I have borrowed the key.\n\nEllie\n\nThursday, October 7",
+  ja:"8時には。パークさんが8時に玄関ホールに鍵をかけるし、あの人は何でも聞いているの。9時に、月が昇ったらノックして。ドアを開けます。鍵は借りてあります。\n\nエリー\n\n10月7日 木曜日"},
+ photo:{en:"A black-and-white wedding photo. On the back: \"June 18, 1977. Mr. and Mrs. Hale.\"",ja:"白黒の結婚写真。裏に「1977年6月18日　ヘイル夫妻」。"},
+ window:{en:"Rain is hitting the window. Far away, the lighthouse is still working. Its light turns slowly across the dark sea.",ja:"雨が窓を打っている。遠くで、灯台はまだ動いている。その光が、暗い海の上をゆっくり回っている。"},
+ calendar:{en:"An old calendar. The page says OCTOBER 1976. October 1 is a Friday. Someone wrote \"school concert\" on Friday the 15th, and \"LAST DAY\" on Sunday the 31st.",ja:"古いカレンダー。1976年10月のページ。10月1日は金曜日。15日の金曜日に「学校の演奏会」、31日の日曜日に「最終日」と誰かが書き込んでいる。"},
+ typewriter:{en:"There is a sheet of paper in the typewriter:\n\n\"HARBOR WEATHER REPORT. Wind: north-west, force 6. Rain after 3 a.m. Visibility: 4 miles.\"\n\nThe report is not finished.",ja:"タイプライターに紙が1枚はさまっている。\n\n「港の天気予報。風：北西、風力6。午前3時以降は雨。視界：4マイル。」\n\n報告は書きかけだ。"},
+ keydish:{en:"Five old keys in a dish. A small tag says: \"He dropped them every day.\" None of them fits anything in this room.",ja:"皿に古い鍵が5本。小さな札に「彼は毎日これを落とした」。どれもこの部屋の何にも合わない。"},
+ cdoorClosed:{en:"The connecting door is locked. There is a narrow gap under it. A note or a small key could slide through.",ja:"連絡用ドアには鍵がかかっている。下に細い隙間がある。メモや小さな鍵なら滑らせて通せそうだ。"},
+ cdoorOpen:{en:"The door between the rooms is open. On its edge, someone carved small letters long ago: \"E + J  9 Oct. 1976\"",ja:"部屋の間のドアが開いている。その縁に、ずっと昔に誰かが小さな文字を彫っている。「E + J　1976年10月9日」"},
+ end:{en:"You did it! October ninth. Now I know the code, too. I have a secret. Mr. and Mrs. Hale are my grandparents. They are in the lobby right now, with candles and hot tea. They would like to meet you. They say it has been years since two guests finished the story. Please come down. Breakfast is on us.",
+  ja:"やりましたね！10月9日。これで私にも番号がわかりました。実は秘密があるんです。ヘイル夫妻は私の祖父母なんです。二人は今ロビーで、ろうそくと温かい紅茶を用意して待っています。お二人に会いたいそうです。物語を最後まで読んだお客様は何年ぶりだろう、と言っています。どうぞ下へ。朝食はホテルからのごちそうです。"},
+ ej:{en:"Well done, neighbors. This door opened for us once. Tonight it opened for you.\n\nE. & J.",ja:"よくやったね、お隣さん。このドアは一度、私たちのために開いた。今夜は、あなたたちのために開いた。\n\nE. & J."}
+};
+const SHELF=[["114","Für Elise"],["233","Moonlight Sonata"],["328","Clair de Lune"],["341","Claire's Waltz"],["407","Gymnopédie No. 1"],["512","Träumerei"],["586","The Swan"],["690","Morning Mood"]];
+const ANS={p1:[8,11],p2:"1145",p3:"328",p4:"175",p5:"1009"};
+const PZ=["p1","p2","p3","p4","p5"];
+const PNAME={p1:"取り決め",p2:"最後の明かり",p3:"壁越しの曲",p4:"彼の足音",p5:"ドアが開いた日"};
 
-// 部屋の物。st は共有状態 G を受け取り {en,ja} を返す
+// 鍵：状態は 0=まだ無い 1=見つけた側が持つ 2=ドアの下から相方へ渡った 3=使った（大きくなる方向にしか進まないので、2人の状態は最大値でまとめられる）
+const KEYS={
+  tape:{tag:"402 · tape recorder",ja:"テープレコーダーの鍵",from:"A",to:"B"},
+  bench:{tag:"401 · piano bench",ja:"ピアノ椅子の鍵",from:"B",to:"A"},
+  cdoor:{tag:"an old key (connecting door)",ja:"連絡用ドアの古い鍵",from:"B",to:null}
+};
+function holder(k){const s=G.k[k]||0;return s===1?KEYS[k].from:s===2?KEYS[k].to:null}
+
+// 部屋の物（401=A：エリーの部屋。ジェームズが書いた手紙がある／402=B：ジェームズの部屋。エリーが書いた手紙がある）
 const OBJ={
- A:[
-  {id:"phone",nm:"phone",ja:"電話"},
-  {id:"safe",nm:"safe",ja:"金庫"},
-  {id:"minibar",nm:"minibar",ja:"ミニバー"},
-  {id:"bath",nm:"bathroom",ja:"浴室"},
-  {id:"bed",nm:"bed",ja:"ベッド"},
-  {id:"desk",nm:"desk",ja:"机"},
-  {id:"door",nm:"door",ja:"出口のドア"}
- ],
- B:[
-  {id:"phone",nm:"phone",ja:"電話"},
-  {id:"note",nm:"note on the desk",ja:"机のメモ"},
-  {id:"drawer",nm:"desk drawer",ja:"机の引き出し"},
-  {id:"closet",nm:"closet",ja:"クローゼット"},
-  {id:"clock",nm:"wall clock",ja:"壁の時計"},
-  {id:"bed",nm:"bed",ja:"ベッド"},
-  {id:"door",nm:"door",ja:"出口のドア"}
- ]
+ A:[["phone","phone","電話"],["plaque","brass plaque","案内板"],["framed","framed note","額のメモ"],["piano","piano","ピアノ"],["bench","piano bench","ピアノ椅子"],["shelf","music shelf","楽譜棚"],["box","writing box","手紙箱"],["photo","wedding photo","結婚写真"],["window","window","窓"],["door","door","廊下のドア"],["cdoor","connecting door","連絡用ドア"]],
+ B:[["phone","phone","電話"],["plaque","brass plaque","案内板"],["framed","framed note","額のメモ"],["trunk","sea trunk","トランク"],["tape","tape recorder","テープレコーダー"],["logbook","logbook","業務日誌"],["calendar","wall calendar","壁のカレンダー"],["typewriter","typewriter","タイプライター"],["keydish","key dish","鍵の皿"],["door","door","廊下のドア"],["cdoor","connecting door","連絡用ドア"]]
 };
-const TXT={
- A:{
-  bath:{en:"There are three towels on the rack.\nThe bath towel is blue.\nThe washcloth is yellow.\nThe hand towel is white.",ja:"タオル掛けにタオルが3枚。\nバスタオルは青。\nウォッシュクロス（いちばん小さい）は黄色。\nハンドタオルは白。"},
-  minibar:{en:"A card on the door says:\nMINIBAR INVENTORY\n3 bottles of water\n2 cans of soda\n2 bags of nuts\n1 chocolate bar\n\nInside the minibar now:\n1 bottle of water, 1 can of soda, 2 bags of nuts.",ja:"扉のカード：ミニバー在庫表　水3本／炭酸2缶／ナッツ2袋／チョコ1枚\n\n今、中にあるもの：水1本、炭酸1缶、ナッツ2袋。"},
-  safeNote:{en:"A sticky note on the safe:\n\"The code is the total amount of whatever I took from the minibar. Enter it without the dot.\"\n— the previous guest",ja:"金庫の付箋：「番号は、私がミニバーから取った物の合計金額。ドット（小数点）なしで入れて。」— 前の客"},
-  bed:{en:"There are three pillows and one cushion on the bed.",ja:"ベッドの上に枕が3つとクッションが1つ。"},
-  desk:{en:"A hotel notepad and a pen. Nothing is written on it.",ja:"ホテルのメモ帳とペン。何も書かれていない。"}
- },
- B:{
-  note:{en:"Dear guest,\nYour drawer code is the colors of the towels in Room 401, from the largest to the smallest.\n— Housekeeping",ja:"お客様へ\n引き出しの番号は、401号室のタオルの色を大きい順に並べたものです。\n— 客室清掃係"},
-  closet:{en:"There are seven hangers on the rail. At the back, there is a breaker panel.",ja:"棒にハンガーが7本かかっている。奥にブレーカー盤がある。"},
-  clock:{en:"The clock has stopped.",ja:"時計は止まっている。（針を読んでみよう）"},
-  bed:{en:"There are two pillows on the bed.",ja:"ベッドの上に枕が2つ。"}
- }
-};
-const CLOCK_SVG=`<svg class="clock" width="150" height="150" viewBox="0 0 100 100" aria-label="clock"><circle cx="50" cy="50" r="46" fill="var(--paper)" stroke="var(--ink)" stroke-width="3"/>${Array.from({length:12},(_,i)=>{const a=i*Math.PI/6;return `<line x1="${50+38*Math.sin(a)}" y1="${50-38*Math.cos(a)}" x2="${50+43*Math.sin(a)}" y2="${50-43*Math.cos(a)}" stroke="var(--ink)" stroke-width="${i%3?1.5:3}"/>`}).join("")}<line x1="50" y1="50" x2="${50+24*Math.sin(Math.PI*2*(9.25/12))}" y2="${50-24*Math.cos(Math.PI*2*(9.25/12))}" stroke="var(--ink)" stroke-width="4" stroke-linecap="round"/><line x1="50" y1="50" x2="${50+36*Math.sin(Math.PI/2)}" y2="${50-36*Math.cos(Math.PI/2)}" stroke="var(--ink)" stroke-width="2.5" stroke-linecap="round"/><circle cx="50" cy="50" r="3" fill="var(--ink)"/></svg>`;
 
+// ヒント：謎ごと・部屋ごとに3段階（1段目=どこを見るか、2段目=相方に何を聞くか、3段目=日本語で答えまで）
 const HINTS={
- p1:{A:["The guest next door needs the colors of your towels.","Look in the bathroom. Tell Room 402 the color of each towel, and which towel is the biggest.","浴室のタオル3枚の色を、大きい順（bath towel → hand towel → washcloth）に402へ伝えよう。答えは 青・白・黄。"],
-     B:["Read the note on your desk.","The code is in Room 401. Ask them about their towels.","401のタオルの色を聞き、大きい順（bath towel → hand towel → washcloth）に引き出しへ入れよう。答えは 青・白・黄。"]},
- p2:{A:["Read the sticky note on the safe.","Compare the minibar card with what is inside now. What is missing?","無くなったのは 水2本・炭酸1缶・チョコ1枚。402の料金表で合計すると $12.25 → 1225。"],
-     B:["Read what was in your drawer.","Room 401 needs prices. Ask them what is missing from their minibar.","401のミニバーから無くなった物を聞いて、料金表で合計しよう。水2本・炭酸1缶・チョコ1枚で $12.25 → 1225。"]},
- p3:{A:["Read the paper from the safe carefully.","Tell Room 402 the steps in the right order. \"Before\" and \"until\" are important.","正しい順：ダイヤルをOFF → メインスイッチを上げる → 緑ランプが点く → ダイヤルを2 → 赤ボタンを1回。"],
-     B:["The breaker panel is in your closet.","Room 401 has the instructions. Ask them to read them to you.","手順は401の金庫の紙。ダイヤルOFF → メインスイッチ → 緑ランプ → ダイヤル2 → 赤ボタン。"]},
- p4:{A:["Listen to the new message on the phone.","You need four numbers. Some are in your room, and some are in Room 402.","1桁目＝階（4）、2桁目＝402のハンガーの数、3桁目＝402の止まった時計の『時』、4桁目＝自分のベッドの枕の数（クッションは数えない）。"],
-     B:["Room 401 got a new phone message. Ask them about it.","Count the hangers in your closet, and read your clock.","401の留守電によると、402のハンガーの数（7）と、止まった時計の『時』（9時15分なので9）が要る。"]}
+ p1:{A:["Look at the writing box. Card 1 asks for two hours: her hour, then his hour.","The deal is in a letter in Room 402. Ask them: \"What time will she not play before? What time will he not type after?\"","取り決めの中身は402の額のメモにある。「何時より前に弾かないか、何時より後に打たないか」を聞く。答えは 8 と 11。（自分の部屋の6時・5時は引っかけ）"],
+     B:["Read the framed note on your wall. It is about a deal.","Room 401 has a lock with two hours. Tell them the deal: \"not play before ...\" and \"not type after ...\".","額のメモの「not play before eight」「not type after eleven」を401に伝える。答えは 8 と 11。"]},
+ p2:{A:["Look at the piano. Is anything on it?","Turn the postcard over and read it to Room 402. When does the last light go out?","ピアノの上の絵はがきの裏を読み、明かりが消える時刻（a quarter to twelve）を402に伝える。"],
+     B:["Read Card 2 on your trunk. The answer is not in your room.","Ask Room 401: \"Is there a postcard? What time does the lamp go out?\"","401の絵はがきに時刻がある。a quarter to twelve は12時の15分前＝11時45分。答えは 1145。"]},
+ p3:{A:["Card 3 asks for a song. In one of his letters, James asks about it.","Room 402 has her answer. Ask: \"What was the song? Can you spell it?\" Then find its folder on the music shelf.","曲名は402の手紙（E2）にある。つづりを聞いて棚から探す。Clair de Lune は 328。（Moonlight Sonata と Claire's Waltz は引っかけ）"],
+     B:["Read the letters from your trunk. Is there a song name?","Spell the song name for Room 401, letter by letter.","トランクの手紙（E2）の曲名「C-L-A-I-R  D-E  L-U-N-E」を、つづりで401に伝える。"]},
+ p4:{A:["Room 402 has a tape with a question. Your diary may have the answer.","Read the diary page to Room 402: his steps on the stairs, and the hour he comes home.","日記の「階段の歩数（seventeen）」と「帰る時刻（five）」を402に伝える。答えは 175。"],
+     B:["Play the tape. Listen for what the logbook needs.","The tape asks for two numbers: his steps on the stairs, then the hour he comes home. Ask Room 401 about Ellie's diary. (You can turn on the tape subtitles now.)","テープの問いは「階段の歩数、次に帰る時刻」。答えは401の日記にある。17と5で 175。（月が昇る9時は引っかけ）"]},
+ p5:{A:["Listen to the phone message again. What is the code?","Put the torn letters together. Which day did he knock? Ask Room 402: \"What is the date on it?\"","破れた手紙を上下つなげて読む。ノックするのは土曜。402の手紙の日付（木曜、10月7日）から数えて10月9日。月が先で 1009。"],
+     B:["Listen to the phone message again. What is the code?","Put the torn letters together. Which day did he knock? Ask Room 401: \"Read the last line, please.\"","401の手紙では土曜にノックする。自分の手紙の日付は木曜、10月7日なので土曜は10月9日（カレンダーで確かめられる）。月が先で 1009。"]}
 };
-const HELPERS=["What do you see?","Is anything written on it?","Can you read it to me?","How many ... are there?","What color is ...?","What time is it on ...?","Please try ...","Turn the dial to ...","It didn't work.","It worked!","Say that again, please.","Wait a minute.","Thank you!"];
-const VOCAB=[["storm","嵐"],["power","電気"],["safe","金庫"],["minibar","客室の冷蔵庫"],["bath towel","バスタオル"],["hand towel","ハンドタオル"],["washcloth","いちばん小さいタオル"],["a bottle of water","水1本"],["a can of soda","炭酸1缶"],["a bag of nuts","ナッツ1袋"],["the total amount","合計金額"],["breaker panel","ブレーカー盤"],["flip the main switch","メインスイッチを上げる"],["before you ...","〜する前に"],["Do not ... until ...","〜するまで…しない"],["comes on","（明かりが）点く"],["hanger","ハンガー"],["a quarter past nine","9時15分"],["digit","桁"],["pillow / cushion","枕／クッション"],["What do you see?","何が見える？"],["Can you read it to me?","読んでくれる？"]];
+const HELPERS=["What do you see?","Is anything written on it?","Can you read it to me?","Can you spell it?","What is the date on it?","Who wrote it?","Read the last line, please.","What time ...?","How many ...?","Please try ...","I'm sliding a key under the door.","Did you get it?","It didn't work.","It worked!","Say that again, please.","Wait a minute.","Thank you!"];
+const VOCAB=[["Let's make a deal.","取り決めをしよう"],["I will not play before eight.","8時より前には弾かない"],["You will not type after eleven.","11時より後には打たない"],["a quarter to twelve","12時15分前（11時45分）"],["a quarter past nine","9時15分"],["the last light goes out","最後の明かりが消える"],["through the wall","壁越しに"],["Can you spell it?","つづりを言ってくれる？"],["footsteps / steps on the stairs","足音／階段の歩数"],["seventeen / seventy","17／70"],["drop my keys","鍵を落とす"],["the moon rises at nine","月が9時に昇る"],["I will knock three times.","3回ノックする"],["I have borrowed the key.","鍵は借りてある"],["Thursday, October 7","10月7日 木曜日"],["Month first, then day.","月が先、日が後"],["the ninth of October / October ninth","10月9日"],["connecting door","（隣の部屋との）連絡用ドア"],["slide it under the door","ドアの下から滑らせる"],["What is the date on it?","日付は何て書いてある？"],["Read the last line, please.","最後の行を読んで"],["Breakfast is on us.","朝食はこちらのおごりです"]];
 
 // ---------- 状態 ----------
-// G: 2人で共有（謎の解決・メモ・ヒント回数など）。L: 自分だけ（どちらの部屋か、ブレーカー盤など）
+// G: 2人で共有（解いた謎・鍵・メモ・ヒント回数など）。L: 自分だけ（どちらの部屋か、見ている物、錠の入力途中など）
 const me=lsGet("eigo-escape-me")||rid();lsSet("eigo-escape-me",me);
-let MODE=null,ROOM=null,G=null,L=null,ch=null,sbc=null,PEERS={},online=false;
-function newG(){return{solved:{},notes:[],jp:{},hints:{},start:0,end:0,vm2:0}}
-function gKey(){return "eigo-escape:"+(MODE==="solo"?"solo":ROOM)}
+let ROOM=null,G=null,L=null,ch=null,sbc=null,PEERS={},online=false;
+function newG(){return{solved:{},k:{},cd:0,notes:[],jp:{},hints:{},start:0,end:0}}
+function newL(role){return{role:role||null,view:null,draft:"",hint:{},dial:[1,1]}}
+function gKey(r){return "eigo-escape:"+VER+":"+(r||ROOM)}
 function saveAll(){lsSet(gKey(),{G,L})}
 function sum(o){return Object.values(o||{}).reduce((a,b)=>a+b,0)}
 function merge(o){
   if(!o)return;
-  Object.keys(o.solved||{}).forEach(k=>{if(o.solved[k])G.solved[k]=1});
-  const ids=new Set(G.notes.map(n=>n.id));(o.notes||[]).forEach(n=>{if(n&&n.id&&!ids.has(n.id)&&typeof n.text==="string")G.notes.push({id:n.id,from:n.from,text:String(n.text).slice(0,300),t:n.t})});
+  PZ.forEach(p=>{if(o.solved&&o.solved[p])G.solved[p]=1});
+  Object.keys(KEYS).forEach(k=>{const v=+((o.k||{})[k])||0;if(v>(G.k[k]||0))G.k[k]=Math.min(3,v)});
+  if(o.cd)G.cd=1;
+  const ids=new Set(G.notes.map(n=>n.id));(o.notes||[]).forEach(n=>{if(n&&n.id&&!ids.has(n.id)&&typeof n.text==="string")G.notes.push({id:n.id,from:n.from,text:String(n.text).slice(0,300),t:+n.t||0})});
   G.notes.sort((a,b)=>a.t-b.t);
   ["jp","hints"].forEach(k=>Object.keys(o[k]||{}).forEach(p=>{G[k][p]=Math.max(G[k][p]||0,+o[k][p]||0)}));
   if(o.start&&(!G.start||o.start<G.start))G.start=o.start;
   if(o.end&&(!G.end||o.end<G.end))G.end=o.end;
-  if(o.vm2)G.vm2=1;
 }
 function push(ask){saveAll();if(ch&&online)ch.send({type:"broadcast",event:"st",payload:{g:G,ask:!!ask}}).catch(()=>{})}
 function connect(){
-  if(!window.supabase){return}
+  if(!window.supabase)return;
   sbc=window.supabase.createClient(SB.url,SB.key);
-  ch=sbc.channel("eigo-escape:"+ROOM,{config:{presence:{key:me},broadcast:{self:false}}});
-  ch.on("broadcast",{event:"st"},m=>{const d=m&&m.payload;if(!d)return;const before=JSON.stringify(G);merge(d.g);saveAll();if(d.ask)push(false);if(JSON.stringify(G)!==before)render()});
-  ch.on("presence",{event:"sync"},()=>{const st=ch.presenceState();PEERS={};Object.keys(st).forEach(k=>{if(k!==me)PEERS[k]=(st[k][0]||{}).role||""});render()});
-  ch.subscribe(s=>{if(s==="SUBSCRIBED"){online=true;ch.track({role:L.role||""}).catch(()=>{});push(true);render()}else if(s==="CLOSED"||s==="CHANNEL_ERROR"||s==="TIMED_OUT"){online=false;render()}});
+  ch=sbc.channel("eigo-escape:"+VER+":"+ROOM,{config:{presence:{key:me},broadcast:{self:false}}});
+  ch.on("broadcast",{event:"st"},m=>{const d=m&&m.payload;if(!d)return;const before=JSON.stringify(G);merge(d.g);saveAll();if(d.ask)push(false);if(JSON.stringify(G)!==before)render(true)});
+  ch.on("presence",{event:"sync"},()=>{const st=ch.presenceState();PEERS={};Object.keys(st).forEach(k=>{if(k!==me)PEERS[k]=(st[k][0]||{}).role||""});render(true)});
+  ch.subscribe(s=>{if(s==="SUBSCRIBED"){online=true;ch.track({role:L.role||""}).catch(()=>{});push(true);render(true)}else if(s==="CLOSED"||s==="CHANNEL_ERROR"||s==="TIMED_OUT"){online=false;render(true)}});
 }
+function sysNote(text){G.notes.push({id:rid(),from:"sys",text,t:Date.now()})}
 
 // ---------- 画面: タイトル ----------
 function title(){
   const q=new URLSearchParams(location.search).get("room");
   if(q&&/^\d{6}$/.test(q)){startDuo(q);return}
   app.innerHTML=`
-  <div class="top"><a class="back" href="/">‹ なつめポータル</a><span class="muted">β たたき台</span></div>
+  <div class="top"><a class="back" href="/">‹ なつめポータル</a><span class="muted">β</span></div>
   <h1>英語脱出</h1>
   <p class="muted">英語が読めて、聞けて、伝えられないと出られない。</p>
   <div class="card">
-    <h2>Stage 1　The Hotel Rooms</h2>
-    <p>嵐で停電したホテル。電子錠が止まり、401号室と402号室に閉じ込められた。謎は4つ。15〜20分。</p>
+    <h2>Stage 1　The Letter Rooms</h2>
+    <p>嵐の夜、海辺の小さなホテル。停電で電子錠が止まり、隣り合う401号室と402号室に閉じ込められた。ここは1976年、顔を合わせないまま、ドアの下のメモだけで恋をした二人の部屋。それぞれの部屋には、相手から「受け取った」手紙しかない。</p>
+    <p class="muted">ふたり用。謎は5つ。25〜30分。</p>
     <button class="pri wide" id="duo" style="margin-bottom:8px">ふたりで遊ぶ（個室を作る）</button>
-    <div class="row" style="margin-bottom:10px"><input type="text" id="code" inputmode="numeric" maxlength="6" placeholder="相方の6桁の番号" style="flex:1;min-width:140px"><button id="join">入る</button></div>
-    <button class="wide" id="solo">ひとりで遊ぶ（隣室の客と内線で協力）</button>
+    <div class="row"><input type="text" id="code" inputmode="numeric" maxlength="6" placeholder="相方の6桁の番号" style="flex:1;min-width:140px"><button id="join">入る</button></div>
   </div>
-  <p class="muted">ふたりで遊ぶときは、片方が個室を作って6桁の番号（またはURL）を相方に送ります。それぞれ別の部屋に入り、相方の部屋は見えません。</p>`;
+  <p class="muted">片方が個室を作り、6桁の番号（またはURL）を相方に送ります。それぞれ別の部屋に入り、相方の部屋は最後まで見えません。やりとりは「ドアの下のメモ」（英字だけ）で。同じ部屋にいて声で話すときは、相方の画面をのぞかないのがお約束です。ひとり用は準備中です。</p>`;
   $("#duo").onclick=()=>startDuo(String(100000+Math.floor(Math.random()*900000)));
   $("#join").onclick=()=>{const v=$("#code").value.replace(/\D/g,"");if(v.length===6)startDuo(v);else $("#code").focus()};
-  $("#solo").onclick=startSolo;
 }
 function startDuo(room){
-  MODE="duo";ROOM=room;
+  ROOM=room;
   const q=new URLSearchParams(location.search);q.set("room",room);history.replaceState(null,"",location.pathname+"?"+q.toString());
-  const s=lsGet(gKey());G=s&&s.G?s.G:newG();L=s&&s.L?s.L:{role:null,view:null,panel:null,word:""};
-  if(!L.panel)L.panel={dial:"3",sw:"DOWN",green:false,msg:""};
-  if(L.role&&!G.start)G.start=Date.now();
+  const s=lsGet(gKey());G=s&&s.G?s.G:newG();L=s&&s.L?Object.assign(newL(),s.L):newL();
+  G.k=G.k||{};
   connect();render();
-}
-function startSolo(){
-  MODE="solo";ROOM=null;
-  const s=lsGet(gKey());
-  if(s&&s.G&&!s.G.end){G=s.G;L=s.L}else{G=newG();L={role:"A",view:null,panel:null}}
-  L.role="A";if(!L.panel)L.panel={dial:"3",sw:"DOWN",green:false,msg:""};
-  if(!L.npc)L.npc={en:"Hello? This is Rivera in Room 402. Can you hear me? My door won't open either!",ja:"もしもし？402号室のリベラです。聞こえますか？私のドアも開かないの！"};
-  if(!G.start)G.start=Date.now();
-  saveAll();render();
 }
 
 // ---------- 描画 ----------
-function render(){
+function render(remote){
   if(!G)return title();
   if(G.end)return clear();
   if(!L.role)return pickRole();
+  // 相方の更新で描き直すとき、メモ欄に書いている途中なら入力位置を保つ
+  const a=document.activeElement,typing=remote&&a&&a.id==="nt",pos=typing?a.selectionStart:0,sy=window.scrollY;
   roomView();
+  if(remote)window.scrollTo(0,sy);
+  if(typing){const n=$("#nt");if(n){n.focus();try{n.setSelectionRange(pos,pos)}catch(e){}}}
 }
 function pickRole(){
   const taken=Object.values(PEERS);
@@ -243,139 +295,208 @@ function pickRole(){
     <p>相方に番号 <b style="font-size:22px;letter-spacing:3px">${ROOM}</b> を伝えてください。</p>
     <div class="row" style="margin-bottom:12px"><button class="small" id="share">URLをコピー</button><span class="muted" id="shmsg"></span></div>
     <p class="muted">${online?(Object.keys(PEERS).length?"相方が来ています。":"相方を待っています。先に部屋に入っても大丈夫です。"):"接続中…"}</p>
-    <button class="wide" data-r="A" style="margin-bottom:8px" ${taken.includes("A")?"disabled":""}>Room 401 に入る${taken.includes("A")?"（相方が使用中）":""}<br><span class="muted">金庫・ミニバー・浴室がある部屋。手順書を読む役</span></button>
-    <button class="wide" data-r="B" ${taken.includes("B")?"disabled":""}>Room 402 に入る${taken.includes("B")?"（相方が使用中）":""}<br><span class="muted">引き出し・クローゼット・時計がある部屋。ブレーカーを操作する役</span></button>
+    <button class="wide" data-r="A" style="margin-bottom:8px" ${taken.includes("A")?"disabled":""}>Room 401 に入る${taken.includes("A")?"（相方が使用中）":""}<br><span class="muted">音楽教師エリーの部屋。ジェームズからの手紙がある</span></button>
+    <button class="wide" data-r="B" ${taken.includes("B")?"disabled":""}>Room 402 に入る${taken.includes("B")?"（相方が使用中）":""}<br><span class="muted">灯台の無線係ジェームズの部屋。エリーからの手紙がある</span></button>
   </div>`;
   $("#bk").onclick=()=>{location.href=location.pathname};
   $("#share").onclick=()=>{const u=location.origin+location.pathname+"?room="+ROOM;(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>{$("#shmsg").textContent="コピーしました"}).catch(()=>{$("#shmsg").textContent=u})};
-  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{L.role=b.dataset.r;if(!G.start)G.start=Date.now();saveAll();if(ch&&online)ch.track({role:L.role}).catch(()=>{});push(false);render()});
+  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{L.role=b.dataset.r;L.view="phone";if(!G.start)G.start=Date.now();saveAll();if(ch&&online)ch.track({role:L.role}).catch(()=>{});push(false);render()});
 }
-function curPuzzle(){return ["p1","p2","p3","p4"].find(p=>!G.solved[p])}
+// 謎に手が届くか（ヒントの対象を決める）
+function avail(p){const S=G.solved;return p==="p1"||p==="p2"||(p==="p3"&&S.p2)||(p==="p4"&&S.p1)||(p==="p5"&&S.p3&&S.p4)}
 function roomView(){
   const R=L.role,no=R==="A"?"401":"402";
-  const cp=curPuzzle(),done=["p1","p2","p3","p4"].filter(p=>G.solved[p]).length;
+  const done=PZ.filter(p=>G.solved[p]).length;
   const peerRole=Object.values(PEERS)[0];
-  const status=MODE==="solo"?"ひとりで（内線：402のリベラさん）":(online?(Object.keys(PEERS).length?`相方：Room ${peerRole==="A"?"401":peerRole==="B"?"402":"？"}`:"相方：まだ来ていない"):"接続が切れています（自動で再接続）");
-  const objs=OBJ[R];
+  const status=online?(Object.keys(PEERS).length?`相方：Room ${peerRole==="A"?"401":peerRole==="B"?"402":"？"}`:"相方：まだ来ていない"):"接続中…（切れたら自動で再接続）";
+  const inv=Object.keys(KEYS).filter(k=>holder(k)===R);
   app.innerHTML=`
-  <div class="top"><button class="back" id="bk">‹ やめる</button><span class="prog">Room ${no}｜謎 ${done}/4${MODE==="duo"?`｜個室 ${ROOM}`:""}</span></div>
-  <p class="stat">${esc(status)}${G.solved.p3?"｜電源：復旧":"｜電源：停電中"}</p>
+  <div class="top"><button class="back" id="bk">‹ やめる</button><span class="prog">Room ${no}｜謎 ${done}/5｜個室 ${ROOM}</span></div>
+  <p class="stat">${esc(status)}</p>
   <div class="card">
-    <div class="objs">${objs.map(o=>`<button class="obj ${L.view===o.id?"sel":""}" data-o="${o.id}">${esc(o.nm)}<small>${esc(o.ja)}${badge(R,o.id)}</small></button>`).join("")}</div>
+    <div class="objs">${OBJ[R].map(o=>`<button class="obj ${L.view===o[0]?"sel":""}" data-o="${o[0]}">${esc(o[1])}<small>${esc(o[2])}${badge(R,o[0])}</small></button>`).join("")}</div>
+    ${inv.length?`<h3>持ち物</h3><div class="inv">${inv.map(k=>`<span class="key">🗝 ${esc(KEYS[k].tag)}${KEYS[k].to&&KEYS[k].from===R?` <button class="small" data-slide="${k}">ドアの下から滑らせる</button>`:""}</span>`).join("")}</div>`:""}
   </div>
   <div id="detail"></div>
   <div id="comm"></div>
   <div class="row" style="margin-top:4px">
-    <button class="small" id="hint">ヒント（${cp?"謎"+cp.slice(1):"-"}）</button>
+    <button class="small" id="hint">ヒント</button>
     <button class="small" id="jp">日本語びん ${sum(G.jp)}</button>
     <span class="stat">ヒント ${sum(G.hints)} 回</span>
   </div>
   <div id="hintbox"></div>`;
   $("#bk").onclick=()=>{if(armQuit())location.href=location.pathname};
-  app.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{L.view=L.view===b.dataset.o?null:b.dataset.o;saveAll();roomView()});
-  $("#hint").onclick=showHint;
+  app.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{L.view=L.view===b.dataset.o?null:b.dataset.o;saveAll();roomView();const d=$("#detail");if(d&&L.view)d.scrollIntoView({block:"nearest",behavior:"smooth"})});
+  app.querySelectorAll("[data-slide]").forEach(b=>b.onclick=()=>{const k=b.dataset.slide;if(holder(k)!==R)return;G.k[k]=2;sysNote(`A small key slides under the door. Tag: "${KEYS[k].tag}"`);push(false);roomView()});
+  $("#hint").onclick=()=>hintMenu();
   $("#jp").onclick=()=>{G.jp[me]=(G.jp[me]||0)+1;push(false);$("#jp").textContent=`日本語びん ${sum(G.jp)}`};
   if(L.view)detail(R,L.view);
-  if(MODE==="duo")notesPanel();else npcPanel();
+  notesPanel();
+  if(L.hintOpen)showHint(L.hintOpen,true);
 }
 let quitAt=0;function armQuit(){if(Date.now()-quitAt<3000)return true;quitAt=Date.now();$("#bk").textContent="‹ もう一度押すとやめる";return false}
 function badge(R,id){
-  if(R==="A"&&id==="phone"&&G.solved.p3&&!G.vm2)return " ・新着";
-  if(id==="door"&&G.solved.p3)return " ・電源あり";
+  const S=G.solved;
+  if(id==="phone"&&!L.heard)return " ・留守電1件";
+  if(R==="A"){
+    if(id==="box")return S.p1?" ・開いた":" ・ダイヤル錠";
+    if(id==="bench")return G.k.bench===3?(S.p3?" ・開いた":" ・日記に錠"):" ・鍵穴";
+  }else{
+    if(id==="trunk")return S.p2?" ・開いた":" ・4桁の錠";
+    if(id==="tape")return G.k.tape===3?" ・ケースが開いた":" ・ケースに鍵";
+    if(id==="logbook")return S.p4?" ・開いた":" ・3桁の錠";
+  }
+  if(id==="cdoor")return G.cd?" ・開いた":"";
   return "";
 }
-function hintLevel(p){L.hint=L.hint||{};return L.hint[p]||0}
-function showHint(){
-  const p=curPuzzle();if(!p)return;
-  L.hint=L.hint||{};const lv=Math.min(3,(L.hint[p]||0)+1);
-  if(lv>(L.hint[p]||0)){L.hint[p]=lv;G.hints[me]=(G.hints[me]||0)+1;push(false)}
+
+// ---------- ヒント ----------
+function hintMenu(){
+  const list=PZ.filter(p=>avail(p)&&!G.solved[p]);
+  if(L.hintOpen){L.hintOpen=null;$("#hintbox").innerHTML="";saveAll();return}
+  $("#hintbox").innerHTML=`<div class="card"><p class="muted">どの謎のヒント？</p><div class="row">${list.map(p=>`<button class="small" data-hp="${p}">謎${p.slice(1)} ${PNAME[p]}</button>`).join("")||`<span class="muted">今は出せるヒントがありません。</span>`}</div></div>`;
+  $("#hintbox").querySelectorAll("[data-hp]").forEach(b=>b.onclick=()=>showHint(b.dataset.hp));
+}
+function showHint(p,keep){
+  L.hint=L.hint||{};
+  let lv=L.hint[p]||0;
+  if(!keep||!lv){lv=Math.min(3,lv+1);if(lv>(L.hint[p]||0)){L.hint[p]=lv;G.hints[me]=(G.hints[me]||0)+1;push(false)}}
+  L.hintOpen=p;saveAll();
   const H=HINTS[p][L.role];
-  $("#hintbox").innerHTML=`<div class="card">${H.slice(0,lv).map((h,i)=>`<p>${i<2?tw(h):esc(h)}</p>`).join("")}<div class="wbox" id="hw"></div>${lv<3?`<button class="small" id="more">もっとヒント（${lv+1}/3）</button>`:""}</div>`;
+  $("#hintbox").innerHTML=`<div class="card"><h2>謎${p.slice(1)} ${PNAME[p]}のヒント</h2>${H.slice(0,lv).map((h,i)=>`<p>${i<2?tw(h):esc(h)}</p>`).join("")}<div class="wbox" id="hw"></div><div class="row">${lv<3?`<button class="small" id="more">もっとヒント（${lv+1}/3）</button>`:""}<button class="small" id="hclose">閉じる</button></div></div>`;
   bindWords($("#hintbox"),"#hw");
-  if($("#more"))$("#more").onclick=showHint;
-  $("#hint").textContent=`ヒント（謎${p.slice(1)}）`;
+  if($("#more"))$("#more").onclick=()=>{L.hint[p]=lv;showHint(p,false);if(p==="p4"&&L.view==="tape")detail(L.role,"tape")};
+  $("#hclose").onclick=()=>{L.hintOpen=null;saveAll();$("#hintbox").innerHTML=""};
+}
+
+// ---------- 文書 ----------
+function docHTML(t,opt={}){
+  const j=nid();
+  return `${opt.front?`<p class="muted">${tw(opt.front.en)}</p>`:""}<div class="doc">${tw(t.en)}</div><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc((opt.front?opt.front.ja+"\n\n":"")+t.ja)}</div>`;
+}
+// 破れた手紙：上半分だけなら下端を破ったように見せ、下半分がそろえば1通につなげる
+function tornHTML(top,bottom,whole,what){
+  const j=nid();
+  if(!whole)return `<div class="tornnote">${esc(what)}（上半分だけ。下が破れている）</div><div class="doc torn">${tw(top.en)}</div><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(top.ja)}</div>`;
+  return `<div class="tornnote">${esc(what)}（上下がそろった）</div><div class="doc">${tw(top.en)}<div class="tear"><span>torn here</span></div>${tw(bottom.en)}</div><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(top.ja+"……\n……"+bottom.ja)}</div>`;
+}
+function bindDoc(root){bindWords(root,"#wb");root.querySelectorAll("[data-ja]").forEach(b=>b.onclick=()=>{const j=document.getElementById(b.dataset.ja);j.hidden=!j.hidden;b.classList.toggle("on",!j.hidden)})}
+function calHTML(){
+  const hd=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>`<div class="hd">${d}</div>`).join("");
+  let c="";for(let i=0;i<5;i++)c+=`<div class="bl"></div>`;
+  for(let d=1;d<=31;d++)c+=`<div>${d}${d===15?"<i>school concert</i>":d===31?"<i>LAST DAY</i>":""}</div>`;
+  return `<div class="cal"><div class="ttl">OCTOBER 1976</div>${hd}${c}</div>`;
+}
+function audioHTML(id,label,canSub,subNote){
+  return `<div class="row"><button class="pri" data-play="${id}">▶ ${esc(label)}</button><button class="small" data-stop="1">■ 止める</button><button class="small" data-sub="${id}" ${canSub?"":"disabled"}>字幕</button></div>${subNote?`<p class="muted" style="margin-top:6px">${esc(subNote)}</p>`:""}<div data-subbox="${id}" hidden></div>`;
+}
+const AUDIO={vm:["vm","mia"],tape:["tape","james"],end:["end","mia"]};
+function bindAudio(root){
+  root.querySelectorAll("[data-play]").forEach(b=>b.onclick=()=>{const a=AUDIO[b.dataset.play];if(b.dataset.play==="vm"&&!L.heard){L.heard=1;saveAll()}speak(T[a[0]].en,a[1])});
+  root.querySelectorAll("[data-stop]").forEach(b=>b.onclick=hush);
+  root.querySelectorAll("[data-sub]").forEach(b=>b.onclick=()=>{const box=root.querySelector(`[data-subbox="${b.dataset.sub}"]`);if(!box.innerHTML){box.innerHTML=docHTML(T[AUDIO[b.dataset.sub][0]]);bindDoc(box)}box.hidden=!box.hidden;b.classList.toggle("on",!box.hidden)});
 }
 
 // ---------- 物を調べる ----------
-function docHTML(t,jaId){return `<div class="doc">${tw(t.en)}</div><div class="wbox" id="wb"></div><button class="small" data-ja="${jaId}">訳</button><div class="ja" id="${jaId}" hidden>${esc(t.ja)}</div>`}
-function bindDoc(root){bindWords(root,"#wb");root.querySelectorAll("[data-ja]").forEach(b=>b.onclick=()=>{const j=$("#"+b.dataset.ja);j.hidden=!j.hidden;b.classList.toggle("on",!j.hidden)})}
 function detail(R,id){
-  const box=$("#detail");let h="";
+  const box=$("#detail");const S=G.solved;let h="";
+  const nm=(OBJ[R].find(o=>o[0]===id)||[])[1]||id;
+  h=`<h2>${esc(nm)}</h2>`;
   if(id==="phone"){
-    const has2=R==="A"&&G.solved.p3;
-    h=`<h2>phone</h2><p class="muted">${has2?"留守電が2件あります。":"留守電が1件あります。"}フロントからの英語のメッセージです。</p>
-      <div class="row"><button data-vm="1">▶ メッセージ1</button>${has2?`<button data-vm="2" class="${G.vm2?"":"pri"}">▶ メッセージ2</button>`:""}</div>
-      <div id="vmtxt"></div>`;
-  }else if(R==="A"&&id==="safe"){
-    h=`<h2>safe</h2>${docHTML(TXT.A.safeNote,"j1")}`+(G.solved.p2?`<p class="res-ok">金庫は開いている。中に紙が1枚。</p>${docHTML(PROC,"j2")}`:lockDigits("safe",4));
-  }else if(id==="door"){
-    h=`<h2>door</h2>`+(G.solved.p3?`<p>ドアの横の数字キーに電源が入った。4桁の番号が要る。</p>${lockDigits("door",4)}`:`<p class="muted">電子錠のランプが消えている。停電中は動かない。</p>`)+`<p class="muted">連絡用ドア（connecting door）は鍵がかかっている。下の隙間からメモは通せる。</p>`;
-  }else if(R==="B"&&id==="drawer"){
-    h=`<h2>desk drawer</h2>`+(G.solved.p1?`<p class="res-ok">引き出しは開いている。中に紙が1枚。</p>${docHTML(PRICE,"j1")}`:`<p>3つの色を選ぶ錠がついている。</p>${lockColors()}`);
-  }else if(R==="B"&&id==="closet"){
-    h=`<h2>closet</h2>${docHTML(TXT.B.closet,"j1")}${panelHTML()}`;
-  }else if(R==="B"&&id==="clock"){
-    h=`<h2>wall clock</h2>${CLOCK_SVG}${docHTML(TXT.B.clock,"j1")}`;
-  }else{
-    const t=TXT[R][id==="bath"?"bath":id];h=`<h2>${esc(OBJ[R].find(o=>o.id===id).nm)}</h2>${docHTML(t,"j1")}`;
+    h+=`<p class="muted">留守電が1件。フロントからの英語のメッセージです。</p>${audioHTML("vm","留守電を聞く",true)}`;
+  }else if(id==="plaque"){h+=docHTML(T.plaque)}
+  else if(id==="framed"){h+=docHTML(R==="A"?T.J1:T.E1)}
+  else if(id==="window"){h+=docHTML(T.window)}
+  else if(id==="photo"){h+=docHTML(T.photo)}
+  else if(id==="piano"){h+=`<p class="muted">ピアノの上に絵はがきが1枚。裏返すと手書きの文字。</p>${docHTML(T.postcard,{front:T.postFront})}`}
+  else if(id==="shelf"){const j=nid();h+=`<p>${tw(T.shelf.en)}</p><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(T.shelf.ja)}</div><table class="shelf">${SHELF.map(s=>`<tr><td>No. ${s[0]}</td><td>${esc(s[1])}</td></tr>`).join("")}</table>`}
+  else if(id==="box"){
+    if(!S.p1)h+=docHTML(T.card1)+dialLock();
+    else h+=`<p class="res-ok">手紙箱は開いている。中には手紙が2通と、小さな鍵が1本入っていた。</p>${docHTML(T.J2)}${tornHTML(T.J3a,T.J3b,S.p3,"ジェームズの手紙")}${keyLine("tape",R)}`;
+  }else if(id==="bench"){
+    if(G.k.bench!==3)h+=`<p>ピアノ椅子の座面に小さな鍵穴がある。開けるには鍵が要る。</p>${useKeyHTML(R,"bench")}`;
+    else if(!S.p3)h+=`<p>椅子の中に日記帳が1冊。3桁の錠がついている。</p>${docHTML(T.card3)}${digitLock("p3",3)}`;
+    else h+=`<p class="res-ok">日記は開いている。9月20日のページに、破れた手紙の下半分がはさまっていた。</p>${docHTML(T.diary)}${tornHTML(T.J3a,T.J3b,true,"ジェームズの手紙")}`;
+  }else if(id==="trunk"){
+    if(!S.p2)h+=docHTML(T.card2)+digitLock("p2",4);
+    else h+=`<p class="res-ok">トランクは開いている。中には手紙が2通と、小さな鍵が1本入っていた。</p>${docHTML(T.E2)}${tornHTML(T.E3a,T.E3b,S.p4,"エリーの手紙")}${keyLine("bench",R)}`;
+  }else if(id==="tape"){
+    h+=`<p class="muted">ラベル：“For Room 401. Not sent.”</p>`;
+    if(G.k.tape!==3)h+=`<p>テープレコーダーは鍵のかかったケースに入っている。</p>${useKeyHTML(R,"tape")}`;
+    else{const sub=(L.hint&&L.hint.p4>=2);h+=audioHTML("tape","テープを再生",sub,sub?"":"字幕は、謎4のヒントを2段目まで開くと出せます。何度でも聞き直せます。")}
+  }else if(id==="logbook"){
+    if(!S.p4)h+=`<p>ジェームズの業務日誌。3桁の錠がついている。</p>${docHTML(T.card4)}${digitLock("p4",3)}`;
+    else h+=`<p class="res-ok">業務日誌は開いている。最後のページに、破れた手紙の下半分と古い鍵が1本はさまっていた。</p>${tornHTML(T.E3a,T.E3b,true,"エリーの手紙")}${keyLine("cdoor",R)}`;
+  }else if(id==="calendar"){h+=calHTML()+docHTML(T.calendar)}
+  else if(id==="typewriter"){h+=docHTML(T.typewriter)}
+  else if(id==="keydish"){h+=docHTML(T.keydish)}
+  else if(id==="door"){
+    h+=`<p>廊下へのドア。電子錠は止まっている。横に電池式の非常用キーパッドがある。4桁。</p>${digitLock("p5",4)}`;
+  }else if(id==="cdoor"){
+    if(G.cd)h+=docHTML(T.cdoorOpen);
+    else h+=docHTML(T.cdoorClosed)+(R==="B"&&S.p4?useKeyHTML(R,"cdoor"):"");
   }
-  box.innerHTML=`<div class="card">${h}</div>`;
-  bindDoc(box);
-  box.querySelectorAll("[data-vm]").forEach(b=>b.onclick=()=>{const v=b.dataset.vm==="2"?VM2:VM1;if(b.dataset.vm==="2"&&!G.vm2){G.vm2=1;push(false)}$("#vmtxt").innerHTML=`<div class="row" style="margin-top:8px"><button class="small" id="vmsub">字幕</button></div><div id="vmsubs" hidden>${docHTML(v,"jv")}</div>`;$("#vmsub").onclick=()=>{const s=$("#vmsubs");s.hidden=!s.hidden;$("#vmsub").classList.toggle("on",!s.hidden)};bindDoc($("#vmtxt"));speak(v.en,{rate:.88,voice:3})});
-  bindLocks(box,R);
+  box.innerHTML=`<div class="card">${h}<div class="wbox" id="wb"></div></div>`;
+  bindDoc(box);bindAudio(box);bindLocks(box,R);
 }
-function lockDigits(name,n){return `<div class="lockrow"><span class="dig" id="${name}-d">${"_".repeat(n)}</span></div><div class="keys">${[1,2,3,4,5,6,7,8,9].map(k=>`<button data-k="${k}" data-lock="${name}">${k}</button>`).join("")}<button data-k="C" data-lock="${name}">C</button><button data-k="0" data-lock="${name}">0</button><button data-k="E" data-lock="${name}" class="pri">OK</button></div><div class="msg" id="${name}-m"></div>`}
-function lockColors(){const c=L.colors||[null,null,null];return `${[0,1,2].map(i=>`<div class="lab muted">${i+1}つ目</div><div class="chips">${COLORS.map(k=>`<button data-col="${i}" data-v="${k}" class="${c[i]===k?"sel":""}">${k}</button>`).join("")}</div>`).join("")}<button class="pri" id="tryc" style="margin-top:8px">開ける</button><div class="msg" id="col-m"></div>`}
-function panelHTML(){
-  const P=L.panel;const pow=G.solved.p3;
-  if(pow)return `<div class="card" style="margin-top:8px"><p class="res-ok">ブレーカー盤：電源は復旧している。</p></div>`;
-  return `<div class="card panel" style="margin-top:8px"><h2>breaker panel</h2>
-    <div>dial: ${["OFF","1","2","3"].map(v=>`<button class="small ${P.dial===v?"sel":""}" data-dial="${v}">${v}</button>`).join(" ")}</div>
-    <div>main switch: <button class="small" id="sw">${P.sw==="UP"?"UP（下げる）":"DOWN（上げる）"}</button></div>
-    <div><span class="lamp ${P.green?"on":""}"></span>green light ${P.green?"ON":"OFF"}</div>
-    <div><button id="red">red button</button></div>
-    <div class="msg">${esc(P.msg||"")}</div></div>`;
+function keyLine(k,R){
+  const s=G.k[k]||0;
+  if(s===3)return `<p class="muted">鍵（${esc(KEYS[k].tag)}）はもう使った。</p>`;
+  if(holder(k)===R)return `<p class="muted">小さな鍵の札：“${esc(KEYS[k].tag)}”。持ち物に入れた。</p>`;
+  return `<p class="muted">鍵（${esc(KEYS[k].tag)}）はドアの下から相方へ渡した。</p>`;
 }
-// ブレーカー盤の動き（2人でもひとりでも同じ）
-function panelAct(a,v){
-  const P=L.panel;let out={en:"",ja:""};
-  const reset=(en,ja)=>{P.dial="3";P.sw="DOWN";P.green=false;out={en:en+" BEEP! The breaker trips. Everything goes back to the start.",ja:ja+" ピーッ！ブレーカーが落ちて、全部最初に戻った。"}};
-  if(a==="dial"){P.dial=v;out={en:`The dial is on ${v}.`,ja:`ダイヤルは ${v}。`}}
-  else if(a==="sw"){
-    if(P.sw==="UP"){P.sw="DOWN";P.green=false;out={en:"The main switch is down.",ja:"メインスイッチを下げた。"}}
-    else if(P.dial==="OFF"){P.sw="UP";P.green=true;out={en:"The main switch is up. The green light comes on.",ja:"メインスイッチを上げた。緑のランプが点いた。"}}
-    else reset("The dial was not on OFF.","ダイヤルがOFFになっていなかった。");
-  }else if(a==="red"){
-    if(P.green&&P.dial==="2"){G.solved.p3=1;out={en:"The lights come back on! The power is back.",ja:"明かりが戻った！電源が復旧した。"};push(false)}
-    else if(!P.green)reset("The green light was not on.","緑のランプが点いていなかった。");
-    else reset(`The dial was on ${P.dial}, not 2.`,`ダイヤルが2ではなく${P.dial}だった。`);
-  }
-  P.msg=out.en;saveAll();return out;
+function useKeyHTML(R,target){
+  const mine=Object.keys(KEYS).filter(k=>holder(k)===R);
+  if(!mine.length)return `<p class="muted">合う鍵を持っていない。</p>`;
+  return `<div class="row">${mine.map(k=>`<button data-use="${k}" data-tg="${target}">🗝 ${esc(KEYS[k].tag)} を使う</button>`).join("")}</div><div class="msg" id="usem"></div>`;
 }
 const entry={};
+function digitLock(p,n){
+  const e=entry[p]||"";
+  return `<div class="lockrow"><span class="dig" id="${p}-d">${(e+"_".repeat(n)).slice(0,n)}</span></div><div class="keys">${[1,2,3,4,5,6,7,8,9].map(k=>`<button data-k="${k}" data-lock="${p}" data-n="${n}">${k}</button>`).join("")}<button data-k="C" data-lock="${p}" data-n="${n}">C</button><button data-k="0" data-lock="${p}" data-n="${n}">0</button><button data-k="E" data-lock="${p}" data-n="${n}" class="pri">OK</button></div><div class="msg" id="${p}-m"></div>`;
+}
+function dialLock(){
+  const d=L.dial||[1,1];
+  return `<div class="dial"><span class="lab">her hour</span><button class="small" data-dl="0" data-dv="-1">‹</button><span class="val">${d[0]}</span><button class="small" data-dl="0" data-dv="1">›</button></div>
+  <div class="dial"><span class="lab">his hour</span><button class="small" data-dl="1" data-dv="-1">‹</button><span class="val">${d[1]}</span><button class="small" data-dl="1" data-dv="1">›</button></div>
+  <button class="pri" id="tryd" style="margin-top:6px">開ける</button><div class="msg" id="p1-m"></div>`;
+}
+function solve(p){
+  G.solved[p]=1;
+  if(p==="p1"&&!G.k.tape)G.k.tape=1;
+  if(p==="p2"&&!G.k.bench)G.k.bench=1;
+  if(p==="p4"&&!G.k.cdoor)G.k.cdoor=1;
+  if(p==="p5"){G.end=Date.now();if(G.cd&&!G.notes.some(n=>n.from==="EJ"))G.notes.push({id:"ej",from:"EJ",text:T.ej.en,t:Date.now()})}
+  if(L.hintOpen===p){L.hintOpen=null}
+  push(false);render();
+}
 function bindLocks(box,R){
   box.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>{
-    const name=b.dataset.lock,k=b.dataset.k,n=4;entry[name]=entry[name]||"";
-    if(k==="C")entry[name]="";else if(k==="E"){
-      const v=entry[name];
-      if(name==="safe"&&v===ANS.p2){G.solved.p2=1;push(false);roomView();return}
-      if(name==="door"&&v===ANS.p4){G.solved.p4=1;G.end=Date.now();push(false);render();return}
-      $(`#${name}-m`).innerHTML=`<span class="res-ng">ブーッ。開かない。</span>`;entry[name]="";
-    }else if(entry[name].length<n)entry[name]+=k;
-    $(`#${name}-d`).textContent=(entry[name]+"____").slice(0,n);
+    const p=b.dataset.lock,k=b.dataset.k,n=+b.dataset.n;entry[p]=entry[p]||"";
+    if(k==="C")entry[p]="";
+    else if(k==="E"){
+      const v=entry[p];entry[p]="";
+      if(v===ANS[p]){solve(p);return}
+      $(`#${p}-m`).innerHTML=`<span class="res-ng">${p==="p5"?"ブーッ。キーパッドが短く鳴っただけ。":"カチッ…開かない。"}</span>`;
+    }else if(entry[p].length<n)entry[p]+=k;
+    $(`#${p}-d`).textContent=(entry[p]+"_".repeat(n)).slice(0,n);
   });
-  box.querySelectorAll("[data-col]").forEach(b=>b.onclick=()=>{L.colors=L.colors||[null,null,null];L.colors[+b.dataset.col]=b.dataset.v;saveAll();detail(R,L.view)});
-  if($("#tryc"))$("#tryc").onclick=()=>{const c=L.colors||[];if(c.join()===ANS.p1.join()){G.solved.p1=1;push(false);roomView()}else $("#col-m").innerHTML=`<span class="res-ng">カチッ…開かない。</span>`};
-  box.querySelectorAll("[data-dial]").forEach(b=>b.onclick=()=>{panelAct("dial",b.dataset.dial);detail(R,"closet")});
-  if($("#sw"))$("#sw").onclick=()=>{panelAct("sw");detail(R,"closet")};
-  if($("#red"))$("#red").onclick=()=>{panelAct("red");G.solved.p3?roomView():detail(R,"closet")};
+  box.querySelectorAll("[data-dl]").forEach(b=>b.onclick=()=>{L.dial=L.dial||[1,1];const i=+b.dataset.dl;L.dial[i]=((L.dial[i]-1+ +b.dataset.dv+12)%12)+1;saveAll();detail(R,"box")});
+  if($("#tryd"))$("#tryd").onclick=()=>{const d=L.dial||[];if(d[0]===ANS.p1[0]&&d[1]===ANS.p1[1])solve("p1");else $("#p1-m").innerHTML=`<span class="res-ng">カチッ…開かない。</span>`};
+  box.querySelectorAll("[data-use]").forEach(b=>b.onclick=()=>{
+    const k=b.dataset.use,tg=b.dataset.tg;
+    if(k!==tg||holder(k)!==R){$("#usem").innerHTML=`<span class="res-ng">鍵が合わない。</span>`;return}
+    G.k[k]=3;if(k==="cdoor"){G.cd=1;sysNote("The connecting door is open.")}
+    push(false);roomView();
+  });
 }
 
-// ---------- ドアの下のメモ（2人用） ----------
+// ---------- ドアの下のメモ ----------
 function notesPanel(){
   const c=$("#comm"),draft=L.draft||"";
+  const who=n=>n.from==="A"?"Room 401":n.from==="B"?"Room 402":"";
   c.innerHTML=`<div class="card"><h2>ドアの下のメモ</h2>
-    <div class="notes" id="nl">${G.notes.length?G.notes.map(n=>`<div class="note"><div class="who">${n.from==="A"?"Room 401":"Room 402"}${n.from===L.role?"（自分）":""}</div>${tw(n.text)}</div>`).join(""):`<div class="muted">まだメモはありません。英語で書いて、隙間から送りましょう。</div>`}</div>
+    <div class="notes" id="nl">${G.notes.length?G.notes.map(n=>n.from==="sys"?`<div class="note sys">${tw(n.text)}</div>`:`<div class="note"><div class="who">${who(n)}${n.from===L.role?"（自分）":""}</div>${tw(n.text)}</div>`).join(""):`<div class="muted">まだメモはありません。英語で書いて、隙間から送りましょう。</div>`}</div>
     <div class="wbox" id="nw"></div>
     <div class="chips">${HELPERS.map(h=>`<button data-h="${esc(h)}">${esc(h)}</button>`).join("")}</div>
     <input type="text" id="nt" maxlength="300" placeholder="英語で書く（英字のみ）" value="${esc(draft)}" autocomplete="off">
@@ -386,82 +507,42 @@ function notesPanel(){
   nt.addEventListener("input",()=>{const v=clean(nt.value);if(v!==nt.value){nt.value=v;$("#nm").textContent="英字だけ入力できます"}L.draft=nt.value});
   nt.addEventListener("compositionend",()=>{nt.value=clean(nt.value);L.draft=nt.value});
   c.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{nt.value=(nt.value?nt.value.replace(/\s*$/," "):"")+b.dataset.h;L.draft=nt.value;nt.focus()});
-  const send=()=>{const v=clean(nt.value).trim();if(!v)return;G.notes.push({id:rid(),from:L.role,text:v.slice(0,300),t:Date.now()});L.draft="";push(false);roomView()};
+  const send=()=>{const v=clean(nt.value).trim();if(!v)return;G.notes.push({id:rid(),from:L.role,text:v.slice(0,300),t:Date.now()});L.draft="";push(false);roomView();const n=$("#nt");if(n)n.focus()};
   $("#send").onclick=send;nt.onkeydown=e=>{if(e.key==="Enter"&&!e.isComposing)send()};
 }
 
-// ---------- 隣室の客（ひとり用。AIは使わず、決まった受け答え） ----------
-function npcSay(en,ja){L.npc={en,ja};saveAll();speak(en,{rate:.92,pitch:1.15,voice:1})}
-function npcAsk(q){
-  const P=G.solved;
-  const A={
-    see:["I see a bed, a desk with a drawer, a closet, a wall clock, and a phone. There's a note on the desk.","ベッド、引き出しつきの机、クローゼット、壁の時計、電話が見える。机の上にメモがあるわ。"],
-    note:["It says, \"Dear guest, your drawer code is the colors of the towels in Room 401, from the largest to the smallest. Housekeeping.\"","「お客様へ。引き出しの番号は401号室のタオルの色を大きい順に。客室清掃係」と書いてある。"],
-    drawer:P.p1?["The drawer is open. There's a minibar price list inside.","引き出しは開いてる。中にミニバーの料金表があるわ。"]:["It has a lock with three colors. I don't know the right colors.","3色の錠がついてる。正しい色がわからないの。"],
-    price:P.p1?["Okay. A bottle of water is two fifty. A can of soda is three seventy-five. A bag of nuts is four twenty-five. A chocolate bar is three fifty.","水1本 2.50、炭酸1缶 3.75、ナッツ1袋 4.25、チョコ1枚 3.50。"]:["I can't read it yet. The drawer is locked.","まだ読めないわ。引き出しに鍵がかかってるもの。"],
-    closet:["There are some hangers on the rail, and a breaker panel at the back.","棒にハンガーがいくつか。奥にブレーカー盤があるわ。"],
-    hangers:["Let me count. One, two, three... There are seven hangers.","数えるわね。1、2、3…ハンガーは7本。"],
-    panel:P.p3?["The power is back. We don't need the panel anymore.","電源は戻ったわ。もう盤はいらない。"]:[`It has a dial, a main switch, a red button, and a small green light. The dial is on ${L.panel.dial}. The switch is ${L.panel.sw.toLowerCase()}. The green light is ${L.panel.green?"on":"off"}.`,`ダイヤル、メインスイッチ、赤いボタン、小さな緑のランプがある。ダイヤルは${L.panel.dial}、スイッチは${L.panel.sw==="UP"?"上":"下"}、緑のランプは${L.panel.green?"点いてる":"消えてる"}。`],
-    clock:["The clock has stopped. The short hand is a little past nine, and the long hand is on three. So, it's a quarter past nine.","時計は止まってる。短い針は9を少し過ぎて、長い針は3。つまり9時15分ね。"],
-    bed:["There are two pillows on my bed.","私のベッドには枕が2つ。"],
-    again:[L.npc.en,L.npc.ja]
-  }[q];
-  npcSay(A[0],A[1]);
-}
-function npcPanel(){
-  const c=$("#comm"),P=G.solved,n=L.npc;
-  const Q=[["see","What do you see in your room?"],["note","Can you read the note on your desk to me?"],["drawer","Can you open the drawer?"]];
-  if(P.p1)Q.push(["price","Can you read the price list to me?"]);
-  Q.push(["closet","What's in your closet?"],["hangers","How many hangers are there?"],["clock","What time is it on your clock?"],["bed","How many pillows are on your bed?"]);
-  if(P.p2&&!P.p3)Q.push(["panel","What does the breaker panel look like?"]);
-  Q.push(["again","Say that again, please."]);
-  const c3=L.ncol||[null,null,null];
-  c.innerHTML=`<div class="card"><h2>内線電話：Room 402 のリベラさん</h2>
-    <div class="npc"><div id="nen" ${L.nsub?"":"hidden"}>${tw(n.en)}</div><div class="ja" id="nja" hidden>${esc(n.ja)}</div>${L.nsub?"":`<span class="muted">♪ 音声で話しています</span>`}</div>
-    <div class="wbox" id="nw"></div>
-    <div class="row" style="margin-bottom:10px"><button class="small" id="nag">▶ もう一度</button><button class="small ${L.nsub?"on":""}" id="nsb">字幕</button><button class="small" id="nj">訳</button></div>
-    <div class="muted" style="margin-bottom:4px">聞く</div>
-    <div class="chips">${Q.map(q=>`<button data-q="${q[0]}">${esc(q[1])}</button>`).join("")}</div>
-    ${!P.p1?`<div class="muted" style="margin:10px 0 4px">頼む：Could you try ___, ___, and ___ on the drawer?</div>${[0,1,2].map(i=>`<div class="chips">${COLORS.map(k=>`<button data-nc="${i}" data-v="${k}" class="${c3[i]===k?"sel":""}">${k}</button>`).join("")}</div>`).join("")}<button class="small pri" id="ntry">頼む</button>`:""}
-    ${P.p2&&!P.p3?`<div class="muted" style="margin:10px 0 4px">頼む（ブレーカー盤）</div><div class="chips">${["OFF","1","2","3"].map(v=>`<button data-nd="${v}">Turn the dial to ${v}.</button>`).join("")}<button id="nsw">Flip the main switch.</button><button id="nred">Press the red button.</button><button id="ngr">Is the green light on?</button></div>`:""}
-  </div>`;
-  bindWords(c,"#nw");
-  $("#nag").onclick=()=>speak(n.en,{rate:.92,pitch:1.15,voice:1});
-  $("#nsb").onclick=()=>{L.nsub=!L.nsub;saveAll();npcPanel()};
-  $("#nj").onclick=()=>{const j=$("#nja");j.hidden=!j.hidden;$("#nj").classList.toggle("on",!j.hidden)};
-  c.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{npcAsk(b.dataset.q);npcPanel()});
-  c.querySelectorAll("[data-nc]").forEach(b=>b.onclick=()=>{L.ncol=L.ncol||[null,null,null];L.ncol[+b.dataset.nc]=b.dataset.v;saveAll();npcPanel()});
-  if($("#ntry"))$("#ntry").onclick=()=>{const k=L.ncol||[];if(k.some(x=>!x)){npcSay("Sorry, which three colors?","ごめん、3つの色はどれ？");npcPanel();return}
-    if(k.join()===ANS.p1.join()){G.solved.p1=1;saveAll();npcSay(`${k.join(", ")}... It opened! There's a minibar price list inside.`,"開いた！中にミニバーの料金表があるわ。");roomView()}
-    else{npcSay(`Okay, ${k[0]}, ${k[1]}, and ${k[2]}... No, it didn't open.`,"…だめ、開かない。");npcPanel()}};
-  const pa=(a,v)=>{const o=panelAct(a,v);npcSay("Okay. "+o.en,o.ja);G.solved.p3?roomView():npcPanel()};
-  c.querySelectorAll("[data-nd]").forEach(b=>b.onclick=()=>pa("dial",b.dataset.nd));
-  if($("#nsw"))$("#nsw").onclick=()=>pa("sw");
-  if($("#nred"))$("#nred").onclick=()=>pa("red");
-  if($("#ngr"))$("#ngr").onclick=()=>{npcSay(L.panel.green?"Yes, it's on.":"No, it's off.",L.panel.green?"うん、点いてる。":"ううん、消えてる。");npcPanel()};
-}
-
 // ---------- クリア ----------
+let cleared=false;
 function clear(){
+  if(!cleared){cleared=true;hush()}
   const sec=Math.max(0,Math.round((G.end-G.start)/1000)),mm=Math.floor(sec/60),ss=sec%60;
+  const story=[["J1","ジェームズ → エリー"],["E1","エリー → ジェームズ"],["J2","ジェームズ → エリー"],["E2","エリー → ジェームズ"],["J3","ジェームズ → エリー"],["E3","エリー → ジェームズ"]];
+  const notes=G.notes.filter(n=>n.from!=="EJ");
   app.innerHTML=`
-  <div class="top"><span class="prog">Stage 1 クリア</span><span class="prog">${MODE==="duo"?"個室 "+ROOM:"ひとり"}</span></div>
+  <div class="top"><span class="prog">Stage 1 クリア</span><span class="prog">個室 ${ROOM}</span></div>
   <div class="card">
     <div class="big">ESCAPED!</div>
-    <p>ドアが開いた。廊下に出ると、${MODE==="duo"?"隣の部屋の相方も出てきた":"402号室のリベラさんも出てきた"}。</p>
-    <p>クリア時間 <b>${mm}分${ss}秒</b>｜ヒント ${sum(G.hints)} 回｜日本語びん ${sum(G.jp)}</p>
+    <p>キーパッドが緑に光り、ドアが開いた。廊下に出ると、隣の部屋から相方も出てきた。電話が鳴る。</p>
+    ${audioHTML("end","フロントのミアの声",true)}
+    <p style="margin-top:10px">クリア時間 <b>${mm}分${ss}秒</b>｜ヒント ${sum(G.hints)} 回｜日本語びん ${sum(G.jp)}</p>
   </div>
+  ${G.cd?`<div class="card"><h2>ドアの下から、もう1枚</h2><p class="muted">ふたりのどちらも書いていないメモが届いた。</p>${docHTML(T.ej)}</div>`:""}
+  <div class="card"><h2>物語を日付順に読み返す</h2>${story.map(s=>`<h3>${esc(s[1])}</h3>${s[0]==="J3"?tornHTML(T.J3a,T.J3b,true,"破れていた手紙"):s[0]==="E3"?tornHTML(T.E3a,T.E3b,true,"破れていた手紙"):docHTML(T[s[0]])}`).join("")}
+    <p class="muted" style="margin-top:10px">1976年10月9日（土）夜9時、連絡用ドアが開き、二人は初めて顔を合わせた。二人はのちに結婚し、このホテルを買い取った。</p></div>
   <div class="card"><h2>このステージの単語と言い回し</h2>${VOCAB.map(v=>`<div class="note"><button class="small" data-say="${esc(v[0])}">▶</button> ${esc(v[0])}　<span class="muted">${esc(v[1])}</span></div>`).join("")}</div>
-  ${MODE==="duo"&&G.notes.length?`<div class="card"><h2>ふたりのメモ</h2><div class="notes">${G.notes.map(n=>`<div class="note"><div class="who">${n.from==="A"?"Room 401":"Room 402"}</div>${esc(n.text)}</div>`).join("")}</div></div>`:""}
-  <div class="row">${MODE==="duo"?`<button class="pri" id="swap">部屋を入れ替えてもう一度</button>`:`<button class="pri" id="again">もう一度</button>`}<button id="home">タイトルへ</button></div>`;
-  app.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say,{rate:.85}));
+  ${notes.length?`<div class="card"><h2>ふたりのメモ</h2><div class="notes">${notes.map(n=>`<div class="note${n.from==="sys"?" sys":""}"><div class="who">${n.from==="A"?"Room 401":n.from==="B"?"Room 402":""}</div>${esc(n.text)}</div>`).join("")}</div></div>`:""}
+  <div class="wbox" id="wb"></div>
+  <div class="row"><button class="pri" id="swap">部屋を入れ替えてもう一度</button><button id="home">タイトルへ</button></div>`;
+  bindDoc(app);bindAudio(app);
+  app.querySelectorAll("[data-say]").forEach(b=>b.onclick=()=>speak(b.dataset.say,"plain"));
   $("#home").onclick=()=>{location.href=location.pathname};
-  if($("#again"))$("#again").onclick=()=>{lsSet(gKey(),null);G=null;startSolo()};
-  if($("#swap"))$("#swap").onclick=()=>{const r=String(100000+Math.floor(Math.random()*900000));
+  const other=L.role==="A"?"B":"A";
+  $("#swap").onclick=()=>{const r=String(100000+Math.floor(Math.random()*900000));
     G.notes.push({id:rid(),from:L.role,text:"NEXT ROOM: "+r,t:Date.now()});push(false);
-    lsSet("eigo-escape:"+r,{G:newG(),L:{role:L.role==="A"?"B":"A",view:null,panel:{dial:"3",sw:"DOWN",green:false,msg:""}}});
+    lsSet(gKey(r),{G:newG(),L:newL(other)});
     setTimeout(()=>{location.href=location.pathname+"?room="+r},500)};
-  if(MODE==="duo"){const nx=G.notes.slice().reverse().find(n=>/^NEXT ROOM: \d{6}$/.test(n.text)&&n.from!==L.role);if(nx){const r=nx.text.slice(-6);const b=document.createElement("p");b.className="muted";b.style.marginTop="10px";b.innerHTML=`相方が入れ替えの部屋 ${r} を作りました。<button class="small" id="gonext">そこへ移る</button>`;app.appendChild(b);$("#gonext").onclick=()=>{lsSet("eigo-escape:"+r,{G:newG(),L:{role:L.role==="A"?"B":"A",view:null,panel:{dial:"3",sw:"DOWN",green:false,msg:""}}});location.href=location.pathname+"?room="+r}}}
+  const nx=G.notes.slice().reverse().find(n=>/^NEXT ROOM: \d{6}$/.test(n.text)&&n.from!==L.role);
+  if(nx){const r=nx.text.slice(-6);const b=document.createElement("p");b.className="muted";b.style.marginTop="10px";b.innerHTML=`相方が入れ替えの部屋 ${r} を作りました。<button class="small" id="gonext">そこへ移る</button>`;app.appendChild(b);$("#gonext").onclick=()=>{lsSet(gKey(r),{G:newG(),L:newL(other)});location.href=location.pathname+"?room="+r}}
 }
 
 title();

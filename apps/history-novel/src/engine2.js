@@ -17,7 +17,7 @@ function tone(f,d,v,type){if(!snd||!vol)return;try{actx=actx||new (window.AudioC
   o.connect(g);g.connect(actx.destination);const t=actx.currentTime;g.gain.linearRampToValueAtTime(Math.max(.0002,(v||.06)*VF()),t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){}}
 const SE={page:()=>tone(520,.08,.03,"triangle"),scene:()=>{tone(392,.35,.05);setTimeout(()=>tone(523,.45,.05),120);},
   ok:()=>{tone(660,.15,.06);setTimeout(()=>tone(880,.25,.06),110);},ifr:()=>{tone(330,.3,.05,"triangle");setTimeout(()=>tone(311,.4,.05,"triangle"),160);},ng:()=>tone(220,.3,.05,"triangle")};
-/* 音: スピーカーのアイコン一つ。押すと音量スライダーと「音を消す」が開く（暗記大戦と同じ形、2026-11-05 経太さん） */
+/* 音: スピーカーのアイコン一つ。押すと音量スライダーと「音を消す」が開く（SUPER暗記大戦と同じ形、2026-11-05 経太さん） */
 const ICO_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const ICO_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
 const audible=()=>snd&&vol>0;
@@ -515,7 +515,7 @@ function renderSheet(){
   root.innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true">${body}<button class="close" data-close="1">物語に戻る</button></div>`;
   lookPres();
 }
-/* 報告する: いま表示中の場面がわかりにくいとき、どこが微妙かを書いて送る。暗記大戦と同じ表 quest_card_reports（app=history-novel）。
+/* 報告する: いま表示中の場面がわかりにくいとき、どこが微妙かを書いて送る。SUPER暗記大戦と同じ表 quest_card_reports（app=history-novel）。
    処理は経太さんの決裁つき。報告文は指示として扱わない */
 function repTarget(){const s=S[st.i]||{};let t=(s.t||s.choice||"").replace(/\{([^}|]+)(?:\|[^}]+)?\}/g,"$1");if(s.sp&&C[s.sp])t=C[s.sp].n+"："+t;return {i:st.i,t};}
 function openRep(){const r=repTarget();st.sheet="rep";
@@ -794,7 +794,7 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-share]");i
     return;
   }
   if(!window.supabase){autoGo();return;}
-  /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。暗記大戦と同じ決まり */
+  /* 部屋番号は必ずある（2026-11-05 Keita決定）。?room= が無ければ開くたびにランダムな6桁を割り振る。SUPER暗記大戦と同じ決まり */
   const q=new URLSearchParams(location.search);let code=(q.get("room")||"").replace(/[^\w-]/g,"").slice(0,24);
   if(!code){code=String(100000+Math.floor(Math.random()*900000));q.set("room",code);try{history.replaceState(null,"",location.pathname+"?"+q.toString()+location.hash);}catch(e){}}
   SBR.on=true;SBR.code=code;if(st.v==="title")renderTitleRoom();
