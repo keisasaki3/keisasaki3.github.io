@@ -4,9 +4,13 @@ let editMode = false;
 // プリセットのドット絵アイコン（icons/<subject_id>.svg）。無いプリセットと自作ステータスは絵文字。
 const PIXEL_ICON_IDS = new Set(['math', 'physics', 'astronomy', 'earth-science', 'chemistry', 'biology', 'computer-science', 'architecture', 'design', 'agriculture', 'medicine', 'dentistry', 'pharmacy', 'political-science', 'military-defense', 'law', 'economics', 'business-administration', 'sociology', 'education', 'philosophy', 'religious-studies', 'psychology', 'linguistics-languages', 'anthropology-archaeology', 'history', 'geography', 'literature', 'art', 'english', 'strength', 'assets']);
 
+// 教養プリセット（2026-11-17）は暗記大戦のジャンルと同じドット絵を使う
+const PIXEL_ICON_ALIAS = { 'kyo-heritage': 'heritage', 'kyo-archi': 'architecture', 'kyo-paint': 'art', 'kyo-classic': 'classical', 'kyo-const': 'constellation', 'kyo-cuisine': 'cuisine', 'kyo-drink': 'drink', 'kyo-season': 'season' };
+Object.keys(PIXEL_ICON_ALIAS).forEach(id => PIXEL_ICON_IDS.add(id));
+
 function presetIconMarkup(preset) {
   return PIXEL_ICON_IDS.has(preset.subject_id)
-    ? `<img class="pixicon" src="../../shared/icons/${esc(preset.subject_id)}.svg" alt="" width="16" height="16">`
+    ? `<img class="pixicon" src="../../shared/icons/${esc(PIXEL_ICON_ALIAS[preset.subject_id] || preset.subject_id)}.svg" alt="" width="16" height="16">`
     : esc(preset.icon);
 }
 

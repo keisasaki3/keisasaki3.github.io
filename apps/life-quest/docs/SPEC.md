@@ -80,6 +80,10 @@ NEXTの候補はチェック型トピックのみ。自分で追加したトピ�
 
 同じ分野内では一つ下の区切りを前提にしているので、NEXTは次の区切りを指す。中身は `CURRICULUM.md` と `/shared-world-core/supabase/seeds/006_english_strength_presets.sql`。
 
+### 教養
+
+2026-11-17 Keita了承で追加。SUPER暗記大戦の教養ジャンルと同じ8科目（世界遺産・名建築・名画・クラシック音楽・星座・料理・酒・旬の食材、subject_id は kyo-○○）。分野は暗記大戦の札のグループ（世界遺産なら日本・アジア…）、各分野にチェック型トピックが1件（トピックIDは分野IDと同じ）。習得度は暗記大戦の札の定着度から出す。アイコンは暗記大戦と同じドット絵（subject-ui.js の PIXEL_ICON_ALIAS）。中身は `/shared-world-core/supabase/seeds/010_kyoyo_presets.sql`。
+
 ### 29学問
 
 現在のまとまりは「29学問」（2026-09-27 Keita決定の名称）。
