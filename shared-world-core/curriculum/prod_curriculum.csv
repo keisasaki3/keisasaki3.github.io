@@ -4700,3 +4700,45 @@ kyo-season,旬の食材,Seasonal Foods,教養,True,kyo-season-01,春,Spring,10,T
 kyo-season,旬の食材,Seasonal Foods,教養,True,kyo-season-02,夏,Summer,20,True,kyo-season-02,夏,Summer,SUPER暗記大戦 旬の食材,2,10,check,,True
 kyo-season,旬の食材,Seasonal Foods,教養,True,kyo-season-03,秋,Autumn,30,True,kyo-season-03,秋,Autumn,SUPER暗記大戦 旬の食材,2,10,check,,True
 kyo-season,旬の食材,Seasonal Foods,教養,True,kyo-season-04,冬,Winter,40,True,kyo-season-04,冬,Winter,SUPER暗記大戦 旬の食材,2,10,check,,True
+kyo-flower,花,Flowers,教養,True,kyo-flower-01,春の花,Spring flowers,10,True,kyo-flower-01,春の花,Spring flowers,SUPER暗記大戦 花,2,10,check,,True
+kyo-flower,花,Flowers,教養,True,kyo-flower-02,夏の花,Summer flowers,20,True,kyo-flower-02,夏の花,Summer flowers,SUPER暗記大戦 花,2,10,check,,True
+kyo-flower,花,Flowers,教養,True,kyo-flower-03,秋の花,Autumn flowers,30,True,kyo-flower-03,秋の花,Autumn flowers,SUPER暗記大戦 花,2,10,check,,True
+kyo-flower,花,Flowers,教養,True,kyo-flower-04,冬の花,Winter flowers,40,True,kyo-flower-04,冬の花,Winter flowers,SUPER暗記大戦 花,2,10,check,,True
+kyo-flower,花,Flowers,教養,True,kyo-flower-05,花屋の花,Florist flowers,50,True,kyo-flower-05,花屋の花,Florist flowers,SUPER暗記大戦 花,2,10,check,,True
+kyo-gem,宝石と鉱物,Gems & Minerals,教養,True,kyo-gem-01,誕生石,Birthstones,10,True,kyo-gem-01,誕生石,Birthstones,SUPER暗記大戦 宝石と鉱物,2,10,check,,True
+kyo-gem,宝石と鉱物,Gems & Minerals,教養,True,kyo-gem-02,有名な宝石,Famous gems,20,True,kyo-gem-02,有名な宝石,Famous gems,SUPER暗記大戦 宝石と鉱物,2,10,check,,True
+kyo-gem,宝石と鉱物,Gems & Minerals,教養,True,kyo-gem-03,宝石の基本,Gem basics,30,True,kyo-gem-03,宝石の基本,Gem basics,SUPER暗記大戦 宝石と鉱物,2,10,check,,True
+kyo-gem,宝石と鉱物,Gems & Minerals,教養,True,kyo-gem-04,身近な鉱物,Common minerals,40,True,kyo-gem-04,身近な鉱物,Common minerals,SUPER暗記大戦 宝石と鉱物,2,10,check,,True
+kyo-gem,宝石と鉱物,Gems & Minerals,教養,True,kyo-gem-05,名石と産地,Famous stones & sources,50,True,kyo-gem-05,名石と産地,Famous stones & sources,SUPER暗記大戦 宝石と鉱物,2,10,check,,True
+kyo-gem,宝石と鉱物,Gems & Minerals,教養,True,kyo-gem-06,鉱物の科学,Mineral science,60,True,kyo-gem-06,鉱物の科学,Mineral science,SUPER暗記大戦 宝石と鉱物,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-01,仏の四つの位,Four ranks,10,True,kyo-buddha-01,仏の四つの位,Four ranks,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-02,如来,Nyorai,20,True,kyo-buddha-02,如来,Nyorai,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-03,菩薩,Bosatsu,30,True,kyo-buddha-03,菩薩,Bosatsu,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-04,明王,Myōō,40,True,kyo-buddha-04,明王,Myōō,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-05,天部,Tenbu,50,True,kyo-buddha-05,天部,Tenbu,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-06,見分けのポイント,Identifying features,60,True,kyo-buddha-06,見分けのポイント,Identifying features,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-07,名品,Masterpieces,70,True,kyo-buddha-07,名品,Masterpieces,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-08,手の形（印）,Mudrās,80,True,kyo-buddha-08,手の形（印）,Mudrās,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-09,仏の種類,Types of deities,90,True,kyo-buddha-09,仏の種類,Types of deities,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-10,つくり方と様式,Techniques & styles,100,True,kyo-buddha-10,つくり方と様式,Techniques & styles,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-buddha,仏像,Buddhist Statues,教養,True,kyo-buddha-11,仏師,Sculptors,110,True,kyo-buddha-11,仏師,Sculptors,SUPER暗記大戦 仏像,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-01,ワインの基本,Wine basics,10,True,kyo-wine-01,ワインの基本,Wine basics,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-02,ブドウの品種,Grape varieties,20,True,kyo-wine-02,ブドウの品種,Grape varieties,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-03,産地,Regions,30,True,kyo-wine-03,産地,Regions,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-04,ワインの言葉,Wine terms,40,True,kyo-wine-04,ワインの言葉,Wine terms,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-05,つくり方,Winemaking,50,True,kyo-wine-05,つくり方,Winemaking,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-06,テイスティング,Tasting,60,True,kyo-wine-06,テイスティング,Tasting,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-wine,ワイン,Wine,教養,True,kyo-wine-07,歴史,History,70,True,kyo-wine-07,歴史,History,SUPER暗記大戦 ワイン,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-01,季語の基本,Basics,10,True,kyo-kigo-01,季語の基本,Basics,SUPER暗記大戦 季語,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-02,春,Spring,20,True,kyo-kigo-02,春,Spring,SUPER暗記大戦 季語,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-03,夏,Summer,30,True,kyo-kigo-03,夏,Summer,SUPER暗記大戦 季語,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-04,秋,Autumn,40,True,kyo-kigo-04,秋,Autumn,SUPER暗記大戦 季語,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-05,冬,Winter,50,True,kyo-kigo-05,冬,Winter,SUPER暗記大戦 季語,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-06,新年,New Year,60,True,kyo-kigo-06,新年,New Year,SUPER暗記大戦 季語,2,10,check,,True
+kyo-kigo,季語,Season Words,教養,True,kyo-kigo-07,俳人,Haiku poets,70,True,kyo-kigo-07,俳人,Haiku poets,SUPER暗記大戦 季語,2,10,check,,True
+kyo-heritagejp,世界遺産（日本）,World Heritage in Japan,教養,True,kyo-heritagejp-01,世界遺産のしくみ,How World Heritage works,10,True,kyo-heritagejp-01,世界遺産のしくみ,How World Heritage works,SUPER暗記大戦 世界遺産（日本）,2,10,check,,True
+kyo-heritagejp,世界遺産（日本）,World Heritage in Japan,教養,True,kyo-heritagejp-02,1990年代の登録,1990s inscriptions,20,True,kyo-heritagejp-02,1990年代の登録,1990s inscriptions,SUPER暗記大戦 世界遺産（日本）,2,10,check,,True
+kyo-heritagejp,世界遺産（日本）,World Heritage in Japan,教養,True,kyo-heritagejp-03,2000年代の登録,2000s inscriptions,30,True,kyo-heritagejp-03,2000年代の登録,2000s inscriptions,SUPER暗記大戦 世界遺産（日本）,2,10,check,,True
+kyo-heritagejp,世界遺産（日本）,World Heritage in Japan,教養,True,kyo-heritagejp-04,2010年代の登録,2010s inscriptions,40,True,kyo-heritagejp-04,2010年代の登録,2010s inscriptions,SUPER暗記大戦 世界遺産（日本）,2,10,check,,True
+kyo-heritagejp,世界遺産（日本）,World Heritage in Japan,教養,True,kyo-heritagejp-05,2020年代の登録,2020s inscriptions,50,True,kyo-heritagejp-05,2020年代の登録,2020s inscriptions,SUPER暗記大戦 世界遺産（日本）,2,10,check,,True
+kyo-heritagejp,世界遺産（日本）,World Heritage in Japan,教養,True,kyo-heritagejp-06,構成資産と見どころ,Component sites,60,True,kyo-heritagejp-06,構成資産と見どころ,Component sites,SUPER暗記大戦 世界遺産（日本）,2,10,check,,True
