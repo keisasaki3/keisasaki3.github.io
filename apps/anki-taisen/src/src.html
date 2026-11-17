@@ -1,7 +1,7 @@
 <title>SUPER暗記大戦</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&family=DotGothic16&display=swap">
 <style>
 /* Layout: 窓辺の明るい部屋（ミント）と栗色の壁（夜）の2トーン。上は胡桃色の見出し帯、中央に白い札、下に手元の操作。片手で遊べる縦一列。トーンは data-tone で切り替え。 */
 :root{
@@ -280,6 +280,56 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 .citem.hit{background:var(--soft-acc);border-radius:8px;padding:8px}
 .clink{font-size:12px;background:transparent;color:var(--card-muted);text-decoration:underline;padding:2px 0;align-self:flex-start}
 [hidden]{display:none!important}
+
+/* ===== 夜空（2026-11-17 Keita依頼「ルミナロゴの雰囲気でゲーム風に。素敵なゲームに」）: ファミコン〜スーファミのタイトル画面の夜空。
+   文字はSUPER歴史ノベルと同じドット（DotGothic16）、窓はRPGの枠（紺地に生成りの縁）、札は羊皮紙、強調は金。初期の見た目。 ===== */
+.app-name{font-family:"DotGothic16",var(--sys)!important;font-weight:400!important;font-size:34px!important;line-height:1.2!important;letter-spacing:.04em!important;background:none!important;color:var(--ink)!important;text-align:left!important;padding:6px 2px 0!important;border-radius:0!important;box-shadow:none!important;text-shadow:none!important}
+.app-name b{font-weight:400;color:var(--sup,#b08d3c);letter-spacing:.06em}
+:root[data-tone="night"]{
+  color-scheme:dark;
+  --pg:#0e1430; --surf:#1a2250; --surf2:#131a3d; --ink:#efe6c8; --muted:#a7aed4; --line:#46508f;
+  --head:#131a3d; --onhead:#efe6c8; --acc:#e2c86a; --onacc:#1a1f3c; --acc-ink:#ead690;
+  --btn:#e2c86a; --onbtn:#1a1f3c; --brand:#2c3d86; --sup:#e2c86a;
+  --card:#f5edd5; --card-ink:#232a4d; --card-muted:#5c6286; --card-line:#d4c79f; --card-line2:#b8a874; --card-soft:#ece2c3; --card-acc:#3b58b0; --photo:#e8dec0;
+  --ok:#9fe08f; --ng:#ff9f9f; --soft-acc:#e2c86a1f;
+  --shadow:none; --panel-shadow:none; --capbg:#131a3de6; --capink:#efe6c8;
+  --body:"DotGothic16",var(--sys); --pop:"DotGothic16",var(--sys); --digits:"DotGothic16",var(--sys); --mincho:"DotGothic16",var(--sys);
+  --frame:#efe6c8; --frame2:#060a1c;
+}
+:root[data-tone="night"] body{background:#0e1430 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' shape-rendering='crispEdges'%3E%3Cg fill='%23ffffff'%3E%3Crect x='12' y='20' width='2' height='2'/%3E%3Crect x='88' y='8' width='2' height='2' opacity='.5'/%3E%3Crect x='150' y='44' width='3' height='3'/%3E%3Crect x='210' y='18' width='2' height='2' opacity='.6'/%3E%3Crect x='40' y='96' width='2' height='2' opacity='.4'/%3E%3Crect x='120' y='130' width='2' height='2'/%3E%3Crect x='196' y='110' width='2' height='2' opacity='.5'/%3E%3Crect x='70' y='176' width='3' height='3' opacity='.8'/%3E%3Crect x='170' y='196' width='2' height='2' opacity='.4'/%3E%3Crect x='226' y='226' width='2' height='2'/%3E%3Crect x='20' y='220' width='2' height='2' opacity='.6'/%3E%3C/g%3E%3C/svg%3E") repeat fixed}
+:root[data-tone="night"] body::after{content:"";position:fixed;inset:0;z-index:70;pointer-events:none;background:repeating-linear-gradient(#0000 0 2px,#0000000f 2px 4px)}
+:root[data-tone="night"] html{background:#0e1430}
+/* RPGの窓 */
+:root[data-tone="night"] .panel,:root[data-tone="night"] .bar,:root[data-tone="night"] .dsheet,:root[data-tone="night"] .gsub{background:var(--surf);border:2px solid var(--frame);border-radius:6px;box-shadow:0 0 0 3px var(--frame2)}
+:root[data-tone="night"] .gsub{border-top:none;border-radius:0 0 6px 6px;background:var(--surf2)}
+:root[data-tone="night"] .gtabs{border-bottom:2px solid var(--frame)}
+:root[data-tone="night"] .gtabs .lv{border-radius:6px 6px 0 0}
+:root[data-tone="night"] .card{border:3px solid var(--card-line2);border-radius:6px;box-shadow:0 0 0 3px var(--frame2)}
+:root[data-tone="night"] .card .era{letter-spacing:.12em}
+:root[data-tone="night"] .lv,:root[data-tone="night"] .choice,:root[data-tone="night"] .key,:root[data-tone="night"] .slot,:root[data-tone="night"] .arow,:root[data-tone="night"] .rank,:root[data-tone="night"] .chip,:root[data-tone="night"] input,:root[data-tone="night"] select,:root[data-tone="night"] .typebox input,:root[data-tone="night"] .report textarea{border-radius:4px;border:2px solid var(--line);background:var(--surf2)}
+:root[data-tone="night"] .chip{background:var(--surf)}
+:root[data-tone="night"] .lv[aria-pressed="true"],:root[data-tone="night"] .gtabs .lv[aria-pressed="true"],:root[data-tone="night"] .gsub .lv[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--onacc)}
+:root[data-tone="night"] .choice{font-weight:400;text-align:left;padding:10px 12px 10px 26px;position:relative}
+:root[data-tone="night"] .choice:not(:disabled):hover,:root[data-tone="night"] .choice.picked{border-color:var(--acc);background:#232d63}
+:root[data-tone="night"] .choice.picked::before,:root[data-tone="night"] .choice:not(:disabled):hover::before{content:"▶";position:absolute;left:8px;color:var(--acc);font-size:12px;top:50%;transform:translateY(-50%)}
+:root[data-tone="night"] .btn{border-radius:4px;font-weight:400;letter-spacing:.08em;box-shadow:inset 0 -3px 0 #0003,inset 0 2px 0 #fff6}
+:root[data-tone="night"] .btn.ghost,:root[data-tone="night"] .btn.sub,:root[data-tone="night"] #passBtn{background:var(--surf2);border:2px solid var(--line);box-shadow:none;color:var(--ink);font-weight:400}
+:root[data-tone="night"] .btn.sub{border-color:var(--acc)}
+:root[data-tone="night"] .gearbtn{border-radius:4px;border:2px solid var(--frame);background:var(--surf);color:var(--ink)}
+:root[data-tone="night"] .gearpop{border-radius:6px;border:3px solid var(--card-line2)}
+:root[data-tone="night"] .invite{border-radius:6px;border:2px solid var(--frame2)}
+:root[data-tone="night"] .invite button{border-radius:4px}
+:root[data-tone="night"] .typebox input{font-size:17px}
+:root[data-tone="night"] .lv b,:root[data-tone="night"] .chip .s,:root[data-tone="night"] .slot,:root[data-tone="night"] .key,:root[data-tone="night"] .mark,:root[data-tone="night"] .rank .r,:root[data-tone="night"] .card .ev,:root[data-tone="night"] .bname,:root[data-tone="night"] .year{font-weight:400}
+:root[data-tone="night"] .bar .prog{font-weight:400}
+:root[data-tone="night"] h1:not(.app-name){font-family:"DotGothic16",var(--sys);font-weight:400;background:none;box-shadow:none;text-shadow:none;color:var(--ink);text-align:left;padding:6px 2px 0;font-size:28px}
+:root[data-tone="night"] .gic{border-radius:4px;background:#0b1026}
+:root[data-tone="night"] .flip{animation:flipn .35s steps(5,end)}
+:root[data-tone="night"] body{font-synthesis:none}   /* ドット書体は太字が無いので、にじんだ疑似太字にしない */
+:root[data-tone="night"] .mute,:root[data-tone="night"] .stamps button,:root[data-tone="night"] .clink.mute{border-radius:4px;border:2px solid var(--line)}
+:root[data-tone="night"] .card .era,:root[data-tone="night"] .goro b,:root[data-tone="night"] .works>b{color:var(--card-acc)}
+@keyframes flipn{from{transform:scaleY(.1);opacity:.3}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){:root[data-tone="night"] .flip{animation:none}}
 </style>
 
 <button type="button" class="gearbtn" id="gearBtn" aria-label="設定" title="設定"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.4-2.5 1a7.6 7.6 0 0 0-1.7-1L15 3.3h-4l-.4 2.7a7.6 7.6 0 0 0-1.7 1l-2.5-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.4 2.5-1a7.6 7.6 0 0 0 1.7 1l.4 2.7h4l.4-2.7a7.6 7.6 0 0 0 1.7-1l2.5 1 2-3.4zM13 15.5A3.5 3.5 0 1 1 13 8.5a3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg></button>
@@ -287,7 +337,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 
   <!-- ロビー -->
   <section id="lobby" style="display:flex;flex-direction:column;gap:14px">
-    <h1><span class="sup">SUPER</span><span>暗記</span>大戦<small>年号も用語も鳥も木も、みんなで覚える</small></h1>
+    <h1 class="app-name"><b>SUPER</b>暗記大戦</h1>
 
     <div class="roombar" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
       <span id="roomLabel">部屋No.<b id="roomNo" style="font-size:1.25em;letter-spacing:.08em"></b></span>
@@ -358,7 +408,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
     <div class="panel">
       <span class="small muted">テーマカラー</span>
       <div class="levels genres" id="greens"></div>
-      <div class="levels genres" id="tones"></div>
+      <div class="levels genres" id="tones" style="grid-template-columns:repeat(3,1fr)"></div>
     </div>
     <div class="panel" id="lqPanel">
       <span class="small muted">人生クエストと連携</span>
@@ -1402,7 +1452,7 @@ const S={
   mode: store.get("nb-mode")||"J",
   green: store.get("nb-green")||"wakakusa",
   amode: store.get("nb-amode")||"T",   // 答え方 T=入力 C=4択（端末ごと、2026-11-05 Keita依頼）
-  tone: store.get("nb-tone")||((window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"chestnut":"mint"),
+  tone: store.get("nb-tone2")||"night",   // 2026-11-17 夜空を初期に（以前の nb-tone は使わない）
   genre: store.get("nb-genre")||"H", bmode: store.get("nb-bm2")||"V", choices:[],
   view:"lobby",
   gid:null, deck:[], qi:0, phase:"ask", input:"", ans:null, ready:-1, wait:null, again:null,
@@ -1469,7 +1519,8 @@ function renderGenreTree(){
 function renderPickers(){
   if(!genreReady(S.genre)) ensureGenre(S.genre).then(renderPickers).catch(()=>{});
   seg("greens", [{key:"wakakusa",name:"若草"},{key:"tokiwa",name:"常磐"}], S.green, null, k=>{S.green=k; store.set("nb-green",k); document.documentElement.dataset.green=k; renderPickers();});
-  seg("tones", [{key:"mint",name:"明るい"},{key:"chestnut",name:"暗い"}], S.tone, null, k=>{S.tone=k; store.set("nb-tone",k); applyTone(k); renderPickers();});
+  seg("tones", [{key:"night",name:"夜空"},{key:"mint",name:"明るい"},{key:"chestnut",name:"暗い"}], S.tone, null, k=>{S.tone=k; store.set("nb-tone2",k); applyTone(k); renderPickers();});
+  $("greens").hidden=S.tone==="night";
   renderGenreTree();
   { const hist=S.genre==="H"||isProb(S.genre)||isTr(S.genre); $("amodesBox").style.display=hist?"none":"flex";
     seg("amodes", [{key:"T",name:"入力"},{key:"C",name:"4択"}], S.amode, null, k=>{S.amode=k; store.set("nb-amode",k); renderPickers();}); }
