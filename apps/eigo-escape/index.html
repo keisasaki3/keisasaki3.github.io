@@ -137,7 +137,7 @@ function speak(text,who){
 function hush(){spkTok++;try{window.speechSynthesis&&speechSynthesis.cancel()}catch(e){}}
 
 // ---------- 辞書（文書の単語をタップすると意味が出る） ----------
-const DICT={storm:"嵐",power:"電気・電源",electronic:"電子の",locks:"錠",lock:"錠",emergency:"非常の",keypad:"数字キー",battery:"電池",runs:"（機械が）動く",code:"暗証番号",owner:"持ち主・オーナー",chose:"選んだ（choose の過去）",lines:"線（phone lines＝電話線）",down:"（線が）切れて",opened:"開いた",month:"月",connecting:"つながっている",slide:"滑らせる",sliding:"滑らせている",thin:"薄い",downstairs:"下の階に",autumn:"秋",strangers:"見知らぬ人たち",passed:"渡した（pass の過去）",received:"受け取った",locked:"鍵のかかった",finish:"終える",free:"無料の",breakfast:"朝食",lighthouse:"灯台",radio:"無線",station:"局",enough:"十分な",teach:"教える",practice:"練習する",typewriter:"タイプライター",deal:"取り決め・約束",type:"（タイプライターで）打つ",noise:"音・騒音",hour:"時（何時の）",harbor:"港",postcard:"絵はがき",dark:"暗い",lamp:"明かり・ランプ",quarter:"4分の1（15分）",asleep:"眠って",quietly:"静かに",weather:"天気",reports:"報告・予報",report:"報告・予報",tide:"潮",romantic:"ロマンチックな",exactly:"ちょうど",wall:"壁",beautiful:"美しい",miss:"恋しく思う",footsteps:"足音",drop:"落とす",drops:"落とす",dropped:"落とした",folder:"楽譜ばさみ・フォルダー",diary:"日記",neighbor:"隣人",neighbors:"隣人たち",awake:"目が覚めて",count:"数える",steps:"歩数・足音",stairs:"階段",seventeen:"17",single:"ひとつの（every single day＝毎日欠かさず）",sound:"音",question:"問い",tape:"テープ",special:"特別な",south:"南",calm:"穏やかな",moon:"月",rises:"昇る",logbook:"業務日誌",numbers:"数",over:"（無線で）以上",company:"会社",north:"北",goodbyes:"別れ",worse:"もっと下手な",knock:"ノックする",finally:"ついに",understand:"わかる",front:"正面の（front hall＝玄関ホール）",hall:"ホール",hears:"聞こえる",borrowed:"借りた",wedding:"結婚式",photo:"写真",rain:"雨",hitting:"打っている",slowly:"ゆっくり",calendar:"カレンダー",concert:"演奏会",last:"最後の",sheet:"1枚（の紙）",visibility:"視界",force:"風力",finished:"終わった",dish:"皿",keys:"鍵（複数）",key:"鍵",tag:"札",fits:"合う",gap:"隙間",narrow:"細い",carved:"彫った",edge:"縁",letters:"手紙・文字",letter:"手紙",secret:"秘密",grandparents:"祖父母",candles:"ろうそく",years:"年",story:"物語",card:"カード",trunk:"トランク",shelf:"棚",piano:"ピアノ",bench:"（ピアノの）椅子",plaque:"銘板・案内板",brass:"真ちゅう",framed:"額に入った",note:"メモ",notes:"メモ",guest:"客",guests:"客たち",room:"部屋",rooms:"部屋",before:"〜より前に",after:"〜より後に",midnight:"真夜中",morning:"朝",evening:"夕方・夜",spell:"つづりを言う",date:"日付",wrote:"書いた（write の過去）",line:"行",sorry:"すまなく思う",cut:"切った",working:"動いている",still:"まだ",keep:"保つ",keeps:"保つ",window:"窓",light:"光・明かり",across:"〜を横切って",sea:"海",turns:"回る",wind:"風",sky:"空",home:"故郷・家",face:"顔",never:"一度も〜ない",swan:"白鳥",mood:"気分",waltz:"ワルツ",sonata:"ソナタ",through:"〜を通して",hear:"聞こえる",heard:"聞こえた（hear の過去）",watch:"見る・見守る",watched:"見ていた",town:"町",always:"いつも",then:"それから",very:"とても",ends:"終わる",sending:"送る",bad:"下手な",again:"もう一度",saturday:"土曜日",thursday:"木曜日",wednesday:"水曜日",tuesday:"火曜日",monday:"月曜日",friday:"金曜日",sunday:"日曜日",september:"9月",october:"10月",june:"6月",ninth:"9日・9番目",grandson:"孫",tea:"紅茶",meet:"会う",lobby:"ロビー",sent:"送った",open:"開ける・開いている",anything:"何か",dial:"ダイヤル",dials:"ダイヤル",set:"合わせる",hint:"ヒント",until:"〜まで",unfinished:"書きかけの",music:"音楽",teacher:"先生",school:"学校",number:"番号・数",nothing:"何も〜ない",sleep:"睡眠",stop:"やめる",playing:"弾くこと",play:"弾く",slow:"ゆっくりした",shows:"写している",where:"どこ",whatever:"何でも",wakes:"起こす",everything:"すべて"};
+const DICT={storm:"嵐",power:"電気・電源",electronic:"電子の",locks:"錠",lock:"錠",emergency:"非常の",keypad:"数字キー",battery:"電池",runs:"（機械が）動く",code:"暗証番号",owner:"持ち主・オーナー",chose:"選んだ（choose の過去）",lines:"線（phone lines＝電話線）",down:"（線が）切れて",opened:"開いた",month:"月",connecting:"つながっている",slide:"滑らせる",sliding:"滑らせている",thin:"薄い",downstairs:"下の階に",autumn:"秋",strangers:"見知らぬ人たち",passed:"渡した（pass の過去）",received:"受け取った",locked:"鍵のかかった",finish:"終える",free:"無料の",breakfast:"朝食",lighthouse:"灯台",radio:"無線",station:"局",enough:"十分な",teach:"教える",practice:"練習する",typewriter:"タイプライター",deal:"取り決め・約束",type:"（タイプライターで）打つ",noise:"音・騒音",hour:"時（何時の）",harbor:"港",postcard:"絵はがき",dark:"暗い",lamp:"明かり・ランプ",quarter:"4分の1（時刻では15分。a quarter past 〜＝〜時15分、a quarter to 〜＝〜時15分前）",asleep:"眠って",quietly:"静かに",weather:"天気",reports:"報告・予報",report:"報告・予報",tide:"潮",romantic:"ロマンチックな",exactly:"ちょうど",wall:"壁",beautiful:"美しい",miss:"恋しく思う",footsteps:"足音",drop:"落とす",drops:"落とす",dropped:"落とした",folder:"楽譜ばさみ・フォルダー",diary:"日記",neighbor:"隣人",neighbors:"隣人たち",awake:"目が覚めて",count:"数える",steps:"歩数・足音",stairs:"階段",seventeen:"17",single:"ひとつの（every single day＝毎日欠かさず）",sound:"音",question:"問い",tape:"テープ",special:"特別な",south:"南",calm:"穏やかな",moon:"月",rises:"昇る",logbook:"業務日誌",numbers:"数",over:"（無線で）以上",company:"会社",north:"北",goodbyes:"別れ",worse:"もっと下手な",knock:"ノックする",finally:"ついに",understand:"わかる",front:"正面の（front hall＝玄関ホール）",hall:"ホール",hears:"聞こえる",borrowed:"借りた",wedding:"結婚式",photo:"写真",rain:"雨",hitting:"打っている",slowly:"ゆっくり",calendar:"カレンダー",concert:"演奏会",last:"最後の",sheet:"1枚（の紙）",visibility:"視界",force:"風力",finished:"終わった",dish:"皿",keys:"鍵（複数）",key:"鍵",tag:"札",fits:"合う",gap:"隙間",narrow:"細い",carved:"彫った",edge:"縁",letters:"手紙・文字",letter:"手紙",secret:"秘密",grandparents:"祖父母",candles:"ろうそく",years:"年",story:"物語",card:"カード",trunk:"トランク",shelf:"棚",piano:"ピアノ",bench:"（ピアノの）椅子",plaque:"銘板・案内板",brass:"真ちゅう",framed:"額に入った",note:"メモ",notes:"メモ",guest:"客",guests:"客たち",room:"部屋",rooms:"部屋",before:"〜より前に",after:"〜より後に",midnight:"真夜中",morning:"朝",evening:"夕方・夜",spell:"つづりを言う",date:"日付",wrote:"書いた（write の過去）",line:"行",sorry:"すまなく思う",cut:"切った",working:"動いている",still:"まだ",keep:"保つ",keeps:"保つ",window:"窓",light:"光・明かり",across:"〜を横切って",sea:"海",turns:"回る",wind:"風",sky:"空",home:"故郷・家",face:"顔",never:"一度も〜ない",swan:"白鳥",mood:"気分",waltz:"ワルツ",sonata:"ソナタ",through:"〜を通して",hear:"聞こえる",heard:"聞こえた（hear の過去）",watch:"見る・見守る",watched:"見ていた",town:"町",always:"いつも",then:"それから",very:"とても",ends:"終わる",sending:"送る",bad:"下手な",again:"もう一度",saturday:"土曜日",thursday:"木曜日",wednesday:"水曜日",tuesday:"火曜日",monday:"月曜日",friday:"金曜日",sunday:"日曜日",september:"9月",october:"10月",june:"6月",ninth:"9日・9番目",grandson:"孫",tea:"紅茶",meet:"会う",lobby:"ロビー",sent:"送った",open:"開ける・開いている",anything:"何か",dial:"ダイヤル",dials:"ダイヤル",set:"合わせる",hint:"ヒント",until:"〜まで",unfinished:"書きかけの",music:"音楽",teacher:"先生",school:"学校",number:"番号・数",nothing:"何も〜ない",sleep:"睡眠",stop:"やめる",playing:"弾くこと",play:"弾く",slow:"ゆっくりした",shows:"写している",where:"どこ",whatever:"何でも",wakes:"起こす",everything:"すべて"};
 function tw(text){return esc(text).replace(/[A-Za-z]+/g,w=>DICT[w.toLowerCase()]?`<span class="w" data-w="${w.toLowerCase()}">${w}</span>`:w)}
 function bindWords(root,box){root.querySelectorAll(".w").forEach(s=>s.onclick=()=>{const b=$(box);if(b)b.textContent=`${s.dataset.w}：${DICT[s.dataset.w]}`})}
 
@@ -285,7 +285,7 @@ function tutCards(R){
   const first=R==="A"?"401のあなたは、まず <b>writing box</b>（手紙箱）と <b>piano</b>（ピアノ）を見てみましょう。":R==="B"?"402のあなたは、まず <b>framed note</b>（額のメモ）と <b>sea trunk</b>（トランク）を見てみましょう。":"";
   return [
    ["目的",`<ol><li>嵐で停電し、401号室と402号室に閉じ込められました。ふたりは別々の部屋にいて、相方の部屋は見えません。</li><li>廊下のドアのキーパッドに<b>4桁の番号</b>を入れれば脱出です。番号は「ドアが開いた日」。</li><li>まず <b>phone</b>（電話）で留守電を聞きましょう。状況が英語で説明されます。</li></ol>`],
-   ["調べる・開ける",`<ol><li>上に並んだボタン（piano、writing box など）を押すと、その物を調べられます。もう一度押すと閉じます。</li><li>手紙やカードを読みます。わからない単語は<b>点線の単語をタップ</b>で意味が出ます。「訳」で和訳も出せます。</li><li>錠には番号やダイヤルを入れます。間違えても罰はありません。</li></ol>`],
+   ["調べる・開ける",`<ol><li>上に並んだボタン（piano、writing box など）を押すと、その物を調べられます。もう一度押すと閉じます。</li><li>手紙やカードを読みます。わからない単語は<b>点線の単語をタップ</b>で意味が出ます。全文の和訳はありません（クリア後に読み返せます）。</li><li>錠には番号やダイヤルを入れます。間違えても罰はありません。</li></ol>`],
    ["相方と伝え合う",`<ol><li><b>答えの手がかりは、いつも相方の部屋にあります。</b>自分の部屋だけでは開きません。</li><li>画面の下の「ドアの下のメモ」に英語で書いて聞き合います。お助けフレーズ（Can you read it to me? など）を押すと入ります。</li><li>謎を解くと鍵が出ることがあります。「持ち物」の<b>ドアの下から滑らせる</b>で相方に渡します。</li><li>詰まったら<b>ヒント</b>。3段目は日本語で答えまで出ます。</li></ol>${first?`<p>${first}</p>`:""}`]
   ];
 }
@@ -403,13 +403,16 @@ function showHint(p,keep){
 // ---------- 文書 ----------
 function docHTML(t,opt={}){
   const j=nid();
-  return `${opt.front?`<p class="muted">${tw(opt.front.en)}</p>`:""}<div class="doc">${tw(t.en)}</div><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc((opt.front?opt.front.ja+"\n\n":"")+t.ja)}</div>`;
+  return `${opt.front?`<p class="muted">${tw(opt.front.en)}</p>`:""}<div class="doc">${tw(t.en)}</div>${jaBtn(j,(opt.front?opt.front.ja+"\n\n":"")+t.ja)}`;
 }
+// 和訳はゲーム中は出さない（2026-11-17 経太さん：訳を見たら英語の勉強にならない→ボタンを外す）。クリア画面の読み返しでだけ出す
+let JA=false;
+function jaBtn(j,txt){return JA?`<button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(txt)}</div>`:""}
 // 破れた手紙：上半分だけなら下端を破ったように見せ、下半分がそろえば1通につなげる
 function tornHTML(top,bottom,whole,what){
   const j=nid();
-  if(!whole)return `<div class="tornnote">${esc(what)}（上半分だけ。下が破れている）</div><div class="doc torn">${tw(top.en)}</div><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(top.ja)}</div>`;
-  return `<div class="tornnote">${esc(what)}（上下がそろった）</div><div class="doc">${tw(top.en)}<div class="tear"><span>torn here</span></div>${tw(bottom.en)}</div><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(top.ja+"……\n……"+bottom.ja)}</div>`;
+  if(!whole)return `<div class="tornnote">${esc(what)}（上半分だけ。下が破れている）</div><div class="doc torn">${tw(top.en)}</div>${jaBtn(j,top.ja)}`;
+  return `<div class="tornnote">${esc(what)}（上下がそろった）</div><div class="doc">${tw(top.en)}<div class="tear"><span>torn here</span></div>${tw(bottom.en)}</div>${jaBtn(j,top.ja+"……\n……"+bottom.ja)}`;
 }
 function bindDoc(root){bindWords(root,"#wb");root.querySelectorAll("[data-ja]").forEach(b=>b.onclick=()=>{const j=document.getElementById(b.dataset.ja);j.hidden=!j.hidden;b.classList.toggle("on",!j.hidden)})}
 function calHTML(){
@@ -440,7 +443,7 @@ function detail(R,id){
   else if(id==="window"){h+=docHTML(T.window)}
   else if(id==="photo"){h+=docHTML(T.photo)}
   else if(id==="piano"){h+=`<p class="muted">ピアノの上に絵はがきが1枚。裏返すと手書きの文字。</p>${docHTML(T.postcard,{front:T.postFront})}`}
-  else if(id==="shelf"){const j=nid();h+=`<p>${tw(T.shelf.en)}</p><button class="small" data-ja="${j}">訳</button><div class="ja" id="${j}" hidden>${esc(T.shelf.ja)}</div><table class="shelf">${SHELF.map(s=>`<tr><td>No. ${s[0]}</td><td>${esc(s[1])}</td></tr>`).join("")}</table>`}
+  else if(id==="shelf"){const j=nid();h+=`<p>${tw(T.shelf.en)}</p>${jaBtn(j,T.shelf.ja)}<table class="shelf">${SHELF.map(s=>`<tr><td>No. ${s[0]}</td><td>${esc(s[1])}</td></tr>`).join("")}</table>`}
   else if(id==="box"){
     if(!S.p1)h+=docHTML(T.card1)+dialLock();
     else h+=`<p class="res-ok">手紙箱は開いている。中には手紙が2通と、小さな鍵が1本入っていた。</p>${docHTML(T.J2)}${tornHTML(T.J3a,T.J3b,S.p3,"ジェームズの手紙")}${keyLine("tape",R)}`;
@@ -546,6 +549,7 @@ function notesPanel(){
 let cleared=false;
 function clear(){
   if(!cleared){cleared=true;hush()}
+  JA=true;
   const sec=Math.max(0,Math.round((G.end-G.start)/1000)),mm=Math.floor(sec/60),ss=sec%60;
   const story=[["J1","ジェームズ → エリー"],["E1","エリー → ジェームズ"],["J2","ジェームズ → エリー"],["E2","エリー → ジェームズ"],["J3","ジェームズ → エリー"],["E3","エリー → ジェームズ"]];
   const notes=G.notes.filter(n=>n.from!=="EJ");
