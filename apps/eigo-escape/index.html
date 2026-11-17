@@ -67,6 +67,9 @@ input[type=text]{width:100%;font-family:var(--font);font-size:16px;padding:10px;
 .big{font-size:30px;color:var(--head)}
 .inv{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .key{display:inline-flex;align-items:center;gap:6px;border:2px dashed var(--line);border-radius:10px;padding:4px 8px;font-size:14px}
+.tut .step{font-size:13px;color:var(--muted);margin-bottom:4px}
+.tut ol{margin:0 0 10px;padding-left:20px}
+.tut li{margin-bottom:6px}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:6px;margin:8px 0;font-size:13px}
 .cal div{min-height:38px;padding:2px 3px;border:1px solid var(--line);border-radius:3px;line-height:1.15}
 .cal .hd{min-height:0;border:none;text-align:center;color:var(--muted);font-size:11px}
@@ -263,7 +266,9 @@ function title(){
     <button class="pri wide" id="duo" style="margin-bottom:8px">ふたりで遊ぶ（個室を作る）</button>
     <div class="row"><input type="text" id="code" inputmode="numeric" maxlength="6" placeholder="相方の6桁の番号" style="flex:1;min-width:140px"><button id="join">入る</button></div>
   </div>
-  <p class="muted">片方が個室を作り、6桁の番号（またはURL）を相方に送ります。それぞれ別の部屋に入り、相方の部屋は最後まで見えません。やりとりは「ドアの下のメモ」（英字だけ）で。同じ部屋にいて声で話すときは、相方の画面をのぞかないのがお約束です。ひとり用は準備中です。</p>`;
+  <p class="muted">片方が個室を作り、6桁の番号（またはURL）を相方に送ります。それぞれ別の部屋に入り、相方の部屋は最後まで見えません。やりとりは「ドアの下のメモ」（英字だけ）で。同じ部屋にいて声で話すときは、相方の画面をのぞかないのがお約束です。ひとり用は準備中です。</p>
+  <button class="small" id="howto0">遊び方を見る</button>`;
+  $("#howto0").onclick=()=>{inTut=true;showTut(0,()=>{inTut=false;title()})};
   $("#duo").onclick=()=>startDuo(String(100000+Math.floor(Math.random()*900000)));
   $("#join").onclick=()=>{const v=$("#code").value.replace(/\D/g,"");if(v.length===6)startDuo(v);else $("#code").focus()};
 }
@@ -275,11 +280,34 @@ function startDuo(room){
   connect();render();
 }
 
+// ---------- 遊び方（部屋に入った最初と「遊び方」ボタンで出す。3枚） ----------
+function tutCards(R){
+  const first=R==="A"?"401のあなたは、まず <b>writing box</b>（手紙箱）と <b>piano</b>（ピアノ）を見てみましょう。":R==="B"?"402のあなたは、まず <b>framed note</b>（額のメモ）と <b>sea trunk</b>（トランク）を見てみましょう。":"";
+  return [
+   ["目的",`<ol><li>嵐で停電し、401号室と402号室に閉じ込められました。ふたりは別々の部屋にいて、相方の部屋は見えません。</li><li>廊下のドアのキーパッドに<b>4桁の番号</b>を入れれば脱出です。番号は「ドアが開いた日」。</li><li>まず <b>phone</b>（電話）で留守電を聞きましょう。状況が英語で説明されます。</li></ol>`],
+   ["調べる・開ける",`<ol><li>上に並んだボタン（piano、writing box など）を押すと、その物を調べられます。もう一度押すと閉じます。</li><li>手紙やカードを読みます。わからない単語は<b>点線の単語をタップ</b>で意味が出ます。「訳」で和訳も出せます。</li><li>錠には番号やダイヤルを入れます。間違えても罰はありません。</li></ol>`],
+   ["相方と伝え合う",`<ol><li><b>答えの手がかりは、いつも相方の部屋にあります。</b>自分の部屋だけでは開きません。</li><li>画面の下の「ドアの下のメモ」に英語で書いて聞き合います。お助けフレーズ（Can you read it to me? など）を押すと入ります。</li><li>謎を解くと鍵が出ることがあります。「持ち物」の<b>ドアの下から滑らせる</b>で相方に渡します。</li><li>詰まったら<b>ヒント</b>。3段目は日本語で答えまで出ます。</li></ol>${first?`<p>${first}</p>`:""}`]
+  ];
+}
+function showTut(i,after){
+  const C=tutCards(L&&L.role),c=C[i];
+  app.innerHTML=`<div class="top"><span class="prog">遊び方</span><span class="prog">${i+1} / ${C.length}</span></div>
+  <div class="card tut"><h2>${c[0]}</h2>${c[1]}
+  <div class="row" style="margin-top:8px">${i>0?`<button id="tp">‹ 前へ</button>`:""}${i<C.length-1?`<button class="pri" id="tn">次へ ›</button>`:`<button class="pri" id="tn">はじめる</button>`}<button class="small" id="ts">とばす</button></div></div>`;
+  if($("#tp"))$("#tp").onclick=()=>showTut(i-1,after);
+  $("#tn").onclick=()=>i<C.length-1?showTut(i+1,after):after();
+  $("#ts").onclick=after;
+  window.scrollTo(0,0);
+}
+
 // ---------- 描画 ----------
+let inTut=false;
 function render(remote){
   if(!G)return title();
+  if(inTut&&!G.end)return;
   if(G.end)return clear();
   if(!L.role)return pickRole();
+  if(!L.tut&&!remote)return startTut();
   // 相方の更新で描き直すとき、メモ欄に書いている途中なら入力位置を保つ
   const a=document.activeElement,typing=remote&&a&&a.id==="nt",pos=typing?a.selectionStart:0,sy=window.scrollY;
   roomView();
@@ -300,8 +328,9 @@ function pickRole(){
   </div>`;
   $("#bk").onclick=()=>{location.href=location.pathname};
   $("#share").onclick=()=>{const u=location.origin+location.pathname+"?room="+ROOM;(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>{$("#shmsg").textContent="コピーしました"}).catch(()=>{$("#shmsg").textContent=u})};
-  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{L.role=b.dataset.r;L.view="phone";if(!G.start)G.start=Date.now();saveAll();if(ch&&online)ch.track({role:L.role}).catch(()=>{});push(false);render()});
+  app.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{L.role=b.dataset.r;L.view="phone";if(!G.start)G.start=Date.now();saveAll();if(ch&&online)ch.track({role:L.role}).catch(()=>{});push(false);startTut()});
 }
+function startTut(){inTut=true;showTut(0,()=>{inTut=false;L.tut=1;saveAll();render()})}
 // 謎に手が届くか（ヒントの対象を決める）
 function avail(p){const S=G.solved;return p==="p1"||p==="p2"||(p==="p3"&&S.p2)||(p==="p4"&&S.p1)||(p==="p5"&&S.p3&&S.p4)}
 function roomView(){
@@ -321,6 +350,7 @@ function roomView(){
   <div id="comm"></div>
   <div class="row" style="margin-top:4px">
     <button class="small" id="hint">ヒント</button>
+    <button class="small" id="howto">遊び方</button>
     <button class="small" id="jp">日本語びん ${sum(G.jp)}</button>
     <span class="stat">ヒント ${sum(G.hints)} 回</span>
   </div>
@@ -329,6 +359,7 @@ function roomView(){
   app.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{L.view=L.view===b.dataset.o?null:b.dataset.o;saveAll();roomView();const d=$("#detail");if(d&&L.view)d.scrollIntoView({block:"nearest",behavior:"smooth"})});
   app.querySelectorAll("[data-slide]").forEach(b=>b.onclick=()=>{const k=b.dataset.slide;if(holder(k)!==R)return;G.k[k]=2;sysNote(`A small key slides under the door. Tag: "${KEYS[k].tag}"`);push(false);roomView()});
   $("#hint").onclick=()=>hintMenu();
+  $("#howto").onclick=startTut;
   $("#jp").onclick=()=>{G.jp[me]=(G.jp[me]||0)+1;push(false);$("#jp").textContent=`日本語びん ${sum(G.jp)}`};
   if(L.view)detail(R,L.view);
   notesPanel();
