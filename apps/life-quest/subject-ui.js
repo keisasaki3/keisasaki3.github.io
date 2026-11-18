@@ -5,7 +5,7 @@ let editMode = false;
 const PIXEL_ICON_IDS = new Set(['math', 'physics', 'astronomy', 'earth-science', 'chemistry', 'biology', 'computer-science', 'architecture', 'design', 'agriculture', 'medicine', 'dentistry', 'pharmacy', 'political-science', 'military-defense', 'law', 'economics', 'business-administration', 'sociology', 'education', 'philosophy', 'religious-studies', 'psychology', 'linguistics-languages', 'anthropology-archaeology', 'history', 'geography', 'literature', 'art', 'english', 'strength', 'assets']);
 
 // 教養プリセット（2026-11-17）は暗記大戦のジャンルと同じドット絵を使う
-const PIXEL_ICON_ALIAS = { 'kyo-heritage': 'heritage', 'kyo-archi': 'architecture', 'kyo-paint': 'art', 'kyo-classic': 'classical', 'kyo-const': 'constellation', 'kyo-cuisine': 'cuisine', 'kyo-drink': 'drink', 'kyo-season': 'season', 'kyo-flower': 'flower', 'kyo-gem': 'gem', 'kyo-buddha': 'buddha', 'kyo-wine': 'wine', 'kyo-kigo': 'kigo', 'kyo-heritagejp': 'heritage' };
+const PIXEL_ICON_ALIAS = { 'kyo-heritage': 'heritage', 'kyo-archi': 'architecture', 'kyo-paint': 'art', 'kyo-classic': 'classical', 'kyo-const': 'constellation', 'kyo-cuisine': 'cuisine', 'kyo-drink': 'drink', 'kyo-season': 'season', 'kyo-flower': 'flower', 'kyo-gem': 'gem', 'kyo-buddha': 'buddha', 'kyo-wine': 'wine', 'kyo-kigo': 'kigo', 'kyo-heritagejp': 'heritage', 'kyo-rakugo': 'rakugo', 'kyo-owarai': 'owarai' };
 Object.keys(PIXEL_ICON_ALIAS).forEach(id => PIXEL_ICON_IDS.add(id));
 
 function presetIconMarkup(preset) {
