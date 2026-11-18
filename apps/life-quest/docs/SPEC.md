@@ -85,7 +85,7 @@ NEXTの候補はチェック型トピックのみ。自分で追加したトピ�
 2026-11-17 Keita了承で追加。SUPER暗記大戦の教養ジャンルと同じ8科目（世界遺産・名建築・名画・クラシック音楽・星座・料理・酒・旬の食材、subject_id は kyo-○○）。分野は暗記大戦の札のグループ（世界遺産なら日本・アジア…）、各分野にチェック型トピックが1件（トピックIDは分野IDと同じ）。習得度は暗記大戦の札の定着度から出す。アイコンは暗記大戦と同じドット絵（subject-ui.js の PIXEL_ICON_ALIAS）。中身は `/shared-world-core/supabase/seeds/010_kyoyo_presets.sql`。
 
 2026-11-18 Keita了承で6科目を追加（花・宝石と鉱物・仏像・ワイン・季語・世界遺産（日本）、subject_id kyo-flower / kyo-gem / kyo-buddha / kyo-wine / kyo-kigo / kyo-heritagejp、sort_order 410〜460、seed 011）。
-2026-11-18 落語（kyo-rakugo、sort 470）・お笑い（kyo-owarai、sort 480）の2科目を seed 012 に用意（各4分野＝札のグループ）。本番適用は Keita の承認後。
+2026-11-18 落語（kyo-rakugo、sort 470）・お笑い（kyo-owarai、sort 480）の2科目を seed 012 に用意（各4分野＝札のグループ）。2026-11-18 本番適用（Keita「いいよ」）。
 
 ### 29学問
 
