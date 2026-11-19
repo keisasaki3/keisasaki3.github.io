@@ -16,3 +16,6 @@ cp -r apps/eigo-escape dist/eigo-escape
 cp -r apps/ui-mock dist/ui-mock
 cp -r shared dist/shared
 cp apps/portal/index.html dist/index.html
+# 説明書き（README.md など）は開発用のメモなのでサイトに載せない。ファイルはリポジトリに残す。
+# 例外: 環境音のクレジット（CC BY）が参照する snd/SOURCES.md だけは公開のまま。
+find dist -name '*.md' ! -path 'dist/history-novel/snd/SOURCES.md' -delete
