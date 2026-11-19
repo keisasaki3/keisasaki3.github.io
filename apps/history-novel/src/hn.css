@@ -330,7 +330,7 @@ html.title-mode header,html.title-mode .novel{display:none}
 #map{cursor:grab}#map:active{cursor:grabbing}
 #map{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 
-/* ---------- 見た目（スキン）: 2026-11-06 経太さん採用の4種。html[data-skin] で切替、初期は kin（墨と金箔）。
+/* ---------- 見た目（スキン）: 2026-11-06 依頼者採用の4種。html[data-skin] で切替、初期は kin（墨と金箔）。
    赤は強調だけ。太い黒線・ずらし影・赤ベタはやめる。フォントは tpl.html の頭で skin ごとに読み込む ---------- */
 /* 共通: 線を細く、ずらし影をやめて柔らかい影、赤ベタをやめる */
 :root[data-skin]{--shadow:transparent}
@@ -416,7 +416,7 @@ html.going body>*{visibility:hidden!important}
 .enx{display:flex;gap:6px;align-items:center;margin-top:6px}
 .sayb,.jab{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:26px;padding:0 8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:var(--muted);font:inherit;font-size:12.5px;cursor:pointer}
 .sayb svg{width:16px;height:16px}
-/* 押した手ごたえはボタンだけに出す。窓全体が光るスマホのタップ色は消す（2026-11-15 経太さん） */
+/* 押した手ごたえはボタンだけに出す。窓全体が光るスマホのタップ色は消す（2026-11-15 依頼者） */
 #novel,#talk,.sh-body{-webkit-tap-highlight-color:transparent}
 .sayb,.jab{-webkit-tap-highlight-color:transparent;transition:background .12s,color .12s,border-color .12s,transform .08s}
 .sayb:active,.jab:active{transform:scale(.92);background:var(--line)}
@@ -432,8 +432,8 @@ html.going body>*{visibility:hidden!important}
 .sh-body .rd .ipa{font-family:"Segoe UI","Noto Sans",system-ui,sans-serif;letter-spacing:0}
 .sh-body .rd .sayb{margin-left:8px;vertical-align:middle}
 .enja{font-size:17px;font-weight:700;margin:6px 0 2px}
-.biz{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:14px;line-height:1.7}
-.biz b{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:2px}
+.modern{margin:10px 0;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:14px;line-height:1.7}
+.modern b{display:block;font-size:12px;color:var(--muted);font-weight:500;margin-bottom:2px}
 .flash{list-style:none;padding:0;margin:6px 0 14px;display:grid;gap:8px}
 .flash .fl{width:100%;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit;font:inherit;cursor:pointer;display:grid;gap:4px}
 .flash .fl .fe{font-weight:700}

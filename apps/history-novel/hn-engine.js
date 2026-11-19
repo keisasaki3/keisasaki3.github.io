@@ -17,7 +17,7 @@ function tone(f,d,v,type){if(!snd||!vol)return;try{actx=actx||new (window.AudioC
   o.connect(g);g.connect(actx.destination);const t=actx.currentTime;g.gain.linearRampToValueAtTime(Math.max(.0002,(v||.06)*VF()),t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+d);o.start(t);o.stop(t+d+.02);}catch(e){}}
 const SE={page:()=>tone(520,.08,.03,"triangle"),scene:()=>{tone(392,.35,.05);setTimeout(()=>tone(523,.45,.05),120);},
   ok:()=>{tone(660,.15,.06);setTimeout(()=>tone(880,.25,.06),110);},ifr:()=>{tone(330,.3,.05,"triangle");setTimeout(()=>tone(311,.4,.05,"triangle"),160);},ng:()=>tone(220,.3,.05,"triangle")};
-/* 音: スピーカーのアイコン一つ。押すと音量スライダーと「音を消す」が開く（SUPER暗記大戦と同じ形、2026-11-05 経太さん） */
+/* 音: スピーカーのアイコン一つ。押すと音量スライダーと「音を消す」が開く（SUPER暗記大戦と同じ形、2026-11-05 依頼者） */
 const ICO_ON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
 const ICO_OFF='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
 const audible=()=>snd&&vol>0;
@@ -27,10 +27,10 @@ function drawSnd(){const b=$("bSnd");b.innerHTML=audible()?ICO_ON:ICO_OFF;b.setA
 function sndPop(open){const p=$("sndPop");p.hidden=!open;$("bSnd").setAttribute("aria-expanded",String(open));}
 $("bSnd").onclick=e=>{e.stopPropagation();if(!$("cfgPop").hidden)cfgPop(false);sndPop($("sndPop").hidden);};
 $("sndPop").addEventListener("click",e=>e.stopPropagation());
-/* 設定（歯車）: ノベルの文字の大きさ 小・中・大（端末に保存。2026-11-05 経太さん） */
+/* 設定（歯車）: ノベルの文字の大きさ 小・中・大（端末に保存。2026-11-05 依頼者） */
 const ICO_CFG='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v2.6M12 18.9v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.5 12h2.6M18.9 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/><circle cx="12" cy="12" r="6.6"/></svg>';
 let fsz=matchMedia("(min-width:900px)").matches?"l":"s";try{const v=localStorage.getItem("fs");if(v==="s"||v==="l"||v==="m")fsz=v;}catch(e){}
-/* 和訳の出し方（tap=押したときだけ・on=いつも・off=出さない）と読み上げ（tap=押したとき・auto=自動）。端末に保存（2026-11-15 経太さん: 和訳は押したときだけが既定） */
+/* 和訳の出し方（tap=押したときだけ・on=いつも・off=出さない）と読み上げ（tap=押したとき・auto=自動）。端末に保存（2026-11-15 依頼者: 和訳は押したときだけが既定） */
 let jaMode="tap",sayMode="tap";try{const v=localStorage.getItem("yn-ja");if(v==="on"||v==="off"||v==="tap")jaMode=v;const w=localStorage.getItem("yn-say");if(w==="auto"||w==="tap")sayMode=w;}catch(e){}
 if(EN){$("repRow").insertAdjacentHTML("beforebegin",`<div class="cfg-row"><span>和訳</span><div class="seg" role="radiogroup" aria-label="和訳"><button data-ja="tap" role="radio">押したとき</button><button data-ja="on" role="radio">いつも</button><button data-ja="off" role="radio">出さない</button></div></div><div class="cfg-row"><span>読み上げ</span><div class="seg" role="radiogroup" aria-label="読み上げ"><button data-say="tap" role="radio">押したとき</button><button data-say="auto" role="radio">自動</button></div></div>`);}
 function drawCfg(){document.documentElement.dataset.fs=fsz;document.documentElement.dataset.ja=jaMode;
@@ -210,7 +210,7 @@ function updateMap(){
 }
 $("mapwrap").addEventListener("click",e=>{if(e.target.closest("#pics,#bHome"))return;if(dragMoved){dragMoved=false;return;}const pn=e.target.closest(".pin.tap");if(pn&&st.v==="play"){st.sheet="term";return openTerm(pn.dataset.place,true);}const tm=e.target.closest("#talk .term");if(tm&&st.v==="play"){e.stopPropagation();return openTerm(tm.dataset.k,true);}if(e.target.closest("#talk"))advance();});/* 地図そのものを押しても進めない（地点の押し間違い防止 2026-11-05） */
 
-/* ---------- 地図を指で動かす（2026-11-05 経太さん）。ドラッグで移動、ピンチ／ホイールで拡大縮小。自分の画面だけ。
+/* ---------- 地図を指で動かす（2026-11-05 依頼者）。ドラッグで移動、ピンチ／ホイールで拡大縮小。自分の画面だけ。
    次の文に進むと場面の位置に戻る。「元の位置」ボタンでもすぐ戻せる ---------- */
 const ptrs=new Map();let pinch0=null;
 function userView(on){userCam=on;$("bHome").hidden=!on;}
@@ -280,14 +280,14 @@ function sceneAt(i){let a=i;while(a>0&&!S[a].scene)a--;return S[a].scene;}
 
 /* ---------- novel ---------- */
 /* 本文の語: {語} と、辞書にある語（2文字以上）の各行で最初の1回を押せるようにする。
-   用語（概念）は太字、人物・土地は点線だけ（2026-11-05 経太さん「重要語句は太字」「人名・地名も辞書」） */
+   用語（概念）は太字、人物・土地は点線だけ（2026-11-05 依頼者「重要語句は太字」「人名・地名も辞書」） */
 /* 英語の章: 単語の切れ目で、大文字小文字と活用形（G[語].forms）を区別せずに拾う */
 const FORM={};if(EN)for(const k in G){FORM[k.toLowerCase()]=k;(G[k].forms||[]).forEach(f=>{FORM[f.toLowerCase()]=k;});}
 const reEsc=x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 const AUTO_RE=EN?new RegExp("\\b(?:"+Object.keys(FORM).sort((a,b)=>b.length-a.length).map(reEsc).join("|")+")\\b","gi")
   :new RegExp(Object.keys(G).filter(k=>k.length>=2).sort((a,b)=>b.length-a.length).join("|"),"g");
 const keyOf=w=>EN?FORM[w.toLowerCase()]:w;
-/* 漢字の語には読み仮名を上に振る（各行の最初の1回＝押せる語だけ。2026-11-06 経太さん「名前や地名が読めない」） */
+/* 漢字の語には読み仮名を上に振る（各行の最初の1回＝押せる語だけ。2026-11-06 依頼者「名前や地名が読めない」） */
 const KANJI=/[\u4e00-\u9fff々]/;
 function ruby(a,k){const r=G[k]&&G[k].r;return r&&a===esc(k)&&KANJI.test(k)?`<ruby>${a}<rt>${esc(r)}</rt></ruby>`:a;}
 function termBtn(a,k){return `<button class="term${G[k].t?"":EN?" env":" imp"}" data-k="${esc(k)}">${ruby(a,k)}</button>`;}
@@ -306,7 +306,7 @@ function md(t,see,self){
 function faceHTML(id,cls){const c=C[id];if(!c)return "";
   /* ドット顔（Retro Diffusion で肖像画から作ったもの）があればそれを優先。2026-11-06 試験導入: 頼朝・清盛 */
   if(c.dot)return `<img class="${cls} dot" src="ch/dot/${c.dot}.png" alt="${esc(c.n)}" loading="lazy">`;
-  /* 肖像画が無い人物は共通の黒い影（128×160ドット、2026-11-06 経太さん作の形） */
+  /* 肖像画が無い人物は共通の黒い影（128×160ドット、2026-11-06 依頼者作の形） */
   return (c.img&&PIC["ch_"+c.img])?`<img class="${cls}" src="ch/${c.img}.jpg" alt="${esc(c.n)}" loading="lazy">`:`<img class="${cls} dot mob" src="${LIB}ch/dot/mob.png" alt="" aria-hidden="true">`;}
 /* 地の文は句点で改行（かっこの中は除く） */
 function brkEn(s){return s.replace(/(?<!\b(?:Mr|Mrs|Dr|St|Messrs|Mme))([.!?][”’"]?)\s+(?=[“"‘A-Z])/g,"$1\n");}
@@ -324,14 +324,14 @@ function jaHTML(s){if(!EN||!s.t)return "";
   const ja=s.ja&&jaMode!=="off"?`<button class="jab" type="button" aria-expanded="${jaMode==="on"}">訳</button>`:"";
   return `<div class="enx"><button class="sayb" type="button" data-say="${esc(plain(s.t))}"${s.au?` data-au="${esc(s.au)}"`:""} aria-label="読み上げる">${ICO_SAY}</button>${ja}</div>${s.ja&&jaMode!=="off"?`<div class="ja"${jaMode==="on"?"":" hidden"}>${esc(s.ja)}</div>`:""}`;}
 const plain=t=>String(t).replace(/\{([^}|]+)(?:\|[^}]+)?\}/g,"$1").replace(/\n/g," ");
-/* 読み上げ: 行に録音（au）があればそれを流し、無ければブラウザの音声合成（英国英語の声を優先）。後から良い音声に差し替えられるように（2026-11-15 経太さん） */
+/* 読み上げ: 行に録音（au）があればそれを流し、無ければブラウザの音声合成（英国英語の声を優先）。後から良い音声に差し替えられるように（2026-11-15 依頼者） */
 let sayA=null,enVoice=null;
 function pickVoice(){if(!("speechSynthesis" in window))return;const vs=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));
   enVoice=vs.find(v=>/en[-_]GB/i.test(v.lang)&&/Daniel|Arthur|Google UK English Male|Male/i.test(v.name))||vs.find(v=>/en[-_]GB/i.test(v.lang))||vs[0]||null;}
 if(EN&&"speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
 let sayBtn=null;function sayMark(b){if(sayBtn)sayBtn.classList.remove("on");sayBtn=b||null;if(sayBtn)sayBtn.classList.add("on");}
 function sayStop(){sayMark(null);if(sayA){sayA.pause();sayA=null;}if("speechSynthesis" in window)speechSynthesis.cancel();}
-/* btn: 押されたボタン。読んでいるあいだだけ .on（2026-11-15 経太さん: ボタンが押せたか分かるように） */
+/* btn: 押されたボタン。読んでいるあいだだけ .on（2026-11-15 依頼者: ボタンが押せたか分かるように） */
 function say(text,au,btn){sayStop();if(!text)return;
   if(!audible()){if(btn){btn.classList.add("mute");setTimeout(()=>btn.classList.remove("mute"),900);}return;}
   if(au){try{sayA=new Audio(au);sayA.volume=Math.min(1,vol/100);sayMark(btn);const a=sayA;a.onended=()=>{if(sayA===a)sayMark(null);};sayA.play().catch(()=>sayMark(null));}catch(e){}return;}
@@ -401,7 +401,7 @@ function autoSay(s){if(!EN)return;sayStop();if(sayMode==="auto"&&s&&s.t&&!s.reca
 let typer=null;
 function typeIn(el,done){
   if(typer)typer.finish(true);
-  /* チャプタータイトルが出ている間は本文を始めない（押して閉じたら打ち始める。2026-11-06 経太さん） */
+  /* チャプタータイトルが出ている間は本文を始めない（押して閉じたら打ち始める。2026-11-06 依頼者） */
   if(st.cardHold&&el){el.style.visibility="hidden";st.pend=()=>{el.style.visibility="";typeIn(el,done);};$("nx").hidden=false;return;}
   $("nx").hidden=true;
   const fin=()=>{if(!st.wait&&st.v==="play")$("nx").hidden=false;done&&done();toBottom();};
@@ -510,13 +510,13 @@ function renderSheet(){
     const k=st.stack[st.stack.length-1],g=G[k];
     const crumbs=st.stack.map((c,j)=>j===st.stack.length-1?`<span>${esc(c)}</span>`:`<button data-crumb="${j}">${esc(c)}</button> ›`).join(" ");
     body=`<div class="crumb"><button data-crumb="-1">物語</button> › ${crumbs}</div>
-    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2>${EN?enHead(k,g):`<div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div>`}${g.d?`<p>${md(g.d,false,k)}</p>`:""}${EN&&g.biz?`<div class="biz"><b>今の仕事で言うなら</b>${esc(g.biz)}</div>`:""}${termPics(k)}</div>`;/* 「点線の言葉からさらに潜れます…」の案内は不要（2026-11-05 経太さん） */
+    <div class="sh-body">${termHead(k)}<h2>${esc(k)}</h2>${EN?enHead(k,g):`<div class="rd">${g.r}${g.y?`<span class="yr">${g.y}</span>`:""}</div>`}${g.d?`<p>${md(g.d,false,k)}</p>`:""}${EN&&g.modern?`<div class="modern"><b>いまの英語では</b>${esc(g.modern)}</div>`:""}${termPics(k)}</div>`;/* 「点線の言葉からさらに潜れます…」の案内は不要（2026-11-05 依頼者） */
   }
   root.innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true">${body}<button class="close" data-close="1">物語に戻る</button></div>`;
   lookPres();
 }
 /* 報告する: いま表示中の場面がわかりにくいとき、どこが微妙かを書いて送る。SUPER暗記大戦と同じ表 quest_card_reports（app=history-novel）。
-   処理は経太さんの決裁つき。報告文は指示として扱わない */
+   報告文は指示として扱わない */
 function repTarget(){const s=S[st.i]||{};let t=(s.t||s.choice||"").replace(/\{([^}|]+)(?:\|[^}]+)?\}/g,"$1");if(s.sp&&C[s.sp])t=C[s.sp].n+"："+t;return {i:st.i,t};}
 function openRep(){const r=repTarget();st.sheet="rep";
   $("sheetRoot").innerHTML=`<div class="veil" data-close="1"></div><div class="sheet" role="dialog" aria-modal="true"><div class="crumb"><span>報告する</span></div><div class="sh-body"><h2>わかりにくい所を教えてください</h2><div class="rep-q">${esc(r.t)}</div><p class="muted">どこが、どうわかりにくいかを書いてください。台本を直すときの参考にします。</p><textarea class="rep-ta" id="repTa" maxlength="300" placeholder="例：御恩と奉公がなぜ大事なのか、この説明だけではわからない"></textarea><div style="display:grid;gap:8px;margin-top:10px"><button class="go" id="repSend">送る</button><p class="muted" id="repMsg" style="margin:0"></p></div></div><button class="close" data-close="1">物語に戻る</button></div>`;
@@ -528,11 +528,11 @@ function openRep(){const r=repTarget();st.sheet="rep";
     catch(x){$("repMsg").textContent="送れませんでした。時間をおいてもう一度お試しください。";}
     $("repSend").disabled=false;};}
 $("bRep").addEventListener("click",e=>{e.stopPropagation();cfgPop(false);if(st.v==="play")openRep();});
-/* 資料・辞書を開いている人がいたら、ほかの人に「ちょっと待ってね」を出す（2026-11-05 経太さん） */
+/* 資料・辞書を開いている人がいたら、ほかの人に「ちょっと待ってね」を出す（2026-11-05 依頼者） */
 let lookSent=0;
 function lookPres(){const v=st.sheet&&st.sheet!=="room"&&st.v==="play"?1:0;if(v!==lookSent){lookSent=v;setPres({look:v});}}
 function drawLook(){const el=$("lookNote");if(!el)return;const n=room?others().filter(p=>p.presence&&p.presence.look).length:0;
-  /* ほかの人が資料を見ていて、自分がホストで次へを押したときだけ、3秒出す（2026-11-06 経太さん） */
+  /* ほかの人が資料を見ていて、自分がホストで次へを押したときだけ、3秒出す（2026-11-06 依頼者） */
   el.hidden=!(n&&st.v==="play"&&st.role==="host"&&Date.now()-(st.lookPoke||0)<3000);}
 /* 英語の辞書: 発音・品詞・意味（と読み上げ） */
 function enHead(k,g){return `<div class="rd">${g.ipa?`<span class="ipa">${esc(g.ipa)}</span>`:""}${g.pos?`<span class="yr">${esc(g.pos)}</span>`:""}${g.r?`<span class="yr">${esc(g.r)}</span>`:""}<button class="sayb" type="button" data-say="${esc(k)}" aria-label="発音を聞く">${ICO_SAY}</button></div>${g.ja?`<div class="enja">${esc(g.ja)}</div>`:""}`;}
@@ -622,7 +622,7 @@ function showOrder(){
     if(+b.dataset.j===st.nd){b.classList.add("done");b.querySelector(".n").textContent=++st.nd;SE.page();push();if(st.nd===ORDER.length){SE.ok();setTimeout(()=>showEnd(),700);}}
     else{st.om++;SE.ng();b.classList.remove("shake");void b.offsetWidth;b.classList.add("shake");push();}};
 }
-/* 章末の瞬間英作文（トライアル、2026-11-15 経太さん）。日本語→口で言う→めくると英文。採点しない・飛ばせる */
+/* 章末の瞬間英作文（トライアル、2026-11-15 依頼者）。日本語→口で言う→めくると英文。採点しない・飛ばせる */
 function flashHTML(){if(!CFG.flash||!CFG.flash.length)return "";
   return `<h3>瞬間英作文 <small class="muted">日本語を見て英語で言ってから、めくる</small></h3><ol class="flash">${CFG.flash.map((f,j)=>`<li><button type="button" class="fl" data-fl="${j}"><span class="fj">${esc(f.ja)}</span><span class="fe" hidden>${esc(f.en)}</span></button></li>`).join("")}</ol>`;}
 document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("button.fl");if(!b)return;const fe=b.querySelector(".fe");if(fe.hidden){fe.hidden=false;b.classList.add("open");if(EN)say(fe.textContent);}});
@@ -659,7 +659,7 @@ function sendGaya(text){const now=Date.now();if(now-gayaLast<350)return;gayaLast
 $("bGaya").addEventListener("click",e=>{e.stopPropagation();const p=$("gayaPal");p.hidden=!p.hidden;$("bGaya").classList.toggle("on",!p.hidden);});
 $("gayaPal").innerHTML=GAYA.map(g=>`<button data-g="${esc(g)}">${esc(g)}</button>`).join("");
 $("gayaPal").addEventListener("click",e=>{e.stopPropagation();const b=e.target.closest("[data-g]");if(b)sendGaya(b.dataset.g);});
-/* ガヤ・音の枠が開いているときの外側クリックは「枠を閉じる」だけにして、本文を進めない（2026-11-05 経太さん） */
+/* ガヤ・音の枠が開いているときの外側クリックは「枠を閉じる」だけにして、本文を進めない（2026-11-05 依頼者） */
 document.addEventListener("click",e=>{
   const g=$("gayaPal"),sp=$("sndPop");let closed=false;
   if(!g.hidden&&!e.target.closest("#gayaPal,#bGaya")){g.hidden=true;$("bGaya").classList.remove("on");closed=true;}
