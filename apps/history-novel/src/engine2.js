@@ -264,7 +264,7 @@ function openLB(keys,i,back){lbKeys=keys||picKeys;picI=i||0;st.lbBack=back||null
 $("pics").addEventListener("click",e=>{e.stopPropagation();openLB();});
 
 /* ---------- header ---------- */
-/* ---------- BGM＝環境音（2026-11-06 音楽は入れず、チャプターごとに環境音。素材は snd/amb/、出典は snd/SOURCES.md） ---------- */
+/* ---------- BGM＝環境音（2026-11-06 音楽は入れず、チャプターごとに環境音。素材は snd/amb/、出典は snd/SOURCES.txt） ---------- */
 const BGM=Object.fromEntries("satoyama_night temple_garden court_quiet battle_far waterbirds sea_battle town_japan winter_night army_march harbor_river harbor_china harbor_lisbon rough_sea siege_far storm_sea calm_ocean tropical_market lake_city highland_wind island_beach mine port_market".split(" ").map(k=>[k,LIB+"snd/amb/"+k+".mp3"]));let bgmEl=null,bgmKey=null,bgmWant=null;
 function bgm(key){
   bgmWant=key;const k=audible()?key:null;
@@ -634,7 +634,7 @@ function showEnd(){
   ${flashHTML()}
   <h3>次の章</h3>
   <div class="door"><small>試作では未制作</small><b>${esc(CFG.next.t)}</b><p>${esc(CFG.next.d)}</p></div>
-  <details class="cred"><summary>画像の出典</summary><ul>${Object.keys(C).filter(k=>C[k].img&&PIC["ch_"+C[k].img]).map(k=>`<li>${esc(C[k].n)}：${esc(PIC["ch_"+C[k].img].cr)}</li>`).join("")}${Object.keys(PIC).filter(k=>!k.startsWith("ch_")).map(k=>`<li>${esc(PIC[k].cap)}：${esc(PIC[k].cr)}</li>`).join("")}<li>${esc(CFG.credit)}</li><li>環境音：効果音ラボ／OtoLogic（CC BY 4.0）。詳細は snd/SOURCES.md</li></ul></details>
+  <details class="cred"><summary>画像の出典</summary><ul>${Object.keys(C).filter(k=>C[k].img&&PIC["ch_"+C[k].img]).map(k=>`<li>${esc(C[k].n)}：${esc(PIC["ch_"+C[k].img].cr)}</li>`).join("")}${Object.keys(PIC).filter(k=>!k.startsWith("ch_")).map(k=>`<li>${esc(PIC[k].cap)}：${esc(PIC[k].cr)}</li>`).join("")}<li>${esc(CFG.credit)}</li><li>環境音：効果音ラボ／OtoLogic（CC BY 4.0）。詳細は snd/SOURCES.txt</li></ul></details>
   ${isFollower()?"":'<button class="ghost" id="endBack">◀ 本文に戻る</button><button class="ghost" id="again">最初から読む</button>'}`);
   if($("endBack"))$("endBack").onclick=()=>{$("ovRoot").innerHTML="";back();};
   if($("again"))$("again").onclick=()=>{if(SBR.on&&st.role==="host")SBR.clear();resetProgress();showTitle();};

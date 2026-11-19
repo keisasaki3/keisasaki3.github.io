@@ -1,7 +1,5 @@
 # GitHub Pages（Jekyll）の設定。説明書き（*.md）は開発用のメモなのでサイトに載せない。ファイルはリポジトリに残る。
-# 例外: 環境音のクレジット（CC BY）が参照する snd/SOURCES.md だけは公開のまま。
+# 環境音のクレジット（CC BY）が参照する出典の一覧は snd/SOURCES.txt（.md ではないので公開のまま）。
 exclude:
   - "*.md"
   - "**/*.md"
-include:
-  - apps/history-novel/snd/SOURCES.md
