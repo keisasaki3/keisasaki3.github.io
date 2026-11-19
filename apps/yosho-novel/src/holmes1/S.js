@@ -1,5 +1,5 @@
 /* SUPER洋書ノベル 第1話「ボヘミアの醜聞」（A Scandal in Bohemia, 1891）台本。
-   英文 t は原文のまま（書き換え・削除をしない。2026-11-15 経太さん「原文全文」）。ja は自作の和訳（直訳寄り）。
+   英文 t は原文のまま（書き換え・削除をしない。2026-11-15 依頼者「原文全文」）。ja は自作の和訳（直訳寄り）。
    1行は1〜2文。dd:1 は推理の行（手がかりを選ぶ。IFは出さない）。座標は [経度,緯度] */
 const P={
 "Baker Street":[-0.1586,51.5238,"221B Baker Street"],"Langham Hotel":[-0.1438,51.5179,"Langham Hotel"],"Briony Lodge":[-0.1745,51.5335,"Briony Lodge"],"Inner Temple":[-0.1094,51.5122,"Inner Temple"],"Charing Cross":[-0.1247,51.5080,"Charing Cross Station"],"Regent Street":[-0.1400,51.5125,"Gross & Hankey’s (Regent Street)"],"St. Monica":[-0.1680,51.5190,"Church of St. Monica"],

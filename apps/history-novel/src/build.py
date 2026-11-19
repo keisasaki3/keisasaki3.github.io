@@ -10,7 +10,7 @@ CHAPTERS = [
     # (出力ファイル（../ からの相対）, 章のフォルダ（src からの相対。'' は src そのもの）, 地図パスのファイル, 題名, 共通部分への相対パス)
     ('index.html', '', 'japan_path.txt', 'SUPER歴史ノベル', ''),        # 日本史 鎌倉編「武士の天下へ（平安～鎌倉）」
     ('daikokai.html', 'w1', 'world_path.txt', 'SUPER歴史ノベル', ''),   # 世界史 大航海時代「世界がつながる（大航海時代）」
-    # SUPER洋書ノベル（2026-11-15 経太さん: 歴史ノベルと同格の別アプリ /yosho-novel/。エンジンは共有、章データは apps/yosho-novel/src/）
+    # SUPER洋書ノベル（2026-11-15 依頼者: 歴史ノベルと同格の別アプリ /yosho-novel/。エンジンは共有、章データは apps/yosho-novel/src/）
     ('../yosho-novel/index.html', '../../yosho-novel/src/holmes1', 'london_path.txt', 'SUPER洋書ノベル', '../history-novel/'),  # ドイル「ボヘミアの醜聞」
 ]
 ver = {}

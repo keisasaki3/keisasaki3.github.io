@@ -17,7 +17,7 @@
 - ビルドは `python3 apps/history-novel/src/build.py`（`CHAPTERS` に洋書ノベルの行がある）。出力は `apps/yosho-novel/index.html`。
 - 章データは `src/holmes1/`（`cfg.js`・`S.js` 台本・`G.js` 辞書・`pic.js`・`london_path.txt`）。
 - 台本: `t` 原文、`ja` 和訳、`sp` 話し手、`n` 注、`choice`＋`dd:1` は推理（手がかりを選ぶ。IFは出さない、章末の用語帳に「推理」の成績）、`recall`＋`rw`（表示する活用形）は伏せ字。
-- 辞書: 見出しは英語。`ipa` 発音、`pos` 品詞、`ja` 意味、`biz` 今の仕事で言うなら、`d` 説明、`forms` 活用形、`t`（"人"・"地"・"俗"=当時の暮らし）。
+- 辞書: 見出しは英語。`ipa` 発音、`pos` 品詞、`ja` 意味、`modern` いまの英語では（今も使う言い方・例文。特定の読者の仕事や立場に寄せない）、`d` 説明、`forms` 活用形、`t`（"人"・"地"・"俗"=当時の暮らし）。
 - 地図: `CFG.k`（1度あたりの描画単位）を 5000 にして街の縮尺で描く。
 
 ## 進み具合
