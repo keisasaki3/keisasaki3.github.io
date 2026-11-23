@@ -1222,10 +1222,10 @@ const LOADED={}, LOADING={};
 const CIMG = {/*CIMG*/};
 // 音で出題する札（クラシックの名曲など）。科目 → 用語 → [音源, 演奏, ライセンス, 出典ページ, 部分]
 const CSND = {/*CSND*/};
-const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"m",f:"weather",name:"気象学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"0",f:"compsci",name:"情報科学"},{id:"h",f:"math",name:"数学"},{id:"j",f:"boki3",name:"簿記3級"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"s",f:"buddhism",name:"仏教"},{id:"t",f:"christ",name:"キリスト教"},{id:"u",f:"islam",name:"イスラーム"},{id:"v",f:"hindu",name:"ヒンドゥー教"},{id:"w",f:"judaism",name:"ユダヤ教"},{id:"x",f:"shinto",name:"神道"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"l",f:"heritagejp",name:"世界遺産（日本）",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"n",f:"flower",name:"花",k:1},{id:"o",f:"gem",name:"宝石と鉱物",k:1},{id:"p",f:"buddha",name:"仏像",k:1},{id:"q",f:"wine",name:"ワイン",k:1},{id:"r",f:"kigo",name:"季語",k:1},{id:"i",f:"rakugo",name:"落語",k:1},{id:"z",f:"owarai",name:"お笑い",k:1},{id:"y",f:"news",name:"今月の時事",ji:1},{id:"k",f:"wabun",name:"和文英訳",tr:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
+const SUBJ=[{id:"E",f:"econ",name:"経済"},{id:"P",f:"politics",name:"政治"},{id:"G",f:"geo",name:"地理"},{id:"Q",f:"geopol",name:"地政学"},{id:"K",f:"behav",name:"行動経済学"},{id:"F",f:"philo",name:"哲学"},{id:"L",f:"law",name:"法学"},{id:"C",f:"chem",name:"化学用語"},{id:"N",f:"nutri",name:"栄養学"},{id:"M",f:"biz",name:"経営学"},{id:"A",f:"acct",name:"会計・財務"},{id:"Y",f:"psych",name:"心理学"},{id:"O",f:"socio",name:"社会学"},{id:"X",f:"bio",name:"生物学"},{id:"Z",f:"phys",name:"物理学"},{id:"U",f:"earth",name:"地学"},{id:"m",f:"weather",name:"気象学"},{id:"S",f:"astro",name:"天文学"},{id:"1",f:"stat",name:"統計学"},{id:"0",f:"compsci",name:"情報科学"},{id:"h",f:"math",name:"数学"},{id:"j",f:"boki3",name:"簿記3級"},{id:"2",f:"mkt",name:"マーケティング"},{id:"3",f:"med",name:"医学"},{id:"4",f:"relig",name:"宗教学"},{id:"s",f:"buddhism",name:"仏教"},{id:"t",f:"christ",name:"キリスト教"},{id:"u",f:"islam",name:"イスラーム"},{id:"v",f:"hindu",name:"ヒンドゥー教"},{id:"w",f:"judaism",name:"ユダヤ教"},{id:"x",f:"shinto",name:"神道"},{id:"5",f:"arth",name:"美術史"},{id:"6",f:"lit",name:"文学"},{id:"7",f:"jpn",name:"日本語"},{id:"9",f:"heritage",name:"世界遺産",k:1},{id:"l",f:"heritagejp",name:"世界遺産（日本）",k:1},{id:"a",f:"archi",name:"建築",k:1},{id:"b",f:"paint",name:"名画",k:1},{id:"c",f:"cuisine",name:"料理",k:1},{id:"d",f:"drink",name:"酒",k:1},{id:"e",f:"season",name:"旬の食材",k:1},{id:"f",f:"classic",name:"クラシック",k:1},{id:"g",f:"const",name:"星座",k:1},{id:"n",f:"flower",name:"花",k:1},{id:"o",f:"gem",name:"宝石と鉱物",k:1},{id:"p",f:"buddha",name:"仏像",k:1},{id:"q",f:"wine",name:"ワイン",k:1},{id:"r",f:"kigo",name:"季語",k:1},{id:"i",f:"rakugo",name:"落語",k:1},{id:"z",f:"owarai",name:"お笑い",k:1},{id:"y",f:"news",name:"今月の時事",ji:1},{id:"あ",f:"gge",name:"銃・病原菌・鉄",mc:1},{id:"い",f:"sapiens",name:"サピエンス全史",mc:1},{id:"う",f:"fastslow",name:"ファスト＆スロー",mc:1},{id:"え",f:"origin",name:"種の起源",mc:1},{id:"お",f:"selfish",name:"利己的な遺伝子",mc:1},{id:"k",f:"wabun",name:"和文英訳",tr:1},{id:"V",f:"envocab",name:"ビジネス英単語",en:1},{id:"I",f:"enphrase",name:"熟語・句動詞",en:1},{id:"8",f:"enbiz",name:"英語定型表現",en:1}];
 SUBJ.forEach(sj=>{ ALL[sj.id]=[]; });
 const subjByF=f=>SUBJ.find(x=>x.f===f);
-function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.k||""]||(CIMG[sj.f]||{})[c.t]||null,snd:(CSND[sj.f]||{})[c.t]||null,tp:c.tp||"",vis:!!c.v,w:Array.isArray(c.w)?c.w:null,p:Array.isArray(c.p)?c.p:null,alt:c.o||null,key:sj.id+":"+(c.k||c.t)}));
+function addConcepts(sj,arr){ ALL[sj.id]=arr.map(c=>({kind:"choice",cc:true,name:c.t,en:c.en||"",lv:c.lv,grp:c.g,sg:c.g,def:c.d,ex:c.x,rel:c.r||[],alias:c.a||[],subj:sj.id,m:{},doc:(CIMG[sj.f]||{})[c.k||""]||(CIMG[sj.f]||{})[c.t]||null,snd:(CSND[sj.f]||{})[c.t]||null,tp:c.tp||"",vis:!!c.v,w:Array.isArray(c.w)?c.w:null,dw:Array.isArray(c.dw)?c.dw:null,p:Array.isArray(c.p)?c.p:null,alt:c.o||null,key:sj.id+":"+(c.k||c.t)}));
   ALL[sj.id].forEach(c=>{ if(c.snd) c.m={snd:c.snd}; BYKEY[c.key]=c; if(sj.tr||DICT[c.name]) return; DICT[c.name]= sj.en ? {t:c.name,en:c.en,d:c.def.replace("____",c.name),x:c.ex,r:c.rel,s:"英語・"+c.sg,l:1} : {t:c.name,en:c.en,d:c.def,x:c.ex,r:c.rel,s:sj.name+"・"+c.sg}; }); }
 function addDictX(arr){ arr.forEach(e=>{ if(e&&e.t&&!DICT[e.t]) DICT[e.t]={t:e.t,en:e.en||"",d:e.d,x:e.x,r:e.r||[],s:e.s||(e.l?"英語・"+(e.g||""):""),l:e.l?1:0}; }); }
 // f: 科目ファイル名（econ など）か辞書ファイル（dx-history など）。読み込み済みなら即座に解決
@@ -1243,8 +1243,9 @@ const GENRES=[{id:"H",name:"歴史",cat:"K"},...SUBJ.map(x=>({id:x.id,name:x.nam
 const GTREE={name:"すべて",kids:[
   {name:"学問",ic:"academics",kids:[{id:"H"},{id:"E"},{id:"P"},{id:"L"},{id:"G"},{id:"Q"},{id:"K"},{id:"M"},{id:"2"},{id:"A"},{id:"j"},{id:"h"},{id:"1"},{id:"0"},{id:"F"},{name:"宗教",ic:"religious-studies",kids:[{id:"4"},{id:"s"},{id:"t"},{id:"u"},{id:"v"},{id:"w"},{id:"x"}]},{id:"Y"},{id:"O"},{id:"Z"},{name:"化学",ic:"chemistry",kids:[{id:"C"}]},{id:"X"},{id:"U"},{id:"m"},{id:"S"},{id:"3"},{id:"N"},{id:"5"},{id:"6"},{id:"7"},{name:"英語",ic:"english",kids:[{id:"k"},{id:"V"},{id:"I"},{id:"8"}]}]},
   {name:"教養",ic:"culture",kids:[{name:"鳥",ic:"bird",kids:[{id:"B"},{id:"D"}]},{name:"木",ic:"tree",kids:[{id:"T"}]},{name:"世界遺産",ic:"heritage",kids:[{id:"9"},{id:"l"}]},{id:"a"},{id:"b"},{id:"f"},{id:"c"},{id:"e"},{id:"d"},{id:"g"},{id:"n"},{id:"o"},{id:"p"},{id:"q"},{id:"r"},{id:"i"},{id:"z"}]},
+  {name:"名著",ic:"literature",kids:[{id:"あ"},{id:"い"},{id:"う"},{id:"え"},{id:"お"}]},
   {name:"時事問題",ic:"news",kids:[{id:"y"}]}]};
-const GICON={k:"english",h:"math",j:"assets",H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",1:"math",0:"computer-science",2:"business-administration",3:"medicine",4:"religious-studies",5:"art",6:"literature",V:"business-english",I:"idioms",7:"linguistics-languages",8:"business-english",9:"heritage",l:"heritage",a:"architecture",b:"art",c:"cuisine",d:"drink",e:"season",f:"classical",g:"constellation",B:"bird",D:"bird",T:"tree",m:"weather",n:"flower",o:"gem",p:"buddha",q:"wine",r:"kigo",s:"buddhism",t:"christianity",u:"islam",v:"hinduism",w:"judaism",x:"shinto",y:"news",i:"rakugo",z:"owarai"};
+const GICON={"あ":"literature","い":"literature","う":"literature","え":"literature","お":"literature",k:"english",h:"math",j:"assets",H:"history",E:"economics",P:"political-science",L:"law",G:"geography",Q:"geopolitics",K:"behavioral-economics",F:"philosophy",C:"chemistry",N:"nutrition",M:"business-administration",A:"assets",Y:"psychology",O:"sociology",X:"biology",Z:"physics",U:"earth-science",S:"astronomy",1:"math",0:"computer-science",2:"business-administration",3:"medicine",4:"religious-studies",5:"art",6:"literature",V:"business-english",I:"idioms",7:"linguistics-languages",8:"business-english",9:"heritage",l:"heritage",a:"architecture",b:"art",c:"cuisine",d:"drink",e:"season",f:"classical",g:"constellation",B:"bird",D:"bird",T:"tree",m:"weather",n:"flower",o:"gem",p:"buddha",q:"wine",r:"kigo",s:"buddhism",t:"christianity",u:"islam",v:"hinduism",w:"judaism",x:"shinto",y:"news",i:"rakugo",z:"owarai"};
 const ICONS="../../shared/icons/";
 const gName=id=>(GENRES.find(g=>g.id===id)||{}).name||id;
 const gCount=id=>{ const sj=SUBJ.find(x=>x.id===id); return sj?(CMAN[sj.f]||0):(ALL[id]||[]).length; };
@@ -1255,19 +1256,40 @@ let gNav=null;
 const isCon=g=>SUBJ.some(x=>x.id===g);
 const isProb=g=>g==="h"||g==="j";   // 問題を解いて4択で答える科目（数学・簿記3級）
 const isTr=g=>g==="k";   // 和文英訳: 日本語を見て英文を入力。言い方パターン(p)に合えば自動で正解、合わなければ自己判定（2026-11-16 Keita依頼）
-const subjTop=g=>{ const sj=SUBJ.find(x=>x.id===g)||{}; return sj.ji?"時事問題":sj.k?"教養":"学問"; };   // 上段タブ 学問・教養・時事問題（2026-11-17 Keita依頼）
+const subjTop=g=>{ const sj=SUBJ.find(x=>x.id===g)||{}; return sj.ji?"時事問題":sj.mc?"名著":sj.k?"教養":"学問"; };   // 上段タブ 学問・教養・時事問題（2026-11-17 Keita依頼）
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
 const isPick=g=>g==="B"||g==="T"||g==="D"||isCon(g); const hasVoice=g=>g==="B"||g==="D";
 function rng(seedStr){let h=1779033703^seedStr.length;for(let i=0;i<seedStr.length;i++){h=Math.imul(h^seedStr.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);h^=h>>>16;return (h>>>0)/4294967296;};}
 function shuffle(arr,r){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+// 4択の誤答の選び方（README §2.0.2）。check_cards.py の choice-weak と同じ考え方
+function nameKind(t){ t=String(t).replace(/[（(][^）)]*[）)]/g,""); if(/^[\u30a0-\u30ff・ー＝=\s]+$/.test(t)) return "kata"; if(/^[A-Za-z0-9\s\-\/.&'’]+$/.test(t)) return "latin"; if(/[\u4e00-\u9fff]/.test(t)&&!/[\u30a0-\u30ff]/.test(t)) return "kanji"; return "mix"; }
+const SUFFIXES=["主義","理論","の法則","法則","効果","バイアス","仮説","説","法","率","権","制度","制","条約","問題","教","宗","派","寺","神社","宮","人","者","家","学","論","性","化","型","式","体","物","素","酸","星","雲","座","画","像","祭","語","曲","山","島","川"];
+const suffixOf=t=>{ t=String(t).replace(/[（(][^）)]*[）)]/g,""); return SUFFIXES.find(x=>t.endsWith(x)&&t.length>x.length)||""; };
+function distractorScore(c,x){
+  let sc=0; if(x.grp&&x.grp===c.grp) sc+=3; if(c.rel&&c.rel.includes(x.name)) sc+=2; if(x.rel&&x.rel.includes(c.name)) sc+=1;
+  const k=nameKind(c.name); if(nameKind(x.name)===k) sc+=2;
+  const sf=suffixOf(c.name); if(sf&&suffixOf(x.name)===sf) sc+=2;
+  const a=String(c.name).length, b=String(x.name).length; if(Math.abs(a-b)<=Math.max(1,a*0.3)) sc+=1;
+  if(c.lv&&x.lv&&c.lv===x.lv) sc+=0.5;
+  if((c.alias||[]).includes(x.name)) sc-=99;   // 別解は誤答にしない
+  if(c.def&&x.name&&String(x.name).length>=2&&c.def.includes(x.name)) sc-=99;   // 問題文に出てくる語は誤答にしない
+  return sc;
+}
+function pickDistractors(c,pool,r){
+  const seen=new Set([c.name]); const scored=shuffle(pool,r).filter(x=>!seen.has(x.name)&&(seen.add(x.name),true)).map(x=>({x,s:distractorScore(c,x)+r()*0.9}));
+  scored.sort((p,q)=>q.s-p.s); return scored.slice(0,3).map(o=>o.x);
+}
 function choicesFor(deck,qi,gid){
   const c=deck[qi], r=rng(gid+":"+qi), pool=c.cc? ALL[c.subj].filter(x=>x.name!==c.name) : S.genre==="R"? (ALL[c.key[0]]||[]).filter(x=>x.key!==c.key) : deck.filter(x=>x!==c);
   // 数学など問題形式の札は、札ごとの誤答（よくある間違い）から4択を作る（2026-11-08）
   if(c.w&&c.w.length>=3) return shuffle([c.name,...c.w.slice(0,3)],r);
-  const same=shuffle(pool.filter(x=>x.grp===c.grp),r), other=shuffle(pool.filter(x=>x.grp!==c.grp),r);
-  const rel=c.rel&&c.rel.length? shuffle(pool.filter(x=>c.rel.includes(x.name)),r) : [];
-  const picks=[...new Set(rel.concat(same,other))].slice(0,3);
+  // ジャンル内に紛らわしい札が足りないときは、札に手書きした誤答（dw）を使う。w と違い入力モードはそのまま（2026-11-23）
+  if(c.dw&&c.dw.length>=3) return shuffle([c.name,...c.dw.slice(0,3)],r);
+  // 誤答は「迷う余地がある」ものを選ぶ（2026-11-23 Keita「まったく迷う余地がない4択が多い」）:
+  // 同じジャンル全体から、同じまとまり・関連語・同じ字種（カタカナ語／漢字語／英字）・同じ語尾（〜法・〜説・〜主義など）・近い長さを点数にして上位から選ぶ
+  const full=(S.genre!=="R"&&c.subj&&ALL[c.subj]&&ALL[c.subj].length>=4)? ALL[c.subj].filter(x=>x.name!==c.name) : pool;
+  const picks=pickDistractors(c,full,r);
   const out=shuffle([c].concat(picks),r).map(x=>x.name);
   // 英語: 文頭の空欄なら全部大文字始まり、文中なら小文字始まりにそろえる（大文字で答えがばれないように）
   if(c.def&&c.def.includes("____")){ const head=c.def.trim().startsWith("____"); return out.map(t=>head? t.charAt(0).toUpperCase()+t.slice(1) : (/^I\b/.test(t)?t:t.charAt(0).toLowerCase()+t.slice(1))); }
@@ -1584,7 +1606,7 @@ function chip(name, opts={}){
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
 function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
 // 学問・教養の難易度名（2026-11-17 Keita依頼「基礎概念でいっしょくたはそぐわない。気の利いた名前に」）。中身の基準は README §2.1 のまま、名前だけ分野ごと
-const LVN={"0":["ITの基本","技術者の目"],"i":["寄席の入口","噺の通"],"z":["茶の間の笑い","笑いの通"],"E":["新聞が読める","エコノミスト"],"P":["選挙の前に","政治記者"],"G":["旅の地図帳","地図の読み手"],"Q":["ニュースの裏","戦略家の視点"],"K":["つい買う心理","ナッジ設計者"],"F":["哲学カフェ","原典に挑む"],"L":["暮らしの法律","法廷の言葉"],"C":["理科室","研究室"],"N":["毎日のごはん","栄養士の目"],"M":["会議の常識","社長の本棚"],"A":["決算書を読む","CFOの視点"],"Y":["心のしくみ","臨床の現場"],"O":["社会を見る目","学者の道具箱"],"X":["生き物図鑑","細胞の奥へ"],"Z":["身近な物理","宇宙の法則"],"U":["足もとの地球","地球46億年"],"S":["夜空の案内","宇宙の果てへ"],"1":["グラフを疑う","データ分析家"],"h":["教科書の数学","使える数学"],"j":["日々の仕訳","決算"],"2":["売れるしくみ","戦略を立てる"],"3":["からだの基本","診察室"],"4":["宗教めぐり","教えの奥へ"],"5":["美術館の入口","学芸員の目"],"6":["本棚の名作","文学部"],"7":["大人の常識語","言葉の通"],"9":["旅の定番","通の旅先"],"l":["26件を言える","構成資産の通"],"a":["名所めぐり","建築家の目"],"b":["教科書の名画","美術館の主"],"c":["食卓の定番","料理人の目"],"d":["乾杯の定番","酒場の通"],"e":["季節の定番","市場の目利き"],"f":["あの名曲","演奏会の常連"],"g":["夜空の常連","星読み"],"k":["ひとこと英語","商談の英語"],"V":["TOEIC 600","TOEIC 800"],"I":["日常の熟語","仕事の熟語"],"8":["定番フレーズ","会議・交渉"],"m":["予報を読む","予報士の目"],"n":["花屋の定番","植物園の通"],"o":["誕生石","鉱物標本"],"p":["仏の見分け","印を読む"],"q":["品種と産地","ソムリエの道"],"r":["歳時記の入口","俳人の目"],"s":["お寺の基本","教えの奥へ"],"t":["教会の基本","神学の扉"],"u":["六信五行","文明と思想"],"v":["神々と聖地","哲学の源流"],"w":["律法と祭り","離散の歴史"],"x":["神社の基本","神話と歴史"],"y":["見出しがわかる","解説できる"]};
+const LVN={"あ":["要点","深読み"],"い":["要点","深読み"],"う":["要点","深読み"],"え":["要点","深読み"],"お":["要点","深読み"],"0":["ITの基本","技術者の目"],"i":["寄席の入口","噺の通"],"z":["茶の間の笑い","笑いの通"],"E":["新聞が読める","エコノミスト"],"P":["選挙の前に","政治記者"],"G":["旅の地図帳","地図の読み手"],"Q":["ニュースの裏","戦略家の視点"],"K":["つい買う心理","ナッジ設計者"],"F":["哲学カフェ","原典に挑む"],"L":["暮らしの法律","法廷の言葉"],"C":["理科室","研究室"],"N":["毎日のごはん","栄養士の目"],"M":["会議の常識","社長の本棚"],"A":["決算書を読む","CFOの視点"],"Y":["心のしくみ","臨床の現場"],"O":["社会を見る目","学者の道具箱"],"X":["生き物図鑑","細胞の奥へ"],"Z":["身近な物理","宇宙の法則"],"U":["足もとの地球","地球46億年"],"S":["夜空の案内","宇宙の果てへ"],"1":["グラフを疑う","データ分析家"],"h":["教科書の数学","使える数学"],"j":["日々の仕訳","決算"],"2":["売れるしくみ","戦略を立てる"],"3":["からだの基本","診察室"],"4":["宗教めぐり","教えの奥へ"],"5":["美術館の入口","学芸員の目"],"6":["本棚の名作","文学部"],"7":["大人の常識語","言葉の通"],"9":["旅の定番","通の旅先"],"l":["26件を言える","構成資産の通"],"a":["名所めぐり","建築家の目"],"b":["教科書の名画","美術館の主"],"c":["食卓の定番","料理人の目"],"d":["乾杯の定番","酒場の通"],"e":["季節の定番","市場の目利き"],"f":["あの名曲","演奏会の常連"],"g":["夜空の常連","星読み"],"k":["ひとこと英語","商談の英語"],"V":["TOEIC 600","TOEIC 800"],"I":["日常の熟語","仕事の熟語"],"8":["定番フレーズ","会議・交渉"],"m":["予報を読む","予報士の目"],"n":["花屋の定番","植物園の通"],"o":["誕生石","鉱物標本"],"p":["仏の見分け","印を読む"],"q":["品種と産地","ソムリエの道"],"r":["歳時記の入口","俳人の目"],"s":["お寺の基本","教えの奥へ"],"t":["教会の基本","神学の扉"],"u":["六信五行","文明と思想"],"v":["神々と聖地","哲学の源流"],"w":["律法と祭り","離散の歴史"],"x":["神社の基本","神話と歴史"],"y":["見出しがわかる","解説できる"]};
 function lvName(lv,g){ if(LVN[g]&&lv>=1&&lv<=3) return lv===3?"ぜんぶ":LVN[g][lv-1]; if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)||isTr(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
@@ -1708,7 +1730,7 @@ function lqInit(){ const cfg=window.ANKI_SB; if(!cfg||!window.supabase) { render
 
 // ---- game ----
 function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
-  const needF=[...new Set((Array.isArray(custom)?custom:[]).filter(k=>/^[A-Za-z0-9]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]);
+  const needF=[...new Set((Array.isArray(custom)?custom:[]).filter(k=>/^[^:]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]);
   if(needF.length){ const a=arguments; Promise.all(needF.map(sj=>loadData(sj.f))).then(()=>startGame.apply(null,a)).catch(()=>{}); return; }
   if(genre==="R"&&Array.isArray(custom)) S.rkeys=custom;
   if(!genreReady(genre)){ const a=arguments; ensureGenre(genre).then(()=>startGame.apply(null,a)).catch(()=>setTimeout(()=>startGame.apply(null,a),2000)); return; }
@@ -2098,7 +2120,7 @@ $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(host
   const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
   const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V"; if(typeof g.ht==="boolean") S.ht=g.ht; hostAmode(g.amode);
-  { const need=Array.isArray(g.custom)?[...new Set(g.custom.filter(k=>typeof k==="string"&&/^[A-Za-z0-9]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]):[];
+  { const need=Array.isArray(g.custom)?[...new Set(g.custom.filter(k=>typeof k==="string"&&/^[^:]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]):[];
     if(need.length){ Promise.all(need.map(sj=>loadData(sj.f))).then(()=>$("joinBtn").onclick()).catch(()=>{}); return; } }   // 未読み込みの科目の札が捨てられ、相手と違う札になっていた（2026-11-11）
   const cu=Array.isArray(g.custom)?g.custom.filter(k=>typeof k==="string"&&BYKEY[k]).slice(0,200):null;
   startGame(g.gid,genre,mode,lv,qi,bm,cu,cnt); };
