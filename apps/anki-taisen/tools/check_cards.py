@@ -6,6 +6,7 @@
   - どうしても問題ない札は tools/check_allow.json に「規則:科目:答え」と理由を書いて通す。
     理由のない例外は認めない（空文字はエラー）。
   - --all を付けると例外リストも無視して全部表示する。
+  - --choices 科目 [科目…] で、各札の4択の誤答候補（上位3つと点数）を一覧にする。札を作ったら必ず読む。
 
 調べること（2026-11-18 経太さんに叱られた点を仕組みにしたもの）
   leak      問題文に答え（別解・かっこ書き・2文字以上の固有部分を含む）が入っている
@@ -16,6 +17,7 @@
   vague     同じ科目に同じ問題文が2枚（答えが1つに決まらない）
   dup       同じ科目に同じ答えが2枚
   choice    選択式で正解が誤答に混じる・誤答が重複・3つない
+  weak      4択で迷う余地がない（同じまとまり・同じ字種・同じ語尾の誤答候補が3つそろわない。札に dw で誤答3つを手で書くか、候補の札を足す）
   field     必須の欄（t・d・x）が空
   img       資料画像: ファイルがない・同じ画像を別の札で使い回し・索引にない札
 """
@@ -85,6 +87,33 @@ GENERIC_HEAD = set("""日本 世界 国際 社会 経済 政治 文化 時代 �
 """.split())
 
 
+SUFFIXES = ["主義","理論","の法則","法則","効果","バイアス","仮説","説","法","率","権","制度","制","条約","問題","教","宗","派","寺","神社","宮","人","者","家","学","論","性","化","型","式","体","物","素","酸","星","雲","座","画","像","祭","語","曲","山","島","川"]
+def name_kind(t):
+    t = re.sub(r"[（(][^）)]*[）)]", "", t)
+    if re.fullmatch(r"[\u30a0-\u30ff・ー＝=\s]+", t): return "kata"
+    if re.fullmatch(r"[A-Za-z0-9\s\-/.&'’]+", t): return "latin"
+    if re.search(r"[\u4e00-\u9fff]", t) and not re.search(r"[\u30a0-\u30ff]", t): return "kanji"
+    return "mix"
+def suffix_of(t):
+    t = re.sub(r"[（(][^）)]*[）)]", "", t)
+    return next((x for x in SUFFIXES if t.endswith(x) and len(t) > len(x)), "")
+def d_score(c, x):
+    """src.html の distractorScore と同じ（乱数を除く）"""
+    sc = 0
+    if x.get("g") and x.get("g") == c.get("g"): sc += 3
+    if x["t"] in (c.get("r") or []): sc += 2
+    if c["t"] in (x.get("r") or []): sc += 1
+    if name_kind(x["t"]) == name_kind(c["t"]): sc += 2
+    sf = suffix_of(c["t"])
+    if sf and suffix_of(x["t"]) == sf: sc += 2
+    a, b = len(c["t"]), len(x["t"])
+    if abs(a - b) <= max(1, a * 0.3): sc += 1
+    if x["t"] in (c.get("a") or []): sc -= 99
+    if len(x["t"]) >= 2 and x["t"] in c.get("d", ""): sc -= 99
+    return sc
+WEAK_MIN = 4   # 3番目の誤答がこの点に届かなければ「迷う余地がない」（同じまとまり3＋長さ1、同じ字種2＋同じ語尾2 など）
+# 点数は字面しか見ない。人物の札に物の名前が並ぶような意味のずれは --choices で一覧を出して人が読む
+
 def load_allow():
     if not os.path.exists(ALLOW_PATH):
         return {}
@@ -135,18 +164,26 @@ def check_cards():
                 err("vague", f, t, f"問題文が「{seen_d[key_d]}」の札と同じ（答えが1つに決まらない）")
             seen_d[key_d] = t
 
-            if "w" in c:  # 選択式
-                w = c.get("w") or []
+            for wk in ("w", "dw"):  # 選択式の誤答（w）・4択の誤答の手書き（dw）
+                if wk not in c:
+                    continue
+                w = c.get(wk) or []
                 if len(w) != 3:
                     err("choice", f, t, f"誤答が {len(w)} 個（3個にする）")
                 sq = lambda v: re.sub(r"\s", "", unicodedata.normalize("NFKC", v))
-                if sq(t) in [sq(v) for v in w]:
-                    err("choice", f, t, "正解が誤答に混じっている")
+                if sq(t) in [sq(v) for v in w] or any(sq(a) in [sq(v) for v in w] for a in c.get("a") or []):
+                    err("choice", f, t, "正解（別解を含む）が誤答に混じっている")
                 if len({sq(v) for v in w}) != len(w):
                     err("choice", f, t, "誤答が重複")
 
             if f in PROBLEM:
                 continue
+
+            # weak: 4択の誤答候補（w・dw が手書きされていればそれを使うので調べない）
+            if not c.get("w") and not c.get("dw") and f not in ENGLISH:
+                sc = sorted((d_score(c, x) for x in cards if x is not c and x["t"] != c["t"]), reverse=True)
+                if len(sc) < 3 or sc[2] < WEAK_MIN:
+                    err("weak", f, t, f"4択で迷う余地がない（誤答候補の3番目が {sc[2] if len(sc) > 2 else '-'} 点）")
 
             # leak: 問題文に答え
             for p in sorted([nt] if f in ENGLISH else leak_parts(t)):
@@ -229,7 +266,22 @@ def check_images():
     return errs
 
 
+def show_choices(genres):
+    for g in genres:
+        cs = json.load(open(os.path.join(DATA, g + ".json")))
+        for c in cs:
+            if c.get("w") or c.get("dw"):
+                print(f"手 {g} / lv{c.get('lv')} {c['t']} | " + " / ".join(c.get("w") or c["dw"]))
+                continue
+            sc = sorted(((d_score(c, x), x["t"]) for x in cs if x is not c and x["t"] != c["t"]), reverse=True)[:3]
+            mark = "弱" if len(sc) < 3 or sc[2][0] < WEAK_MIN else "  "
+            print(f"{mark} {g} / lv{c.get('lv')} {c['t']} | " + " / ".join(f"{t}({s})" for s, t in sc))
+
+
 def main():
+    if "--choices" in sys.argv:
+        show_choices(sys.argv[sys.argv.index("--choices") + 1:])
+        return
     show_all = "--all" in sys.argv
     allow = {} if show_all else load_allow()
     errs = check_cards() + check_images()
