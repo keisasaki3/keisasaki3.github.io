@@ -269,7 +269,7 @@ def check_images():
 
 
 def check_history():
-    """歴史の本質クイズ（index.html の HQ）: 問いに答えが入っていないか、選択肢の重複、正解だけ長すぎないか（2026-11-24）"""
+    """歴史の本質クイズ（index.html の HQ）: 採点形式（口で答えて答えを見る）。問い・要点・補足がそろっているか、要点がひと目で読める長さか（2026-11-24）"""
     errs = []
     html = open(os.path.join(APP, "index.html"), encoding="utf8").read()
     m = re.search(r"const HQ = (\{.*?\});\n", html, re.S)
@@ -280,17 +280,17 @@ def check_history():
     for k, h in hq.items():
         if k[1:] not in keys:
             errs.append(("hist", "H", k, "HQ にあるが年表（JP/WD）にその札がない"))
-        q, a, w = h.get("q", ""), h.get("a", ""), h.get("w") or []
-        if not q or not a or h.get("t") not in ("S", "T"):
-            errs.append(("hist", "H", k, "問い・正解・種類（S/T）のどれかが空"))
-        if len(w) != 3 or len(set(w)) != 3 or a in w:
-            errs.append(("hist", "H", k, "誤答は重ならない3つ（正解を含めない）"))
-        if h.get("t") == "T":
-            for p in leak_parts(a) | {norm(x) for x in h.get("al", []) if len(norm(x)) >= 2}:
-                if p and p in norm(q):
-                    errs.append(("hist", "H", k, f"問いに答え（{p}）が入っている"))
-        elif w and len(a) > 1.3 * max(len(x) for x in w):
-            errs.append(("hist", "H", k, "正解だけが目立って長い（長さで当てられる）"))
+        q, a, x = h.get("q", ""), h.get("a", ""), h.get("x", "")
+        if not q or not a or not x:
+            errs.append(("hist", "H", k, "問い・要点・補足のどれかが空"))
+        if not q.endswith("？"):
+            errs.append(("hist", "H", k, "問いは「？」で終える"))
+        if len(a) > 24:
+            errs.append(("hist", "H", k, f"要点が長い（{len(a)}字、24字まで）"))
+        if len(x) > 90:
+            errs.append(("hist", "H", k, f"補足が長い（{len(x)}字、90字まで）"))
+        if a and a in x:
+            errs.append(("hist", "H", k, "補足が要点のくり返し"))
     return errs
 
 
