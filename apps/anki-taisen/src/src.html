@@ -472,6 +472,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
   <section id="game" hidden style="display:flex;flex-direction:column;gap:12px">
     <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute zbtn" id="zoomBtn" type="button" aria-label="文字の大きさ" title="文字の大きさ">Aあ</button><button class="mute spkbtn" id="muteBtn" type="button" aria-pressed="true" aria-label="音量"></button><button class="mute" id="quitBtn" type="button">ゲームをやめる</button></div>
     <div class="players" id="gamePlayers"></div>
+    <div class="oral" id="gradeTop" hidden><div class="grade" id="gradeBox"><span>採点</span><button class="btn ghost" type="button" data-g="○">○ 言えた</button><button class="btn ghost" type="button" data-g="△">△ だいたい</button><button class="btn ghost" type="button" data-g="×">× まだ</button></div><p class="small muted" id="gradeNote" style="margin:0">言い方は自由です。要点か補足の中身を言えていれば ○</p></div>
     <div class="card" id="card">
       <span class="era" id="cEra"></span>
       <span class="ev" id="cEv"></span>
@@ -495,8 +496,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <div class="keypad" id="keypad"></div>
       <div class="choices" id="choices" hidden></div>
       <form class="typebox" id="typeBox" hidden><input id="typeIn" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="答えを入力"><button class="btn" type="submit">決定</button></form>
-      <div class="oral" id="oralBox" hidden><button class="btn" id="seeBtn" type="button">答えを見る</button><div class="oans" id="oralAns" hidden></div>
-        <div class="grade" id="gradeBox" hidden><span>採点</span><button class="btn ghost" type="button" data-g="○">○ 言えた</button><button class="btn ghost" type="button" data-g="△">△ だいたい</button><button class="btn ghost" type="button" data-g="×">× まだ</button></div><p class="small muted" id="gradeNote" hidden>言い方は自由です。要点か補足の中身を言えていれば ○</p></div>
+      <div class="oral" id="oralBox" hidden><button class="btn" id="seeBtn" type="button">答えを見る</button></div>
       <button class="btn ghost" id="passBtn" type="button">学習機会に感謝してパス🙏</button>
     </div>
 
@@ -1976,7 +1976,7 @@ function mastery(id){ const n=id==="H"?(ALL.J.length+ALL.W.length):gCount(id); i
   for(const k in LEARN){ if(px.some(p=>k.startsWith(p)&&(p.length>1||!/^[A-Z]:/.test(k)))) sum+=effStage(LEARN[k]); }
   return Math.round(sum/(3*n)*100); }
 function resetReport(){ $("reportForm").hidden=true; $("reportOpen").hidden=false; $("reportText").value=""; $("reportMsg").textContent=""; ["rkWrong","rkAns","rkData","rkImg","rkOther"].forEach(k=>$(k).checked=false); }
-const canSelfOk=()=>{ const c=S.deck&&S.deck[S.qi]; return !!(c&&S.ans&&!S.ans.ok&&S.ans.v!==""&&c.kind==="choice"&&S.phase==="reveal"); };
+const canSelfOk=()=>{ const c=S.deck&&S.deck[S.qi]; return !!(c&&S.ans&&!S.ans.ok&&S.ans.v!==""&&c.kind==="choice"&&!isOral(c)&&S.phase==="reveal"); };
 $("reportOpen").onclick=()=>{ $("rkWrongRow").hidden=!canSelfOk(); { const c=S.deck&&S.deck[S.qi]; $("rkImgLabel").textContent=c&&(c.doc||(c.m&&c.m.img))?"もっと良い画像にしてほしい":"画像がほしい"; } $("reportForm").hidden=false; $("reportOpen").hidden=true; $("reportMsg").textContent=""; };
 $("reportSend").onclick=async()=>{ const c=S.deck&&S.deck[S.qi], t=$("reportText").value.trim(), m=$("reportMsg");
   const wrong=$("rkWrong").checked&&canSelfOk(), kinds=[wrong&&"誤答判定",$("rkAns").checked&&"答え",$("rkData").checked&&"資料",$("rkImg").checked&&(c&&(c.doc||(c.m&&c.m.img))?"画像差し替え":"画像希望"),$("rkOther").checked&&"その他"].filter(Boolean);
@@ -2077,7 +2077,7 @@ function beginAsk(){
   $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
   $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
   const oral=isOral(c), isC=c.kind==="choice"||oral, typing=!oral&&isC&&(S.amode!=="C"||!!c.p)&&!c.w; $("selfBtn").hidden=true; $("typeIn").placeholder=c.p?"英語で入力（大文字・記号は気にしなくてOK）":"答えを入力"; $("slots").hidden=isC; $("yhint").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing||oral; $("typeBox").hidden=!typing;
-  $("oralBox").hidden=!oral; $("seeBtn").hidden=false; $("oralAns").hidden=true; $("oralAns").textContent=""; $("gradeBox").hidden=true; $("gradeNote").hidden=true; resetReport();
+  $("oralBox").hidden=!oral; $("seeBtn").hidden=false; S.peek=-1; $("gradeTop").hidden=true; resetReport();
   if(oral){} else if(typing){ const ti=$("typeIn"); ti.value=""; ti.disabled=!!S.ans; } else if(isC) renderChoices();
   $("askArea").hidden=false; $("revealArea").hidden=true; $("waitAsk").textContent="";
   renderSlots(); renderGamePlayers(); push();
@@ -2127,11 +2127,12 @@ const roughCard=c=>c.kind==="year"&&!isOral(c)&&c.lv>1;
 // 歴史の札はすべて「採点」形式: 口で答えて「答えを見る」→自分で ○（1点）△（0.5点・定着は半分）×（2026-11-24 Keita）
 const isOral=c=>!!c&&(c.kind==="year"||!!(c.cc&&c.hq));   // 学問・教養の「なぜ・どうなる」の札（hq）も採点形式（2026-11-24 東京地理）
 const GRADES=["○","△","×"];
-function oralShow(){ const c=S.deck[S.qi]; if(S.view!=="game"||S.phase!=="ask"||S.ans||!isOral(c)) return; const box=$("oralAns"); box.textContent="";
-  if(c.hq){ box.append(rEl("b",null,c.hq.a), rEl("span","hqx",c.hq.x)); } else { box.append(el("b",null,yearText(c.y)+"年")); }
-  box.hidden=false; $("seeBtn").hidden=true; $("gradeBox").hidden=false; $("gradeNote").hidden=false; }
+// 一段の答え合わせ（2026-11-24 Keita「答え合わせ画面二段階ある？最後の画面だけでよくね？」）: 「答えを見る」で答え合わせ画面を出し、札の上の「採点」で ○△× を押すまで次へ進めない
+function oralShow(){ const c=S.deck[S.qi]; if(S.view!=="game"||S.phase!=="ask"||S.ans||!isOral(c)) return; S.peek=S.qi; reveal(); }
 $("seeBtn").onclick=oralShow;
-$("gradeBox").querySelectorAll("button").forEach(b=>{ b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans) answer(b.dataset.g); }; });
+function syncGrade(){ const c=S.deck&&S.deck[S.qi], g=S.view==="game"&&S.phase==="reveal"&&S.peek===S.qi&&!S.ans&&isOral(c);
+  $("gradeTop").hidden=!g; ["nextBtn","stamps","answers","learnLine"].forEach(id=>{ $(id).hidden=g; }); }
+$("gradeBox").querySelectorAll("button").forEach(b=>{ b.onclick=()=>{ if(S.view==="game"&&S.phase==="reveal"&&S.peek===S.qi&&!S.ans){ const c=S.deck[S.qi]; answer(b.dataset.g); se(S.ans.ok?"ok":"ng"); showLearnLine(c); ansSig=""; syncGrade(); renderAnswers(); window.scrollTo({top:document.body.scrollHeight,behavior:"smooth"}); } }; });
 const centOf=y=>y>0?Math.ceil(y/100):-Math.ceil(-y/100);
 function yearRough(v,c){ if(!roughCard(c)) return false; const t=(c.y<0?-1:1)*Number(v); return centOf(t)===centOf(c.y)||Math.abs(t-c.y)<=10; }
 function isBig(){ return S.deck.length-(S.q0||0)>=6 && S.qi>=S.deck.length-3; }
@@ -2141,7 +2142,7 @@ function answer(v){
   const oral=isOral(c), g=oral&&v!=null&&GRADES.includes(String(v))?String(v):null;
   const exact = v!=null && c.kind==="year" && !oral && Number(v)===Math.abs(c.y);
   const ap = !exact && v!=null && yearRough(v,c);   // やさしい以外の札は「いつごろ」で正解
-  const ok = v!=null && (c.kind==="choice" ? typedOk(v,c) : oral ? g==="○" : exact||ap);
+  const ok = v!=null && (oral ? g==="○" : c.kind==="choice" ? typedOk(v,c) : exact||ap);   // 採点形式を先に見る（東京地理の採点の札は kind "choice" なので ○ が誤答になっていた）
   const near = !ok && v!=null && (oral ? g==="△" : c.kind==="year" && Math.abs(Number(v)-Math.abs(c.y))<=3);
   const pt=(ok?1:near?0.5:0)*(isBig()?2:1);
   S.ans={q:S.qi, v:v==null?"":String(v), ok, pt}; if(ap) S.ans.ap=1;
@@ -2206,9 +2207,10 @@ function reRuby(){ if(S.view!=="game"||!S.deck||!S.deck[S.qi]) return; const c=S
   if(S.phase==="ask"){ const q=$("card").querySelector("p.qtext.q-x"); if(q&&c.cc&&c.q!=="I"&&!c.hq){ q.textContent=""; addRuby(q,c.def,askRo(c)); } if(S.choices) renderChoices(); } }
 function reveal(){
   if(S.phase==="reveal") return;
-  if(!S.ans) answer(null);
+  const peek=!S.ans&&S.peek===S.qi&&isOral(S.deck[S.qi]);   // 採点形式で「答えを見る」を押したとき: まだ答えを付けない
+  if(!S.ans&&!peek) answer(null);
   S.phase="reveal"; S.revealAt=Date.now(); showLearnLine(S.deck[S.qi]);
-  se(S.ans&&S.ans.ok?"ok":"ng");
+  if(!peek) se(S.ans&&S.ans.ok?"ok":"ng");
   const c=S.deck[S.qi], prev=S.qi>0?S.deck[S.qi-1]:null;
   const card=$("card");
   if(c.cc&&c.hq){   // 採点形式の札: 問い・答え・補足、資料（地図・写真）、関連
@@ -2296,6 +2298,7 @@ function markFor(a, y){
 let ansSig="", flipQ=-1; const seenStamp={};
 function stampOf(st){ return st&&st.q===S.qi&&typeof st.e==="string"&&STAMPS.includes(st.e)?st:null; }
 function renderAnswers(){
+  syncGrade();
   const cc=S.deck[S.qi]; const y=cc.kind==="year"&&!isOral(cc)?cc.y:null; const box=$("answers");
   const rows=[{name:(S.name||"名無し")+"（あなた）", ans:S.ans, st:stampOf(S.stamp)}];
   gamePeers().forEach(pr=>{const has=pr.ans&&pr.ans.q===S.qi; rows.push({name:safeName(pr), ans:has?pr.ans:null, wait:!has&&!(pr.qi>S.qi), st:stampOf(pr.stamp)});});
@@ -2316,7 +2319,7 @@ const STAMPS=["👏","😱","🤣","🔥","🤔"];
 function buildStamps(){ const box=$("stamps"); STAMPS.forEach(e=>{ const b=el("button",null,e); b.type="button"; b.setAttribute("aria-label","スタンプ "+e);
   b.onclick=()=>{ if(S.phase!=="reveal") return; S.stampN++; S.stamp={q:S.qi,e,n:S.stampN}; push(); renderAnswers(); }; box.append(b); }); }
 function next(){
-  if(S.phase!=="reveal") return;
+  if(S.phase!=="reveal"||!S.ans) return;
   S.ready=S.qi; $("nextBtn").disabled=true; push(); check();
 }
 function allReady(){
