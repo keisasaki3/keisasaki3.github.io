@@ -182,9 +182,21 @@ def check_cards():
             if f in PROBLEM:
                 continue
 
+            # 採点形式の札（hq: 問い・答え・補足。README §2.0.5）は答えが文なので、用語向けの規則は当てはめず長さだけ見る
+            if c.get("hq"):
+                hq = c["hq"]
+                for k2 in ("q", "a", "x"):
+                    if not str(hq.get(k2, "")).strip():
+                        err("field", f, t, f"hq の欄 {k2} が空")
+                if len(hq.get("a", "")) > 24:
+                    err("term", f, t, f"採点の答えが24字を超える（{len(hq.get('a', ''))}字）")
+                if len(hq.get("x", "")) > 90:
+                    err("term", f, t, f"採点の補足が90字を超える（{len(hq.get('x', ''))}字）")
+                continue
+
             # weak: 4択の誤答候補（w・dw が手書きされていればそれを使うので調べない）
             if not c.get("w") and not c.get("dw") and f not in ENGLISH:
-                sc = sorted((d_score(c, x) for x in cards if x is not c and x["t"] != c["t"]), reverse=True)
+                sc = sorted((d_score(c, x) for x in cards if x is not c and x["t"] != c["t"] and not x.get("hq")), reverse=True)
                 if len(sc) < 3 or sc[2] < WEAK_MIN:
                     err("weak", f, t, f"4択で迷う余地がない（誤答候補の3番目が {sc[2] if len(sc) > 2 else '-'} 点）")
 
