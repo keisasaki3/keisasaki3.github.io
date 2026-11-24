@@ -86,6 +86,7 @@ NEXTの候補はチェック型トピックのみ。自分で追加したトピ�
 
 2026-11-18 Keita了承で6科目を追加（花・宝石と鉱物・仏像・ワイン・季語・世界遺産（日本）、subject_id kyo-flower / kyo-gem / kyo-buddha / kyo-wine / kyo-kigo / kyo-heritagejp、sort_order 410〜460、seed 011）。
 2026-11-18 落語（kyo-rakugo、sort 470）・お笑い（kyo-owarai、sort 480）の2科目を seed 012 に用意（各4分野＝札のグループ）。2026-11-18 本番適用（Keita「いいよ」）。
+2026-11-24 ファッション（kyo-fashion、sort 500）・インテリア（kyo-interior、510）・カラーコーディネーター（kyo-color、520）を seed 014 で本番適用（Keita「おけ」、分野＝札のトピック）。
 
 ### 29学問
 

@@ -4750,3 +4750,27 @@ kyo-owarai,お笑い,Comedy,教養,True,kyo-owarai-01,芸の形,Forms,10,True,ky
 kyo-owarai,お笑い,Comedy,教養,True,kyo-owarai-02,笑いの技法,Techniques,20,True,kyo-owarai-02,笑いの技法,Techniques,SUPER暗記大戦 お笑い,2,10,check,,True
 kyo-owarai,お笑い,Comedy,教養,True,kyo-owarai-03,賞レース,Contests,30,True,kyo-owarai-03,賞レース,Contests,SUPER暗記大戦 お笑い,2,10,check,,True
 kyo-owarai,お笑い,Comedy,教養,True,kyo-owarai-04,芸人と番組,Comedians & shows,40,True,kyo-owarai-04,芸人と番組,Comedians & shows,SUPER暗記大戦 お笑い,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-01,服のアイテム,"Garments",10,True,kyo-fashion-01,服のアイテム,"Garments",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-02,柄,"Patterns",20,True,kyo-fashion-02,柄,"Patterns",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-03,素材,"Materials",30,True,kyo-fashion-03,素材,"Materials",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-04,スーツと礼装,"Suits & formalwear",40,True,kyo-fashion-04,スーツと礼装,"Suits & formalwear",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-05,紳士靴,"Men's shoes",50,True,kyo-fashion-05,紳士靴,"Men's shoes",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-06,着こなしとドレスコード,"Styling & dress codes",60,True,kyo-fashion-06,着こなしとドレスコード,"Styling & dress codes",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-07,デザイナー,"Designers",70,True,kyo-fashion-07,デザイナー,"Designers",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-fashion,ファッション,Fashion,教養,True,kyo-fashion-08,業界のしくみ,"The fashion business",80,True,kyo-fashion-08,業界のしくみ,"The fashion business",SUPER暗記大戦 ファッション,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-01,様式,"Styles",10,True,kyo-interior-01,様式,"Styles",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-02,名作家具と照明,"Design classics",20,True,kyo-interior-02,名作家具と照明,"Design classics",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-03,照明,"Lighting",30,True,kyo-interior-03,照明,"Lighting",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-04,窓まわり,"Window treatments",40,True,kyo-interior-04,窓まわり,"Window treatments",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-05,素材と仕上げ,"Materials & finishes",50,True,kyo-interior-05,素材と仕上げ,"Materials & finishes",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-06,間取りと配置,"Layout & planning",60,True,kyo-interior-06,間取りと配置,"Layout & planning",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-interior,インテリア,Interior design,教養,True,kyo-interior-07,和の住まい,"Japanese rooms",70,True,kyo-interior-07,和の住まい,"Japanese rooms",SUPER暗記大戦 インテリア,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-01,光と目,"Light & the eye",10,True,kyo-color-01,光と目,"Light & the eye",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-02,色の三属性,"Three attributes of color",20,True,kyo-color-02,色の三属性,"Three attributes of color",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-03,混色と色の表し方,"Color mixing & systems",30,True,kyo-color-03,混色と色の表し方,"Color mixing & systems",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-04,色の見え方,"Color perception",40,True,kyo-color-04,色の見え方,"Color perception",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-05,色の心理,"Color psychology",50,True,kyo-color-05,色の心理,"Color psychology",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-06,配色,"Color schemes",60,True,kyo-color-06,配色,"Color schemes",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-07,日本の伝統色,"Traditional Japanese colors",70,True,kyo-color-07,日本の伝統色,"Traditional Japanese colors",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-08,西洋の色名,"Western color names",80,True,kyo-color-08,西洋の色名,"Western color names",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
+kyo-color,カラーコーディネーター,Color coordination,教養,True,kyo-color-09,色と社会,"Color in society",90,True,kyo-color-09,色と社会,"Color in society",SUPER暗記大戦 カラーコーディネーター,2,10,check,,True
