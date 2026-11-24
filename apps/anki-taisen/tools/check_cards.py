@@ -18,7 +18,7 @@
   dup       同じ科目に同じ答えが2枚
   choice    選択式で正解が誤答に混じる・誤答が重複・3つない
   weak      4択で迷う余地がない（同じまとまり・同じ字種・同じ語尾の誤答候補が3つそろわない。札に dw で誤答3つを手で書くか、候補の札を足す）
-  field     必須の欄（t・d・x）が空
+  field     必須の欄（t・d・x、トピックの g）が空
   img       資料画像: ファイルがない・同じ画像を別の札で使い回し・索引にない札
 """
 import json, os, re, sys, glob, unicodedata, hashlib
@@ -152,6 +152,8 @@ def check_cards():
             for k in ("t", "d", "x"):
                 if not str(c.get(k, "")).strip():
                     err("field", f, t, f"欄 {k} が空")
+            if not str(c.get("g", "")).strip():   # ロビーのトピック選択は g で分ける（README §2.0.3）
+                err("field", f, t, "欄 g（トピック）が空")
             nt, nd = norm(t), norm(d)
             key_t, key_d = nt, nd
             if f in PROBLEM:   # 問題形式は答えが同じでも問題が違えばよい

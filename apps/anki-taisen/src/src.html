@@ -62,6 +62,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .lumi .say::before{content:"";position:absolute;left:-12px;bottom:12px;border:6px solid transparent;border-right-color:var(--frame,var(--line))}
 .lumi .say b{display:block;font-size:.78em;color:var(--sup,var(--acc));letter-spacing:.15em}
 #levels button{font-size:.92em;word-break:keep-all}
+#levels.tp button{word-break:normal;overflow-wrap:anywhere}   /* トピック名は長いので折り返す */
 .panel{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--panel-shadow)}
 label{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -390,7 +391,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <div class="levels" id="amodes"></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <span class="small muted">難易度（出題数）</span>
+        <span class="small muted" id="levelsLabel">難易度（出題数）</span>
         <div class="levels" id="levels"></div>
         <p class="small muted" id="rangeNote"></p>
       </div>
@@ -1256,6 +1257,16 @@ let gNav=null;
 const isCon=g=>SUBJ.some(x=>x.id===g);
 const isProb=g=>g==="h"||g==="j";   // 問題を解いて4択で答える科目（数学・簿記3級）
 const isTr=g=>g==="k";   // 和文英訳: 日本語を見て英文を入力。言い方パターン(p)に合えば自動で正解、合わなければ自己判定（2026-11-16 Keita依頼）
+// 概念札は難易度でなくトピック（札のまとまり g）で選ぶ（2026-11-24 Keita「難易度って分類やめよう。トピックに変更」）。S.lv にトピック名が入り、3は「ぜんぶ」
+const isTop=g=>isCon(g)&&!isProb(g)&&!isTr(g);
+// 札が30枚未満のジャンル（名著など）は「ぜんぶ」だけ。4枚未満のまとまりが2つ以上あれば「そのほか」にまとめる（1つだけならそのまま出す）
+const TOP_OTHER="そのほか"; const TOPC={};
+function topicsOf(g){ const a=ALL[g]||[]; const hit=TOPC[g]; if(hit&&hit.n===a.length) return hit.t;
+  const n={},o=[]; let none=false; a.forEach(c=>{ if(!c.grp){ none=true; return; } if(!(c.grp in n)){ n[c.grp]=0; o.push(c.grp); } n[c.grp]++; });
+  let t=o.filter(x=>n[x]>=4); const sm=o.filter(x=>n[x]<4); if(sm.length===1&&!none) t.push(sm[0]); else if(sm.length||none) t.push(TOP_OTHER); if(a.length<30||t.length<2) t=[];
+  TOPC[g]={n:a.length,t}; return t; }
+function inTopic(c,t){ if(c.grp===t) return true; return t===TOP_OTHER&&!topicsOf(c.subj).includes(c.grp); }
+const okLv=lv=>[1,2,3,4].includes(lv)||(typeof lv==="string"&&lv.length>0&&lv.length<40);   // 数字は難易度、文字はトピック名
 const subjTop=g=>{ const sj=SUBJ.find(x=>x.id===g)||{}; return sj.ji?"時事問題":sj.mc?"名著":sj.k?"教養":"学問"; };   // 上段タブ 学問・教養・時事問題（2026-11-17 Keita依頼）
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
 const isPick=g=>g==="B"||g==="T"||g==="D"||isCon(g); const hasVoice=g=>g==="B"||g==="D";
@@ -1312,7 +1323,7 @@ const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.le
 function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
   if(genre==="R"){ const d=(Array.isArray(custom)&&custom.length?custom:(S.rkeys||[])).map(k=>BYKEY[k]).filter(Boolean); return birdDeck(d,gid||"r","V"); }
   if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
-  if(isCon(genre)){ if(!hasImgQ(genre)) mode="W"; const dk=birdDeck((ALL[genre]||[]).filter(c=>(lv===3||c.lv===lv)&&(mode!=="J"||canImgQ(c))),gid,"P").map(c=>({...c,q:mode==="W"?"T":canSndQ(c)?"A":canImgQ(c)?"I":"T"})); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
+  if(isCon(genre)){ if(!hasImgQ(genre)) mode="W"; const dk=birdDeck((ALL[genre]||[]).filter(c=>(lv===3||c.lv===lv||(typeof lv==="string"&&inTopic(c,lv)))&&(mode!=="J"||canImgQ(c))),gid,"P").map(c=>({...c,q:mode==="W"?"T":canSndQ(c)?"A":canImgQ(c)?"I":"T"})); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   if(isPick(genre)){ const m=new Date().getMonth()+1; const dk=birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img && !(bmode==="S"&&hasVoice(genre)&&!c.m.snd)),gid,hasVoice(genre)?bmode:"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
@@ -1489,7 +1500,7 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 
 const S={
   name: store.get("nb-name")||"",
-  lv: Number(store.get("nb-lv"))||1, from: store.get("nb-from")||"", ht: store.get("nb-ht")!=="0", cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
+  lv: (v=>v&&isNaN(+v)?v:(+v||1))(store.get("nb-lv")), from: store.get("nb-from")||"", ht: store.get("nb-ht")!=="0", cnt: store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")),
   mode: store.get("nb-mode")||"J",
   green: store.get("nb-green")||"wakakusa",
   amode: store.get("nb-amode")||"T",   // 答え方 T=入力 C=4択（端末ごと、2026-11-05 Keita依頼）
@@ -1573,17 +1584,19 @@ function renderPickers(){
   if(isB) seg("modes", BMODES.map(m=>({key:m.id,name:m.name})), S.bmode, null, k=>{S.bmode=k; store.set("nb-bm2",k); renderPickers(); push();});
   else if(isK){ if(hasImgQ(S.genre)){ $("modesBox").style.display="flex"; $("modesLabel").textContent="出題のしかた"; seg("modes", CMODES.map(m=>({key:m.id,name:m.id==="J"&&hasSndQ(S.genre)?"画像・音で":m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-cmode",k); renderPickers(); push();}); } else $("modesBox").style.display="none"; }
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
-  const lvs=isK?[{lv:1},{lv:2},{lv:3}]:isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
-  if(!lvs.some(l=>l.lv===S.lv)) S.lv=lvs[lvs.length-1].lv;
-  $("levels").style.gridTemplateColumns=`repeat(${lvs.length},1fr)`;
-  seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
+  const isT=isTop(S.genre);
+  const lvs=isT?[{lv:3},...topicsOf(S.genre).map(t=>({lv:t}))]:isK?[{lv:1},{lv:2},{lv:3}]:isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
+  if(!lvs.some(l=>l.lv===S.lv)&&!(isT&&!(ALL[S.genre]||[]).length)) S.lv=isT?3:lvs[lvs.length-1].lv;   // 札の読み込み前は選んだトピックを消さない
+  $("levelsLabel").textContent=isT?"トピック（出題数）":"難易度（出題数）";
+  $("levels").classList.toggle("tp",isT); $("levels").style.gridTemplateColumns=isT?"repeat(auto-fill,minmax(120px,1fr))":`repeat(${lvs.length},1fr)`;
+  seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB&&!isT?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
   $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
   if(S.genre==="j"){ $("rangeNote").textContent=["","日商簿記3級の基本（勘定科目の区分・日常の取引の仕訳）","3級の決算と帳簿（決算整理・消費税・貸倒れ・固定資産の売却・補助簿と財務諸表）","基礎と応用ぜんぶ"][S.lv]+"。取引を読んで、正しい仕訳を4択から選びます（「借方 / 貸方」の順）。答え合わせで考え方を確認できます。"; return; }
   if(isTr(S.genre)){ $("rangeNote").textContent=["","中学〜高校初級の文法で言える、仕事でよく使う短い文","会議・メール・交渉で使う丁寧な言い回し（依頼・断り・提案など）","基礎と応用ぜんぶ"][S.lv]+"。日本語を読んで英語で入力します。登録してある言い方のどれかに合えば正解。合わなくても、答え合わせで模範解答と比べて「合ってた」を押せば正解にできます。"; return; }
   if(S.genre==="h"){ $("rangeNote").textContent=["","中3〜高校の基本（方程式・関数・三角比・指数対数・数列・微積・確率）","数III・大学教養・実務（極限・微積の発展・線形代数・統計・お金の計算）","基礎と応用ぜんぶ"][S.lv]+"。問題を解いて、正しい答えを4択から選びます。答え合わせで解き方を確認できます。"; return; }
-  if(isK){ $("rangeNote").textContent=["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv]+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?(hasSndQ(S.genre)?"画像を見て、または曲を聞いて、あてはまる用語を入力します（画像・音のある札だけ）":"画像を見て、あてはまる用語を入力します（画像のある札だけ）"):hasSndQ(S.genre)?"名曲は音、見た目で覚える札は画像、ほかは説明文で出題します":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
+  if(isK){ $("rangeNote").textContent=(isT?(S.lv===3?"このジャンルの札ぜんぶ":S.lv===TOP_OTHER?"ほかのトピックに入らない札":"「"+S.lv+"」の札だけ"):["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv])+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?(hasSndQ(S.genre)?"画像を見て、または曲を聞いて、あてはまる用語を入力します（画像・音のある札だけ）":"画像を見て、あてはまる用語を入力します（画像のある札だけ）"):hasSndQ(S.genre)?"名曲は音、見た目で覚える札は画像、ほかは説明文で出題します":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
@@ -1607,7 +1620,7 @@ function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
 function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
 // 学問・教養の難易度名（2026-11-17 Keita依頼「基礎概念でいっしょくたはそぐわない。気の利いた名前に」）。中身の基準は README §2.1 のまま、名前だけ分野ごと
 const LVN={"あ":["要点","深読み"],"い":["要点","深読み"],"う":["要点","深読み"],"え":["要点","深読み"],"お":["要点","深読み"],"0":["ITの基本","技術者の目"],"i":["寄席の入口","噺の通"],"z":["茶の間の笑い","笑いの通"],"E":["新聞が読める","エコノミスト"],"P":["選挙の前に","政治記者"],"G":["旅の地図帳","地図の読み手"],"Q":["ニュースの裏","戦略家の視点"],"K":["つい買う心理","ナッジ設計者"],"F":["哲学カフェ","原典に挑む"],"L":["暮らしの法律","法廷の言葉"],"C":["理科室","研究室"],"N":["毎日のごはん","栄養士の目"],"M":["会議の常識","社長の本棚"],"A":["決算書を読む","CFOの視点"],"Y":["心のしくみ","臨床の現場"],"O":["社会を見る目","学者の道具箱"],"X":["生き物図鑑","細胞の奥へ"],"Z":["身近な物理","宇宙の法則"],"U":["足もとの地球","地球46億年"],"S":["夜空の案内","宇宙の果てへ"],"1":["グラフを疑う","データ分析家"],"h":["教科書の数学","使える数学"],"j":["日々の仕訳","決算"],"2":["売れるしくみ","戦略を立てる"],"3":["からだの基本","診察室"],"4":["宗教めぐり","教えの奥へ"],"5":["美術館の入口","学芸員の目"],"6":["本棚の名作","文学部"],"7":["大人の常識語","言葉の通"],"9":["旅の定番","通の旅先"],"l":["26件を言える","構成資産の通"],"a":["名所めぐり","建築家の目"],"b":["教科書の名画","美術館の主"],"c":["食卓の定番","料理人の目"],"d":["乾杯の定番","酒場の通"],"e":["季節の定番","市場の目利き"],"f":["あの名曲","演奏会の常連"],"g":["夜空の常連","星読み"],"k":["ひとこと英語","商談の英語"],"V":["TOEIC 600","TOEIC 800"],"I":["日常の熟語","仕事の熟語"],"8":["定番フレーズ","会議・交渉"],"m":["予報を読む","予報士の目"],"n":["花屋の定番","植物園の通"],"o":["誕生石","鉱物標本"],"p":["仏の見分け","印を読む"],"q":["品種と産地","ソムリエの道"],"r":["歳時記の入口","俳人の目"],"s":["お寺の基本","教えの奥へ"],"t":["教会の基本","神学の扉"],"u":["六信五行","文明と思想"],"v":["神々と聖地","哲学の源流"],"w":["律法と祭り","離散の歴史"],"x":["神社の基本","神話と歴史"],"y":["見出しがわかる","解説できる"]};
-function lvName(lv,g){ if(LVN[g]&&lv>=1&&lv<=3) return lv===3?"ぜんぶ":LVN[g][lv-1]; if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)||isTr(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
+function lvName(lv,g){ if(typeof lv==="string") return lv; if(isTop(g)&&lv===3) return "ぜんぶ"; if(LVN[g]&&lv>=1&&lv<=3) return lv===3?"ぜんぶ":LVN[g][lv-1]; if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)||isTr(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
   $("soloBtn").hidden=!others().length;
@@ -1646,7 +1659,7 @@ function okLine(id, me, rows){
 }
 // 答え方（入力/4択）は対戦ではホスト（待っている人・対戦中の人）に合わせる。ロビーに戻ると自分の設定に戻す（2026-11-05 Keita指摘）
 function hostAmode(a){ if(a==="T"||a==="C") S.amode=a; }
-function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&[1,2,3,4].includes(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
+function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&okLv(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
 function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="lobby"); }
 function startQi(){ return isPick(S.genre)?0:fromQi(S.mode,S.lv,S.from); }
 function startFromWait(w){ if(typeof w.ht==="boolean") S.ht=w.ht; hostAmode(w.amode); const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
@@ -2093,9 +2106,9 @@ function randGo(top){
   const g=ids[Math.floor(Math.random()*ids.length)]; const rnd=a=>a[Math.floor(Math.random()*a.length)];
   if(S.wait){ S.wait=null; push(); }
   ensureGenre(g).then(()=>{
-    S.genre=g; store.set("nb-genre",g); S.lv=1; S.cnt=10;
+    S.genre=g; store.set("nb-genre",g); S.lv=isTop(g)?3:1; S.cnt=10;
     if(hasVoice(g)) S.bmode=rnd(BMODES).id;
-    if(isCon(g)){ const ok=hasImgQ(g)?CMODES.filter(m=>deckFor(m.id,1,g,null,S.bmode).length>=10).map(m=>m.id):["M"]; S.mode=rnd(ok.length?ok:["M"]); }
+    if(isCon(g)){ const ok=hasImgQ(g)?CMODES.filter(m=>deckFor(m.id,S.lv,g,null,S.bmode).length>=10).map(m=>m.id):["M"]; S.mode=rnd(ok.length?ok:["M"]); }
     S.amode="C";   // ランダムはいつも4択（2026-11-08 Keita指摘「ランダムで入力が出た」）。ロビーに戻ると自分の設定に戻る
     renderPickers(); push(); $("startBtn").onclick();
   }).catch(()=>{});
@@ -2117,7 +2130,7 @@ $("randCu").onclick=()=>randGo("教養");
 $("forceBtn").onclick=()=>{ if(S.wait){ $("forceBtn").hidden=true; S.solo=false; startFromWait(S.wait); } };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
 $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
-  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
+  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=okLv(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
   const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V"; if(typeof g.ht==="boolean") S.ht=g.ht; hostAmode(g.amode);
   { const need=Array.isArray(g.custom)?[...new Set(g.custom.filter(k=>typeof k==="string"&&/^[^:]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]):[];
