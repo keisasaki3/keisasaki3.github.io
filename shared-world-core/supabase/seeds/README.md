@@ -41,6 +41,7 @@ python shared-world-core/scripts/generate_math_seed.py
 13. `010_kyoyo_presets.sql` — 教養プリセット8科目（SUPER暗記大戦の教養ジャンルと対応。2026-11-17 本番適用済み）
 14. `011_kyoyo_presets_2.sql` — 教養プリセット追加6科目（花・宝石と鉱物・仏像・ワイン・季語・世界遺産（日本）。2026-11-18 本番適用）
 15. `012_kyoyo_presets_3.sql` — 教養プリセット追加2科目（落語・お笑い、各4分野）。2026-11-18 本番適用（Keita「いいよ」）
+16. `014_kyoyo_presets_5.sql` — 教養プリセット追加3科目（ファッション8・インテリア7・カラーコーディネーター9分野）。2026-11-24 本番適用（Keita「おけ」）
 
 本番の現状の一覧は `../../curriculum/prod_curriculum.csv`（`../../scripts/export_prod_curriculum.py` で作る）。
 
