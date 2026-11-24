@@ -268,6 +268,32 @@ def check_images():
     return errs
 
 
+def check_history():
+    """歴史の本質クイズ（index.html の HQ）: 問いに答えが入っていないか、選択肢の重複、正解だけ長すぎないか（2026-11-24）"""
+    errs = []
+    html = open(os.path.join(APP, "index.html"), encoding="utf8").read()
+    m = re.search(r"const HQ = (\{.*?\});\n", html, re.S)
+    if not m:
+        return [("hist", "H", "-", "index.html に HQ が見つからない")]
+    hq = json.loads(m.group(1))
+    keys = set(re.findall(r"^\[(-?\d+),\d,", html, re.M))
+    for k, h in hq.items():
+        if k[1:] not in keys:
+            errs.append(("hist", "H", k, "HQ にあるが年表（JP/WD）にその札がない"))
+        q, a, w = h.get("q", ""), h.get("a", ""), h.get("w") or []
+        if not q or not a or h.get("t") not in ("S", "T"):
+            errs.append(("hist", "H", k, "問い・正解・種類（S/T）のどれかが空"))
+        if len(w) != 3 or len(set(w)) != 3 or a in w:
+            errs.append(("hist", "H", k, "誤答は重ならない3つ（正解を含めない）"))
+        if h.get("t") == "T":
+            for p in leak_parts(a) | {norm(x) for x in h.get("al", []) if len(norm(x)) >= 2}:
+                if p and p in norm(q):
+                    errs.append(("hist", "H", k, f"問いに答え（{p}）が入っている"))
+        elif w and len(a) > 1.3 * max(len(x) for x in w):
+            errs.append(("hist", "H", k, "正解だけが目立って長い（長さで当てられる）"))
+    return errs
+
+
 def show_choices(genres):
     for g in genres:
         cs = json.load(open(os.path.join(DATA, g + ".json")))
@@ -286,7 +312,7 @@ def main():
         return
     show_all = "--all" in sys.argv
     allow = {} if show_all else load_allow()
-    errs = check_cards() + check_images()
+    errs = check_cards() + check_images() + check_history()
     out, used = [], set()
     for rule, f, t, msg in errs:
         key = f"{rule}:{f}:{t}"
