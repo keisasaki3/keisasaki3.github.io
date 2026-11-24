@@ -20,6 +20,7 @@
   weak      4択で迷う余地がない（同じまとまり・同じ字種・同じ語尾の誤答候補が3つそろわない。札に dw で誤答3つを手で書くか、候補の札を足す）
   field     必須の欄（t・d・x、トピックの g）が空
   img       資料画像: ファイルがない・同じ画像を別の札で使い回し・索引にない札
+  ruby      ふりがな辞書（src/ruby.tsv）の書き方の誤り、data/ruby.json の作り直し忘れ（src/build_ruby.py）
 """
 import json, os, re, sys, glob, unicodedata, hashlib
 
@@ -31,7 +32,7 @@ ALLOW_PATH = os.path.join(HERE, "check_allow.json")
 # 問題形式の科目（答えが式・仕訳・英文）。leak/hint/term/reverse は当てはまらない
 PROBLEM = {"math", "boki3", "wabun"}
 # 札ではない辞書・索引
-SKIP = {"dx-en", "dx-history", "topics"}
+SKIP = {"dx-en", "dx-history", "topics", "ruby"}
 # 英語の言葉の科目（答えが英語、問題文が日本語）
 ENGLISH = {"envocab", "enbiz", "enphrase"}
 
@@ -294,6 +295,21 @@ def check_history():
     return errs
 
 
+def check_ruby():
+    """ふりがな（2026-11-24）: src/ruby.tsv が正しく書けていて、data/ruby.json がそれから作り直されているか"""
+    sys.path.insert(0, os.path.join(APP, "src"))
+    import build_ruby
+    out, bad = build_ruby.build()
+    errs = [("ruby", "ruby.tsv", f"{ln}行目 {l}", msg) for ln, l, msg in bad]
+    try:
+        cur = json.load(open(os.path.join(DATA, "ruby.json"), encoding="utf8"))
+    except Exception:
+        cur = None
+    if cur != out:
+        errs.append(("ruby", "ruby.json", "-", "ruby.tsv と合っていない。python3 apps/anki-taisen/src/build_ruby.py で作り直す"))
+    return errs
+
+
 def show_choices(genres):
     for g in genres:
         cs = json.load(open(os.path.join(DATA, g + ".json")))
@@ -312,7 +328,7 @@ def main():
         return
     show_all = "--all" in sys.argv
     allow = {} if show_all else load_allow()
-    errs = check_cards() + check_images() + check_history()
+    errs = check_cards() + check_images() + check_history() + check_ruby()
     out, used = [], set()
     for rule, f, t, msg in errs:
         key = f"{rule}:{f}:{t}"
