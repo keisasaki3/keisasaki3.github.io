@@ -2198,7 +2198,9 @@ const kanaH=t=>String(t||"").replace(/[\u30a1-\u30f6]/g,ch=>String.fromCharCode(
 function rubyRead(v){ return typeof v==="string"? v : v.map(x=>typeof x==="string"?x:x[1]).join(""); }
 function ansKana(c){ return c? [c.name,...(c.alias||[])].map(x=>kanaH(normAns(x)).replace(/[^\u3041-\u309f]/g,"")).filter(x=>x.length>=2) : []; }
 const askRo=c=>({skip:ansKana(c),ans:[c.name,...(c.alias||[])].map(String)});
-function addRuby(node,text,o){ o=o||{}; text=String(text==null?"":text); if(!RUBYRE){ node.append(text); return node; }
+function addRuby(dst,text,o){ o=o||{}; text=String(text==null?"":text); if(!RUBYRE){ dst.append(text); return dst; }
+  // ひとつの span にまとめて入れる（問題文などの flex の箱で、ルビの語だけ別の行に分かれないように。2026-11-24 Keita「画面おかしいぞ」）
+  const node=document.createElement("span"); dst.append(node);
   const used=o.used||new Set(), skip=o.skip||[]; let last=0;
   text.replace(RUBYRE,(m,off)=>{ const v=RUBY[m], rd=rubyRead(v);
     if(used.has(m)) return m;
@@ -2207,7 +2209,7 @@ function addRuby(node,text,o){ o=o||{}; text=String(text==null?"":text); if(!RUB
     used.add(m); if(off>last) node.append(text.slice(last,off));
     (typeof v==="string"?[[m,v]]:v).forEach(x=>{ if(typeof x==="string"){ node.append(x); return; } const r=document.createElement("ruby"); r.append(x[0]); const t=document.createElement("rt"); t.textContent=x[1]; r.append(t); node.append(r); });
     last=off+m.length; return m; });
-  if(last<text.length) node.append(text.slice(last)); return node; }
+  if(last<text.length) node.append(text.slice(last)); return dst; }
 function rEl(tag,cls,text,o){ return addRuby(el(tag,cls),text,o); }
 function reRuby(){ if(S.view!=="game"||!S.deck||!S.deck[S.qi]) return; const c=S.deck[S.qi];
   if(S.phase==="ask"){ const q=$("card").querySelector("p.qtext.q-x"); if(q&&c.cc&&c.q!=="I"&&!c.hq){ q.textContent=""; addRuby(q,c.def,askRo(c)); } if(S.choices) renderChoices(); } }
