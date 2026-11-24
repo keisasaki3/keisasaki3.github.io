@@ -204,7 +204,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .dr{font-size:14px;margin:0}
 .ensent{font-weight:600;line-height:1.7}.ensent .fill{color:var(--acc-ink);text-decoration:underline;text-underline-offset:3px}
 .gic{width:22px;height:22px;padding:3px;box-sizing:content-box;border-radius:7px;background:#2b2530;image-rendering:pixelated;vertical-align:middle;margin-right:7px}
-.randrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rsel{display:flex;flex-direction:column;gap:4px}.rsel>b{margin-top:6px}.rgrp{border:1px solid var(--line);border-radius:10px;padding:2px 10px}.rgrp summary{cursor:pointer;padding:8px 0;font-weight:700}.rsel label.rrow{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:8px;font-weight:400;padding:5px 0;border-top:1px solid var(--line)}.rrow input{width:20px;height:20px;flex:none}.rrow span:nth-child(2){flex:1}.rall{display:flex;gap:6px;padding:4px 0 8px}.rall .chip{font:inherit;font-size:12px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surf2);color:var(--ink)}
+.randrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.rsel{display:flex;flex-direction:column;gap:4px}.rsel>b{margin-top:6px}.rgrp{border:1px solid var(--line);border-radius:10px;padding:2px 10px}.rgrp summary{cursor:pointer;padding:8px 0;font-weight:700}.rsel label.rrow{display:flex;flex-direction:row;align-items:center;justify-content:flex-start;text-align:left;gap:8px;font-weight:400;padding:5px 0;border-top:1px solid var(--line)}.rrow input{width:20px;height:20px;flex:none}.rrow span:nth-child(2){flex:1}.rall{display:flex;flex-wrap:wrap;gap:6px;padding:4px 0 8px}.rall .chip{font:inherit;font-size:12px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;background:var(--surf2);color:var(--ink)}
 .nsgate{display:flex;flex-direction:column;gap:8px}.nsbox{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}.nsrow{display:flex;align-items:center;gap:8px}.nsrow select{font:inherit;padding:6px 10px;min-width:5em}.randrow .btn{padding:10px 8px;font-size:15px}
 .gearbtn{position:fixed;z-index:40;top:calc(8px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .gearpop{position:fixed;z-index:41;top:calc(54px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:min(300px,calc(100vw - 16px));background:var(--card);color:var(--card-ink);border:1px solid var(--card-line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:12px;display:flex;flex-direction:column;gap:8px}
@@ -411,10 +411,10 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <button class="btn sub" id="rselBtn" type="button" aria-expanded="false">☑ ランダムの範囲</button>
       </div>
       <div id="rselBox" class="nsbox" hidden>
-        <p class="small muted" style="margin:0">学問ランダム・教養ランダム・NONSTOP に入れるトピックを選びます。はじめは 学問＝大学まで、教養＝一般教養がオン（専門・マニアックはオフ）。<span id="rselSave"></span></p>
+        <p class="small muted" style="margin:0">学問ランダム・教養ランダム・NONSTOP に入れるトピックを選びます。はじめは 学問＝高校まで、教養＝一般教養がオン。<span id="rselSave"></span></p>
+        <div class="rall"><button class="chip" id="rselReset" type="button">初期状態にリセット（高校まで）</button><button class="chip" id="rselAll" type="button">全てチェック</button><button class="chip" id="rselNone" type="button">全て解除</button></div>
         <p class="small muted" id="rselNote" style="margin:0"></p>
         <div id="rselList" class="rsel"></div>
-        <button class="btn ghost" id="rselReset" type="button">はじめの状態に戻す</button>
       </div>
       <div id="nsBox" class="nsbox" hidden>
         <p class="small muted" style="margin:0">学問（歴史・数学なども含む）の「ランダムの範囲」でオンのトピックから、選んだ数をランダムに選び、トピックごとに出題しつづけます。部屋にいる人と対戦もできます。答え方は各トピックのはじめに選べます。</p>
@@ -1489,11 +1489,11 @@ const isKyo=g=>{ const t=subjTop(g); return t==="教養"; };
 const LVNAME_A=["","中学","高校","大学","専門"], LVNAME_K=["","一般教養","一般教養","マニアック"];   // 教養は2段（2026-11-24 Keita「教養は一般教養とマニアックにしよう」）。表の 1・2 が一般教養、3 がマニアック
 function topicLv(g,t,mode){ if(g==="H") return mode==="W"?2:1; const m=TLV[g]; const v=m&&(m[t]!==undefined?m[t]:m._); return v||(isKyo(g)?1:2); }
 function topicLvName(g,t,mode){ const v=topicLv(g,t,mode); return (isKyo(g)?LVNAME_K:LVNAME_A)[v]||""; }
-// ランダム・NONSTOP に入れるか（トピックごとのチェック）。初期は学問＝大学まで、教養＝一般教養がオン（Keita「チェック初期は教養レベルまで全部オン。応用はオフスタート」）。
+// ランダム・NONSTOP に入れるか（トピックごとのチェック）。初期は学問＝高校まで、教養＝一般教養がオン（Keita「チェック初期は教養レベルまで全部オン。応用はオフスタート」）。
 // 保存は初期値との差だけ（端末 nb-rsel）。トピックの key は「ジャンル|出題範囲|トピック」（歴史は出題範囲 J/W、鳥・木はトピックなしでジャンルまるごと）
 const rKey=(g,m,t)=>g+"|"+(m||"")+"|"+(t||"");
 let RSEL={}; try{ RSEL=JSON.parse(store.get("nb-rsel")||"{}")||{}; }catch(e){ RSEL={}; }
-const rDef=(g,m,t)=>t?topicLv(g,t,m)<=(isKyo(g)?2:3):true;
+const rDef=(g,m,t)=>t?topicLv(g,t,m)<=2:true;   // 初期は 学問＝高校まで、教養＝一般教養（2026-11-24 Keita「初期状態にリセット(高校まで)」）
 const rOn=(g,m,t)=>{ const k=rKey(g,m,t); return k in RSEL?!!RSEL[k]:rDef(g,m,t); };
 function rSet(g,m,t,v){ const k=rKey(g,m,t); if(v===rDef(g,m,t)) delete RSEL[k]; else RSEL[k]=v?1:0; store.set("nb-rsel",JSON.stringify(RSEL)); clearTimeout(rSet.tm); rSet.tm=setTimeout(()=>lqSaveRsel(),800); }
 // タブ（学問・教養）の全トピック。札の読み込みが要る
@@ -2448,6 +2448,8 @@ $("nsGo").onclick=()=>{ const n=Math.min(20,Math.max(1,Number($("nsN").value)||5
   }).catch(()=>{ $("nsNote").textContent="札を読み込めませんでした。通信を確かめてもう一度押してください。"; }); };
 $("rselBtn").onclick=()=>{ const b=$("rselBox"); if(b.hidden) openRsel(); else { b.hidden=true; $("rselBtn").setAttribute("aria-expanded","false"); } };
 $("rselReset").onclick=()=>{ RSEL={}; store.set("nb-rsel","{}"); lqSaveRsel(); renderRsel(); };
+function rselAllSet(v){ const tops=["学問","教養"]; Promise.all(tops.flatMap(tabGenres).map(ensureGenre)).then(()=>{ tops.forEach(top=>tabTopics(top).forEach(x=>{ const k=x.all||x.t===""?rKey(x.g,"",""):rKey(x.g,x.mode==="M"?"":x.mode,x.t); const d=x.all||x.t===""?true:rDef(x.g,x.mode==="M"?"":x.mode,x.t); if(v===d) delete RSEL[k]; else RSEL[k]=v?1:0; })); store.set("nb-rsel",JSON.stringify(RSEL)); lqSaveRsel(); renderRsel(); }).catch(()=>{}); }
+$("rselAll").onclick=()=>rselAllSet(true); $("rselNone").onclick=()=>rselAllSet(false);
 // 全員のOKを待たずに始める（2026-11-08 Keita依頼）。OKした人は自動で合流、まだの人には「対戦中です［参加する］」が出る
 $("forceBtn").onclick=()=>{ if(S.wait){ $("forceBtn").hidden=true; S.solo=false; startFromWait(S.wait); } };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
