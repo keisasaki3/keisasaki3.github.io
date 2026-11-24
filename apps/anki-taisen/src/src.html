@@ -192,6 +192,7 @@ ruby{ruby-align:center}
 .nsgate{display:flex;flex-direction:column;gap:8px}.nsbox{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}.nsrow{display:flex;align-items:center;gap:8px}.nsrow select{font:inherit;padding:6px 10px;min-width:5em}.randrow .btn{padding:10px 8px;font-size:15px}
 .gearbtn{position:fixed;z-index:40;top:calc(8px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .gearpop{position:fixed;z-index:41;top:calc(54px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:min(300px,calc(100vw - 16px));background:var(--card);color:var(--card-ink);border:1px solid var(--card-line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:12px;display:flex;flex-direction:column;gap:8px}
+.zbtn{font-weight:700;letter-spacing:-.02em}
 .gearpop .zrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.gearpop .zrow button{padding:8px 4px;border-radius:10px;border:1.5px solid var(--card-line);background:var(--card-soft);color:var(--card-ink);font-weight:700}.gearpop .zrow button[aria-pressed="true"]{border-color:var(--card-acc);background:var(--card-acc);color:#fff}
 .btn.sub{background:transparent;color:var(--ink);border:2px solid var(--acc)}
 .report{text-align:center}.rk{display:flex;gap:8px;align-items:center;font-size:14px}.rk input{width:18px;height:18px}.report textarea{font:inherit;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--ink);width:100%;box-sizing:border-box}
@@ -469,7 +470,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
 
   <!-- 出題 -->
   <section id="game" hidden style="display:flex;flex-direction:column;gap:12px">
-    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute spkbtn" id="muteBtn" type="button" aria-pressed="true" aria-label="音量"></button><button class="mute" id="quitBtn" type="button">ゲームをやめる</button></div>
+    <div class="bar"><span class="prog" id="prog"></span><span id="eraRange"></span><button class="mute zbtn" id="zoomBtn" type="button" aria-label="文字の大きさ" title="文字の大きさ">Aあ</button><button class="mute spkbtn" id="muteBtn" type="button" aria-pressed="true" aria-label="音量"></button><button class="mute" id="quitBtn" type="button">ゲームをやめる</button></div>
     <div class="players" id="gamePlayers"></div>
     <div class="card" id="card">
       <span class="era" id="cEra"></span>
@@ -2461,17 +2462,21 @@ const rselOpen=new Set();
 const ZOOMS=[{k:"1",n:"標準"},{k:"1.25",n:"大きめ"},{k:"1.5",n:"特大"}];
 function applyZoom(z){ document.documentElement.style.zoom=(z&&z!=="1")?z:""; }
 applyZoom(store.get("nb-zoom")||"1");
-$("gearBtn").onclick=e=>{ e.stopPropagation(); let pop=$("gearPop"); if(pop){ pop.remove(); return; }
+// ゲーム中も上の「Aあ」から同じ表示の大きさを変えられる（2026-11-24 Keita「ゲーム中も上に文字の大きさ変更のやつでるように」）
+function zoomPop(e){ e.stopPropagation(); let pop=$("gearPop"); if(pop){ pop.remove(); return; }
   pop=el("div","gearpop"); pop.id="gearPop"; pop.onclick=ev=>ev.stopPropagation();
   pop.append(el("b",null,"設定")); pop.append(el("span","small","表示の大きさ（パソコンで遊ぶときに）"));
   const row=el("div","zrow"); const cur=store.get("nb-zoom")||"1";
-  ZOOMS.forEach(z=>{ const b=el("button",null,z.n); b.type="button"; b.setAttribute("aria-pressed",String(z.k===cur)); b.onclick=()=>{ store.set("nb-zoom",z.k); applyZoom(z.k); row.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); }; row.append(b); });
-  pop.append(row); document.body.append(pop); };
+  ZOOMS.forEach(z=>{ const b=el("button",null,z.n); b.type="button"; b.setAttribute("aria-pressed",String(z.k===cur)); b.onclick=()=>{ store.set("nb-zoom",z.k); applyZoom(z.k); fitPop(pop); row.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",String(x===b))); }; row.append(b); });
+  pop.append(row); document.body.append(pop); fitPop(pop); }
+// 拡大中のスマホで窓が画面の外にはみ出さないよう、幅を拡大率で割る
+function fitPop(pop){ const z=Number(store.get("nb-zoom")||"1")||1; pop.style.boxSizing="border-box"; pop.style.width=Math.min(300,(window.innerWidth-16)/z)+"px"; }
+$("gearBtn").onclick=zoomPop; $("zoomBtn").onclick=zoomPop;
 document.addEventListener("click",()=>{ const p=$("gearPop"); if(p) p.remove(); });
 $("randAc").onclick=()=>randGo("学問");
 $("randCu").onclick=()=>randGo("教養");
 function renderNS(){ const sel=$("nsN"); if(!sel.options.length){ for(let i=1;i<=20;i++){ const o=document.createElement("option"); o.value=String(i); o.textContent=String(i); sel.append(o); } sel.onchange=()=>store.set("nb-ns-n",sel.value); }
-  sel.value=String(Math.min(20,Math.max(1,Number(store.get("nb-ns-n"))||5)));
+  sel.value=String(Math.min(20,Math.max(1,Number(store.get("nb-ns-n"))||3)));
 }
 // NONSTOP英語（2026-11-24 Keita「ノンストップリミックスとしてノンストップ英語ボタンを追加」）: 学問›英語（和文英訳・ビジネス英単語・熟語・句動詞・英語定型表現）のトピックだけで回す。ランダムの範囲でオンの英語トピックから選び、1つもオンでなければ英語の全トピックから
 let nsKind="";
