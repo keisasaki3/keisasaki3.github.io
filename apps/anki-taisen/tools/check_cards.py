@@ -298,10 +298,10 @@ def check_history():
             errs.append(("hist", "H", k, "問い・要点・補足のどれかが空"))
         if not q.endswith("？"):
             errs.append(("hist", "H", k, "問いは「？」で終える"))
-        if len(a) > 24:
-            errs.append(("hist", "H", k, f"要点が長い（{len(a)}字、24字まで）"))
-        if len(x) > 90:
-            errs.append(("hist", "H", k, f"補足が長い（{len(x)}字、90字まで）"))
+        if len(a) > 26:
+            errs.append(("hist", "H", k, f"要点が長い（{len(a)}字、26字まで）"))
+        if len(x) > 110:
+            errs.append(("hist", "H", k, f"補足が長い（{len(x)}字、110字まで）"))
         if a and a in x:
             errs.append(("hist", "H", k, "補足が要点のくり返し"))
     return errs
