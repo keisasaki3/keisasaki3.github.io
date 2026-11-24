@@ -161,6 +161,9 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .grade{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:8px;align-items:center}
 .grade>span{font-size:13px;color:var(--muted)}
 .grade button{padding:10px 4px;font-size:15px}
+rt{font-size:.55em;font-weight:400;letter-spacing:0;opacity:.85;user-select:none}
+.choice rt,.dlink rt{font-size:.6em}
+ruby{ruby-align:center}
 .qtext{display:flex;flex-direction:column;gap:6px;font-size:17px;line-height:1.7;font-weight:600}
 .photo{width:100%;aspect-ratio:4/3;object-fit:contain;background:var(--photo);border-radius:12px;max-width:100%;display:block}
 .voice{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0 8px}
@@ -2036,7 +2039,7 @@ function beginAsk(){
     if(c.q==="A"){ const v=el("div","voice q-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i")); v.append(w,vbtns(c),el("p","vnote","この曲は何？")); card.insertBefore(v,$("cEv"));
       const qi0=S.qi; loadVoice(c.snd[0]).then(()=>{ if(S.qi===qi0&&S.phase==="ask") playVoice(c,false); }).catch(()=>{}); }
     else if(c.q==="I"){ const f=el("figure","docimg q-x"); const im=document.createElement("img"); im.src=c.doc[0]; im.alt="この画像は何？"; f.append(im); card.insertBefore(f,$("cEv")); card.insertBefore(el("p","qtext q-x","この画像は何？"),$("cEv")); }
-    else card.insertBefore(el("p","qtext q-x",c.def),$("cEv"));
+    else card.insertBefore(rEl("p","qtext q-x",c.def,askRo(c)),$("cEv"));
     S.choices=choicesFor(S.deck,S.qi,S.gid);
   } else if(c.kind==="choice"){
     $("cEra").textContent=c.hk? "北海道の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる") : c.tree? "関東の木・"+(c.season==="一年中"?"一年中みどり":"見ごろは"+c.season) : "関東の鳥・"+(c.season==="一年中"?"一年中見られる":c.season+"に見られる");
@@ -2058,10 +2061,10 @@ function beginAsk(){
     setTimeout(()=>{ if(S.qi===qi0&&S.loading&&S.phase==="ask") $("waitAsk").textContent=(c.q==="V"?"音声":"写真")+"を読み込み中…（読めたら始まります）"; },600);
   } else if(c.hq){
     $("cEra").textContent=tagOf(c); $("cEv").textContent=""; $("cEn").textContent="";
-    card.insertBefore(el("p","qtext q-x",c.hq.q),$("cEv"));
+    card.insertBefore(rEl("p","qtext q-x",c.hq.q),$("cEv"));
   } else {
     $("cEra").textContent=tagOf(c);
-    $("cEv").textContent=c.name; $("cEn").textContent=c.en;
+    $("cEv").textContent=""; addRuby($("cEv"),c.name); $("cEn").textContent=c.en;
     if(c.kind==="year") card.insertBefore(el("p","qtext q-x","何年のできごと？"),$("cEn").nextSibling);
   }
   const big=isBig(); card.classList.toggle("big",big);
@@ -2077,7 +2080,7 @@ function beginAsk(){
 }
 function renderChoices(){
   const box=$("choices"); box.textContent="";
-  S.choices.forEach(n=>{const b=el("button","choice",n); b.type="button";
+  S.choices.forEach(n=>{const b=rEl("button","choice",n);   // 選択肢は全部に同じ規則で振る（正解だけ振らないと逆に目印になる） b.type="button";
     if(S.ans){ b.disabled=true; if(S.ans.v===n) b.classList.add("picked"); }
     if(S.loading) b.disabled=true;
     b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans&&!S.loading){ answer(n); renderChoices(); } }; box.append(b);});
@@ -2121,7 +2124,7 @@ const roughCard=c=>c.kind==="year"&&!isOral(c)&&c.lv>1;
 const isOral=c=>!!c&&c.kind==="year";
 const GRADES=["○","△","×"];
 function oralShow(){ const c=S.deck[S.qi]; if(S.view!=="game"||S.phase!=="ask"||S.ans||!isOral(c)) return; const box=$("oralAns"); box.textContent="";
-  if(c.hq){ box.append(el("b",null,c.hq.a), el("span","hqx",c.hq.x)); } else { box.append(el("b",null,yearText(c.y)+"年")); }
+  if(c.hq){ box.append(rEl("b",null,c.hq.a), rEl("span","hqx",c.hq.x)); } else { box.append(el("b",null,yearText(c.y)+"年")); }
   box.hidden=false; $("seeBtn").hidden=true; $("gradeBox").hidden=false; }
 $("seeBtn").onclick=oralShow;
 $("gradeBox").querySelectorAll("button").forEach(b=>{ b.onclick=()=>{ if(S.view==="game"&&S.phase==="ask"&&!S.ans) answer(b.dataset.g); }; });
@@ -2156,26 +2159,47 @@ const rxq=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 const DTERMS=Object.keys(DIDX).filter(t=>t.length>=2&&!DIDX[t][1]).sort((a,b)=>b.length-a.length);
 const ETERMS=Object.keys(DIDX).filter(t=>DIDX[t][1]).sort((a,b)=>b.length-a.length);
 const DRE=(DTERMS.length||ETERMS.length)? new RegExp([...(ETERMS.length?["\\b(?:"+ETERMS.map(rxq).join("|")+")\\b"]:[]),...DTERMS.map(rxq)].join("|"),"gi") : null;
-function dlink(label,t){ const b=el("button","dlink",label); b.type="button"; b.onclick=e=>{ e.stopPropagation(); openDict(t,$("dict").hidden); }; return b; }
+function dlink(label,t){ const b=rEl("button","dlink",label); b.type="button"; b.onclick=e=>{ e.stopPropagation(); openDict(t,$("dict").hidden); }; return b; }
 const KATA=/[\u30A1-\u30FA\u30FC]/; const HIRA=/[\u3041-\u309F]/, HONLY=/^[\u3041-\u309F\u30FC]+$/;
-function fillLinked(node,text,self){ node.textContent=""; if(!DRE){ node.textContent=text; return; }
+function fillLinked(node,text,self){ node.textContent=""; const ro={used:new Set()}; if(!DRE){ addRuby(node,text,ro); return; }
   const used=new Set([self]); let last=0; text.replace(DRE,(m,off)=>{ const k=dkey(m); if(!k||used.has(k)) return m;
     // カタカナ語の途中（イスラムの「ラム」、テムジンの「ジン」）はリンクしない
     // ひらがなだけの見出し語（読み札の「しい」等）は、ひらがなの途中（望ましい）ではリンクしない（2026-11-06 誤り報告#10）
     if(HONLY.test(m)&&(HIRA.test(text[off-1]||"")||HIRA.test(text[off+m.length]||""))) return m;
-    if(KATA.test(m[0])&&KATA.test(text[off-1]||"")) return m; if(KATA.test(m[m.length-1])&&KATA.test(text[off+m.length]||"")) return m; used.add(k); if(off>last) node.append(text.slice(last,off)); node.append(dlink(m,k)); last=off+m.length; return m; });
-  if(last<text.length) node.append(text.slice(last)); }
+    if(KATA.test(m[0])&&KATA.test(text[off-1]||"")) return m; if(KATA.test(m[m.length-1])&&KATA.test(text[off+m.length]||"")) return m; used.add(k); if(off>last) addRuby(node,text.slice(last,off),ro); const lb=dlink(m,k); lb.textContent=""; addRuby(lb,m,ro); node.append(lb); last=off+m.length; return m; });
+  if(last<text.length) addRuby(node,text.slice(last),ro); }
 let dstack=[];
 function openDict(t,fresh){ const e=DICT[t];
   if(!e){ const ix=DIDX[t]; if(ix&&!LOADED[ix[0]]) loadData(ix[0]).then(()=>{ if(DICT[t]) openDict(t,fresh); }).catch(()=>{}); return; } if(fresh) dstack=[]; dstack.push(t);
   const box=$("dictBody"); box.textContent="";
-  box.append(el("p","dsub",e.s), el("h3",null,e.t)); if(e.en) box.append(el("p","dsub",e.en));
+  box.append(el("p","dsub",e.s), rEl("h3",null,e.t)); if(e.en) box.append(el("p","dsub",e.en));
   const d=el("p","dd"+(e.l?" ensent":"")); fillLinked(d,e.l?e.d:e.d.replace(/。$/,"")+"。",e.t); box.append(d);
   if(e.x) (e.l?splitNote(e.x):[e.x]).forEach(v=>{ const x=el("p","dx"); fillLinked(x,/[。〕]$/.test(v)?v:v.replace(/。$/,"")+"。",e.t); box.append(x); });
-  if(e.r&&e.r.length){ const g=el("p","dr"); g.append(el("b",null,"関連 ")); e.r.forEach((r,i)=>{ if(i) g.append("・"); const k=dkey(r); g.append(k?dlink(r,k):document.createTextNode(r)); }); box.append(g); }
+  if(e.r&&e.r.length){ const g=el("p","dr"); g.append(el("b",null,"関連 ")); e.r.forEach((r,i)=>{ if(i) g.append("・"); const k=dkey(r); g.append(k?dlink(r,k):rEl("span",null,r)); }); box.append(g); }
   $("dictBack").hidden=dstack.length<2; $("dict").hidden=false; }
 function splitNote(t){ const i=t.indexOf("〔"); return i>0?[t.slice(0,i).trim(),t.slice(i).trim()]:[t]; }
 function el(tag, cls, text){const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e;}
+// 難読語のふりがな（2026-11-24 Keita「漢字むずいやつふりがな振ってくれよ」。README §2.0.6）。辞書は data/ruby.json（src/ruby.tsv から作る）
+// 段落ごとに最初の1回だけ振る。出題中は、読みが答え・別解と重なる語には振らない（答え漏れ防止）。直後に（よみ）が書いてあれば振らない
+let RUBY=null, RUBYRE=null;
+fetch("data/ruby.json").then(r=>r.ok?r.json():null).then(j=>{ if(!j) return; RUBY=j; RUBYRE=new RegExp(Object.keys(j).sort((a,b)=>b.length-a.length).map(rxq).join("|"),"g"); if(S.view==="game") reRuby(); }).catch(()=>{});
+const kanaH=t=>String(t||"").replace(/[\u30a1-\u30f6]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-96));
+function rubyRead(v){ return typeof v==="string"? v : v.map(x=>typeof x==="string"?x:x[1]).join(""); }
+function ansKana(c){ return c? [c.name,...(c.alias||[])].map(x=>kanaH(normAns(x)).replace(/[^\u3041-\u309f]/g,"")).filter(x=>x.length>=2) : []; }
+const askRo=c=>({skip:ansKana(c),ans:[c.name,...(c.alias||[])].map(String)});
+function addRuby(node,text,o){ o=o||{}; text=String(text==null?"":text); if(!RUBYRE){ node.append(text); return node; }
+  const used=o.used||new Set(), skip=o.skip||[]; let last=0;
+  text.replace(RUBYRE,(m,off)=>{ const v=RUBY[m], rd=rubyRead(v);
+    if(used.has(m)) return m;
+    const after=text.slice(off+m.length); if(/^[（(]/.test(after)&&kanaH(after.slice(1,1+rd.length+2)).includes(rd.slice(0,2))) return m;
+    if(skip.some(a=>a.includes(rd)||rd.includes(a))) return m; if(o.ans&&[...m].some(ch=>/[\u4e00-\u9fff]/.test(ch)&&o.ans.some(a=>a.includes(ch)))) return m;   // 答えと同じ漢字を含む語も振らない
+    used.add(m); if(off>last) node.append(text.slice(last,off));
+    (typeof v==="string"?[[m,v]]:v).forEach(x=>{ if(typeof x==="string"){ node.append(x); return; } const r=document.createElement("ruby"); r.append(x[0]); const t=document.createElement("rt"); t.textContent=x[1]; r.append(t); node.append(r); });
+    last=off+m.length; return m; });
+  if(last<text.length) node.append(text.slice(last)); return node; }
+function rEl(tag,cls,text,o){ return addRuby(el(tag,cls),text,o); }
+function reRuby(){ if(S.view!=="game"||!S.deck||!S.deck[S.qi]) return; const c=S.deck[S.qi];
+  if(S.phase==="ask"){ const q=$("card").querySelector("p.qtext.q-x"); if(q&&c.cc&&c.q!=="I"){ q.textContent=""; addRuby(q,c.def,askRo(c)); } if(S.choices) renderChoices(); } }
 function reveal(){
   if(S.phase==="reveal") return;
   if(!S.ans) answer(null);
@@ -2185,7 +2209,7 @@ function reveal(){
   const card=$("card");
   if(c.cc){
     card.querySelectorAll(".qtext,figure.q-x,.voice.q-x").forEach(n=>n.remove());
-    card.insertBefore(el("div","bname reveal-x",c.name),$("cEv"));
+    card.insertBefore(rEl("div","bname reveal-x",c.name),$("cEv"));
     if(c.en) card.insertBefore(el("p","bsub reveal-x",c.en),$("cEv"));
     const flow=el("div","flow reveal-x");
     if(c.def.includes("____")){ const q=el("div","fr ensent"); const [a,b2]=c.def.split("____"); const sa=el("span"), sb=el("span"); fillLinked(sa,a,c.name); fillLinked(sb,b2,c.name); q.append(sa, el("b","fill",c.name), sb); flow.append(q); }
@@ -2195,7 +2219,7 @@ function reveal(){
     if(c.p) card.querySelector(".bname.reveal-x").classList.add("sent");
     card.append(flow);
     if(c.doc){ const f=docFor(c); if(f) card.append(f); }
-    if(c.rel&&c.rel.length){ const g=el("p","goro reveal-x"); g.append(el("b",null,"関連 ")); c.rel.forEach((t,i)=>{ if(i) g.append("・"); const k=dkey(t); g.append(k?dlink(t,k):document.createTextNode(t)); }); card.append(g); }
+    if(c.rel&&c.rel.length){ const g=el("p","goro reveal-x"); g.append(el("b",null,"関連 ")); c.rel.forEach((t,i)=>{ if(i) g.append("・"); const k=dkey(t); g.append(k?dlink(t,k):rEl("span",null,t)); }); card.append(g); }
     if(c.snd){ stopVoice(); const v=el("div","voice reveal-x"); v.id="voiceBox"; const w=el("div","wave"); for(let i=0;i<9;i++) w.append(el("i")); v.append(w,vbtns(c)); card.insertBefore(v,flow);
       const cr=el("p","sndcredit reveal-x"); cr.append("音源："+(c.snd[4]?c.snd[4]+"・":"")+c.snd[1]+"（"+c.snd[2]+"） "); const a=document.createElement("a"); a.href=c.snd[3]; a.target="_blank"; a.rel="noopener"; a.textContent="出典"; cr.append(a); card.append(cr);
       playVoice(c,false); }
@@ -2230,8 +2254,8 @@ function reveal(){
   card.classList.add("rv"); const yr=el("div","year reveal-x", yearText(c.y)); yr.append(el("small",null,"年"));
   card.insertBefore(yr, $("cEv"));
   if(isOral(c)) card.querySelectorAll(".qtext.q-x").forEach(n=>n.remove());
-  if(c.hq){ $("cEv").textContent=c.name; $("cEn").textContent=c.en;
-    const qa=el("div","hqa reveal-x"); qa.append(el("span","hqq",c.hq.q), el("b",null,c.hq.a), el("span","hqx",c.hq.x)); card.insertBefore(qa,yr); }
+  if(c.hq){ $("cEv").textContent=""; addRuby($("cEv"),c.name); $("cEn").textContent=c.en;
+    const qa=el("div","hqa reveal-x"); qa.append(rEl("span","hqq",c.hq.q), rEl("b",null,c.hq.a), rEl("span","hqx",c.hq.x)); card.insertBefore(qa,yr); }
   const flow=el("div","flow reveal-x");
   [c.why,c.what,c.then].filter(Boolean).forEach((v,i)=>{ const r=el("div","fr"+(i?" arrow cz":"")); fillLinked(r,v+"。",c.name); flow.append(r); });
   card.append(flow);

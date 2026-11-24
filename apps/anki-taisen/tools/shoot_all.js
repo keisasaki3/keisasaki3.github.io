@@ -1,5 +1,6 @@
 // 公開版の全ジャンルを開いて、最初の札の「問題」と「答え合わせ（資料画像つき）」のスクショを残す
 // 使い方: node apps/anki-taisen/tools/shoot_all.js [URL] [出力フォルダ]
+//   選択肢はふりがな（rt）を除いた文字で正解を探す（2026-11-24）
 //   既定: https://natsume-portal.onrender.com/anki-taisen/  → ./shots-YYYYMMDD/
 //   AIは使わない。撮ったスクショを人が一覧で見る（index.html を開く）
 const {chromium}=require('playwright');const fs=require('fs');const path=require('path');
@@ -21,7 +22,7 @@ for(const s of subs){
     const n=await p.evaluate(()=>S.deck[S.qi].name);
     const inp=p.locator('input:visible').first();
     if(await inp.count()){await inp.fill(n,{timeout:2000}).catch(()=>{});await p.getByRole('button',{name:'決定'}).click({timeout:2000}).catch(()=>{});}
-    else await p.evaluate(n=>{const x=[...document.querySelectorAll('button')].find(x=>x.innerText.replace(/\s+/g,' ').trim()===n);x&&x.click()},n);
+    else await p.evaluate(n=>{const tx=x=>{const c=x.cloneNode(true);c.querySelectorAll('rt').forEach(r=>r.remove());return c.textContent.replace(/\s+/g,' ').trim();};const x=[...document.querySelectorAll('button')].find(x=>tx(x)===n);x&&x.click()},n);
     await p.waitForTimeout(900);
     const imgs=await p.evaluate(()=>[...document.querySelectorAll('figure.docimg img')].map(i=>i.complete&&i.naturalWidth>0));
     if(imgs.includes(false))bad++;
