@@ -62,6 +62,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .lumi .say::before{content:"";position:absolute;left:-12px;bottom:12px;border:6px solid transparent;border-right-color:var(--frame,var(--line))}
 .lumi .say b{display:block;font-size:.78em;color:var(--sup,var(--acc));letter-spacing:.15em}
 #levels button{font-size:.92em;word-break:keep-all}
+#levels.tp button{word-break:normal;overflow-wrap:anywhere}   /* トピック名は長いので折り返す */
 .panel{background:var(--surf);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--panel-shadow)}
 label{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:6px}
 input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px}
@@ -1255,10 +1256,17 @@ function gPathTo(id,n=GTREE,acc=[]){ if(!n.kids) return null; for(const k of n.k
 let gNav=null;
 const isCon=g=>SUBJ.some(x=>x.id===g);
 const isProb=g=>g==="h"||g==="j";   // 問題を解いて4択で答える科目（数学・簿記3級）
-const isTr=g=>g==="k";
+const isTr=g=>g==="k";   // 和文英訳: 日本語を見て英文を入力。言い方パターン(p)に合えば自動で正解、合わなければ自己判定（2026-11-16 Keita依頼）
 // 概念札は難易度でなくトピック（札のまとまり g）で選ぶ（2026-11-24 Keita「難易度って分類やめよう。トピックに変更」）。S.lv にトピック名が入り、3は「ぜんぶ」
 const isTop=g=>isCon(g)&&!isProb(g)&&!isTr(g);
-function topicsOf(g){ const o=[]; (ALL[g]||[]).forEach(c=>{ if(c.grp&&!o.includes(c.grp)) o.push(c.grp); }); return o.length>=2?o:[]; }   // 和文英訳: 日本語を見て英文を入力。言い方パターン(p)に合えば自動で正解、合わなければ自己判定（2026-11-16 Keita依頼）
+// 札が30枚未満のジャンル（名著など）は「ぜんぶ」だけ。4枚未満のまとまりが2つ以上あれば「そのほか」にまとめる（1つだけならそのまま出す）
+const TOP_OTHER="そのほか"; const TOPC={};
+function topicsOf(g){ const a=ALL[g]||[]; const hit=TOPC[g]; if(hit&&hit.n===a.length) return hit.t;
+  const n={},o=[]; let none=false; a.forEach(c=>{ if(!c.grp){ none=true; return; } if(!(c.grp in n)){ n[c.grp]=0; o.push(c.grp); } n[c.grp]++; });
+  let t=o.filter(x=>n[x]>=4); const sm=o.filter(x=>n[x]<4); if(sm.length===1&&!none) t.push(sm[0]); else if(sm.length||none) t.push(TOP_OTHER); if(a.length<30||t.length<2) t=[];
+  TOPC[g]={n:a.length,t}; return t; }
+function inTopic(c,t){ if(c.grp===t) return true; return t===TOP_OTHER&&!topicsOf(c.subj).includes(c.grp); }
+const okLv=lv=>[1,2,3,4].includes(lv)||(typeof lv==="string"&&lv.length>0&&lv.length<40);   // 数字は難易度、文字はトピック名
 const subjTop=g=>{ const sj=SUBJ.find(x=>x.id===g)||{}; return sj.ji?"時事問題":sj.mc?"名著":sj.k?"教養":"学問"; };   // 上段タブ 学問・教養・時事問題（2026-11-17 Keita依頼）
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
 const isPick=g=>g==="B"||g==="T"||g==="D"||isCon(g); const hasVoice=g=>g==="B"||g==="D";
@@ -1315,7 +1323,7 @@ const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.le
 function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
   if(genre==="R"){ const d=(Array.isArray(custom)&&custom.length?custom:(S.rkeys||[])).map(k=>BYKEY[k]).filter(Boolean); return birdDeck(d,gid||"r","V"); }
   if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
-  if(isCon(genre)){ if(!hasImgQ(genre)) mode="W"; const dk=birdDeck((ALL[genre]||[]).filter(c=>(lv===3||c.lv===lv||c.grp===lv)&&(mode!=="J"||canImgQ(c))),gid,"P").map(c=>({...c,q:mode==="W"?"T":canSndQ(c)?"A":canImgQ(c)?"I":"T"})); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
+  if(isCon(genre)){ if(!hasImgQ(genre)) mode="W"; const dk=birdDeck((ALL[genre]||[]).filter(c=>(lv===3||c.lv===lv||(typeof lv==="string"&&inTopic(c,lv)))&&(mode!=="J"||canImgQ(c))),gid,"P").map(c=>({...c,q:mode==="W"?"T":canSndQ(c)?"A":canImgQ(c)?"I":"T"})); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   if(isPick(genre)){ const m=new Date().getMonth()+1; const dk=birdDeck(ALL[genre].filter(c=>(lv===4?inSeason(c,m):c.lv<=lv) && c.m.img && !(bmode==="S"&&hasVoice(genre)&&!c.m.snd)),gid,hasVoice(genre)?bmode:"P"); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
   const base = mode==="J"?ALL.J : mode==="W"?ALL.W : ALL.J.concat(ALL.W);
   return base.filter(c=>c.lv<=lv).slice().sort((a,b)=>a.y-b.y || (a.src==="J"?-1:1));
@@ -1578,17 +1586,17 @@ function renderPickers(){
   else seg("modes", MODES.map(m=>({key:m.id,name:m.name})), S.mode, null, k=>{S.mode=k; store.set("nb-mode",k); renderPickers(); push();});
   const isT=isTop(S.genre);
   const lvs=isT?[{lv:3},...topicsOf(S.genre).map(t=>({lv:t}))]:isK?[{lv:1},{lv:2},{lv:3}]:isB?LEVELS.filter(l=>l.lv!==3):LEVELS.filter(l=>l.lv<=3);
-  if(!lvs.some(l=>l.lv===S.lv)) S.lv=isT?3:lvs[lvs.length-1].lv;
+  if(!lvs.some(l=>l.lv===S.lv)&&!(isT&&!(ALL[S.genre]||[]).length)) S.lv=isT?3:lvs[lvs.length-1].lv;   // 札の読み込み前は選んだトピックを消さない
   $("levelsLabel").textContent=isT?"トピック（出題数）":"難易度（出題数）";
-  $("levels").style.gridTemplateColumns=isT?"repeat(auto-fill,minmax(120px,1fr))":`repeat(${lvs.length},1fr)`;
-  seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
+  $("levels").classList.toggle("tp",isT); $("levels").style.gridTemplateColumns=isT?"repeat(auto-fill,minmax(120px,1fr))":`repeat(${lvs.length},1fr)`;
+  seg("levels", lvs.map(l=>({key:l.lv,name:lvName(l.lv,S.genre)})), S.lv, it=>deckFor(S.mode,it.key,S.genre,null,S.bmode).length+(isB&&!isT?"種":"問"), k=>{S.lv=k; store.set("nb-lv",String(k)); renderPickers(); push();});
   $("cntBox").style.display=isB?"flex":"none"; $("fromBox").style.display="none";
   if(isB){ const pool=deckFor(S.mode,S.lv,S.genre,null,S.bmode).length;
     seg("counts",[{key:10,name:"10問"},{key:20,name:"20問"},{key:0,name:"全問"}],S.cnt,it=>it.key===0?pool+"問":"ランダム",k=>{S.cnt=k; store.set("nb-cnt",String(k)); renderPickers(); push();}); }
   if(S.genre==="j"){ $("rangeNote").textContent=["","日商簿記3級の基本（勘定科目の区分・日常の取引の仕訳）","3級の決算と帳簿（決算整理・消費税・貸倒れ・固定資産の売却・補助簿と財務諸表）","基礎と応用ぜんぶ"][S.lv]+"。取引を読んで、正しい仕訳を4択から選びます（「借方 / 貸方」の順）。答え合わせで考え方を確認できます。"; return; }
   if(isTr(S.genre)){ $("rangeNote").textContent=["","中学〜高校初級の文法で言える、仕事でよく使う短い文","会議・メール・交渉で使う丁寧な言い回し（依頼・断り・提案など）","基礎と応用ぜんぶ"][S.lv]+"。日本語を読んで英語で入力します。登録してある言い方のどれかに合えば正解。合わなくても、答え合わせで模範解答と比べて「合ってた」を押せば正解にできます。"; return; }
   if(S.genre==="h"){ $("rangeNote").textContent=["","中3〜高校の基本（方程式・関数・三角比・指数対数・数列・微積・確率）","数III・大学教養・実務（極限・微積の発展・線形代数・統計・お金の計算）","基礎と応用ぜんぶ"][S.lv]+"。問題を解いて、正しい答えを4択から選びます。答え合わせで解き方を確認できます。"; return; }
-  if(isK){ $("rangeNote").textContent=(isT?(S.lv===3?"このジャンルの札ぜんぶ":"「"+S.lv+"」の札だけ"):["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv])+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?(hasSndQ(S.genre)?"画像を見て、または曲を聞いて、あてはまる用語を入力します（画像・音のある札だけ）":"画像を見て、あてはまる用語を入力します（画像のある札だけ）"):hasSndQ(S.genre)?"名曲は音、見た目で覚える札は画像、ほかは説明文で出題します":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
+  if(isK){ $("rangeNote").textContent=(isT?(S.lv===3?"このジャンルの札ぜんぶ":S.lv===TOP_OTHER?"ほかのトピックに入らない札":"「"+S.lv+"」の札だけ"):["","まず押さえたい基本の用語","基礎を前提にした発展・実務の用語","基礎と応用ぜんぶ"][S.lv])+"。"+(!hasImgQ(S.genre)||S.mode==="W"?"説明文を読んで、あてはまる用語を入力します":S.mode==="J"?(hasSndQ(S.genre)?"画像を見て、または曲を聞いて、あてはまる用語を入力します（画像・音のある札だけ）":"画像を見て、あてはまる用語を入力します（画像のある札だけ）"):hasSndQ(S.genre)?"名曲は音、見た目で覚える札は画像、ほかは説明文で出題します":"見た目で覚える札は画像、ほかは説明文で出題します")+"。"; return; }
   if(S.genre==="T"){ $("rangeNote").textContent=["","街や公園でまず見る木","庭木・どんぐり・針葉樹など少しマイナーな木まで","",`${new Date().getMonth()+1}月が見ごろの木（花・紅葉・実など）`][S.lv]+"。写真を見て名前を当てます"; return; }
   if(S.genre==="D"){ $("rangeNote").textContent=["","北海道の街や水辺でまず見る鳥と、タンチョウ・シマエナガなどの人気者","森・草原・海の鳥まで","",`${new Date().getMonth()+1}月の北海道で見られる鳥（季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
   if(S.genre==="B"){ $("rangeNote").textContent=["","関東の街や川でまず見る鳥","公園や水辺で見る少しマイナーな鳥まで","関東で見る鳥ぜんぶ",`${new Date().getMonth()+1}月の関東で見られる鳥（やさしい＋ふつうから、季節に合う種だけ）`][S.lv]+(S.bmode==="S"?"。鳴き声だけで出題します。答え合わせで写真が出ます":"。写真と鳴き声の問題がまざって出ます。答え合わせでも鳴き声が流れます"); return; }
@@ -1651,7 +1659,7 @@ function okLine(id, me, rows){
 }
 // 答え方（入力/4択）は対戦ではホスト（待っている人・対戦中の人）に合わせる。ロビーに戻ると自分の設定に戻す（2026-11-05 Keita指摘）
 function hostAmode(a){ if(a==="T"||a==="C") S.amode=a; }
-function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&[1,2,3,4].includes(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
+function validWait(w){ return w&&typeof w==="object"&&typeof w.gid==="string"&&w.gid.length<40&&GENRES.some(x=>x.id===w.genre)&&MODES.some(m=>m.id===w.mode)&&okLv(w.lv)&&[0,10,20].includes(w.cnt)?w:null; }
 function lobbyPeers(){ return others().map(p=>p.presence).filter(pr=>pr.view==="lobby"); }
 function startQi(){ return isPick(S.genre)?0:fromQi(S.mode,S.lv,S.from); }
 function startFromWait(w){ if(typeof w.ht==="boolean") S.ht=w.ht; hostAmode(w.amode); const bm=BMODES.some(m=>m.id===w.bmode)?w.bmode:"V"; S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; startGame(w.gid,w.genre,w.mode,w.lv,Number.isInteger(w.qi)&&w.qi>=0?w.qi:0,bm,null,w.cnt); }
@@ -2122,7 +2130,7 @@ $("randCu").onclick=()=>randGo("教養");
 $("forceBtn").onclick=()=>{ if(S.wait){ $("forceBtn").hidden=true; S.solo=false; startFromWait(S.wait); } };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
 $("joinBtn").onclick=()=>{ S.solo=false; const g=findOpenGame(); if(!g){ if(hostWait()&&!S.wait) $("startBtn").onclick(); return; }
-  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=[1,2,3,4].includes(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
+  const mode=MODES.some(m=>m.id===g.mode)?g.mode:"J"; const genre=GENRES.some(x=>x.id===g.genre)?g.genre:"H"; const lv=okLv(g.lv)?g.lv:1; const cnt=[0,10,20].includes(g.cnt)?g.cnt:0;
   const qi=Math.max(0,...others().map(p=>p.presence).filter(pr=>pr.gid===g.gid).map(pr=>Number(pr.qi)||0));
   const bm=BMODES.some(m=>m.id===g.bmode)?g.bmode:"V"; if(typeof g.ht==="boolean") S.ht=g.ht; hostAmode(g.amode);
   { const need=Array.isArray(g.custom)?[...new Set(g.custom.filter(k=>typeof k==="string"&&/^[^:]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]):[];
