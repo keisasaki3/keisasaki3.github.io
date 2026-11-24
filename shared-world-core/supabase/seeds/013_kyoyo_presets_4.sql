@@ -1,6 +1,6 @@
 -- Life Quest preset: 教養 東京地理（SUPER暗記大戦の東京地理と対応。2026-11-24 Keita依頼）
 -- 形式は 012_kyoyo_presets_3.sql と同じ（科目＝ジャンル、分野＝札のグループ、トピック＝分野と同じid）。再実行可能。
--- 本番への適用は Keita の了承後。
+-- 2026-11-24 Keita 了承のうえ本番適用済み。
 begin;
 insert into public.quest_subjects (subject_id, name_ja, name_en, icon, sort_order, active, preset_group) values
   ('kyo-tokyo', '東京地理', 'Tokyo geography', '🗼', 490, true, '教養')
