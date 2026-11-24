@@ -379,7 +379,8 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <button class="btn sub" id="randAc" type="button">🎲 学問ランダム</button>
         <button class="btn sub" id="randCu" type="button">🎲 教養ランダム</button>
         <button class="btn sub" id="nsBtn" type="button" aria-expanded="false">🔁 NONSTOP（学問）</button>
-        <button class="btn sub" id="rselBtn" type="button" aria-expanded="false">☑ ランダムの範囲</button>
+        <button class="btn sub" id="nsEnBtn" type="button" aria-expanded="false">🔁 NONSTOP英語</button>
+        <button class="btn sub" id="rselBtn" type="button" aria-expanded="false" style="grid-column:1/-1">☑ ランダムの範囲</button>
       </div>
       <div id="rselBox" class="nsbox" hidden>
         <p class="small muted" style="margin:0">学問ランダム・教養ランダム・NONSTOP に入れるトピックを選びます。はじめは 学問＝高校まで、教養＝一般教養がオン。<span id="rselSave"></span></p>
@@ -392,6 +393,7 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
         <span class="small muted">トピックの数</span>
         <div class="nsrow"><select id="nsN" aria-label="トピックの数"></select><span class="small muted">個</span></div>
         <button class="btn" id="nsGo" type="button">NONSTOPをはじめる</button>
+        <button class="btn" id="nsEnGo" type="button">NONSTOP英語をはじめる</button>
         <p class="small muted" id="nsNote" style="margin:0"></p>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
@@ -2203,12 +2205,17 @@ $("randCu").onclick=()=>randGo("教養");
 function renderNS(){ const sel=$("nsN"); if(!sel.options.length){ for(let i=1;i<=20;i++){ const o=document.createElement("option"); o.value=String(i); o.textContent=String(i); sel.append(o); } sel.onchange=()=>store.set("nb-ns-n",sel.value); }
   sel.value=String(Math.min(20,Math.max(1,Number(store.get("nb-ns-n"))||5)));
 }
-$("nsBtn").onclick=()=>{ const b=$("nsBox"); b.hidden=!b.hidden; $("nsBtn").setAttribute("aria-expanded",String(!b.hidden)); if(!b.hidden) renderNS(); };
+// NONSTOP英語（2026-11-24 Keita「ノンストップリミックスとしてノンストップ英語ボタンを追加」）: 学問›英語（和文英訳・ビジネス英単語・熟語・句動詞・英語定型表現）のトピックだけで回す。ランダムの範囲でオンの英語トピックから選び、1つもオンでなければ英語の全トピックから
+let nsKind="";
+function nsOpen(kind){ const b=$("nsBox"), same=!b.hidden&&nsKind===kind; nsKind=kind; b.hidden=same; $("nsBtn").setAttribute("aria-expanded",String(!b.hidden&&!kind)); $("nsEnBtn").setAttribute("aria-expanded",String(!b.hidden&&kind==="en")); $("nsGo").hidden=kind==="en"; $("nsEnGo").hidden=kind!=="en"; if(!b.hidden) renderNS(); }
+$("nsBtn").onclick=()=>nsOpen(""); $("nsEnBtn").onclick=()=>nsOpen("en");
 // 歴史（日本史は時代、世界史は地域）・数学・簿記3級・和文英訳も含む（2026-11-24 Keita「対象にしておけ」）
 const nsGenres=()=>gLeaves(GTREE.kids.find(n=>n.name==="学問"));
 // トピックの一覧は始めた人が「ランダムの範囲」から選び、待ち合わせ（S.wait.nsl）で全員に配る（人によってチェックが違うため）
 const nsName=x=>x.g==="H"?(x.mode==="W"?"世界史":"日本史")+"›"+x.t:x.t===3?subjName(x.g):subjName(x.g)+"›"+x.t;
-function nsPick(n){ return shuffle(tabTopics("学問").filter(isOnT).filter(x=>deckFor(x.g==="H"?x.mode:"W",x.t,x.g).length>=2),Math.random).slice(0,n).map(x=>[x.g,x.mode,x.t]); }
+const EN_G=()=>{ const n=GTREE.kids.find(k=>k.name==="学問").kids.find(k=>k.name==="英語"); return n?gLeaves(n):[]; };
+function nsPick(n,kind){ let c=tabTopics("学問").filter(x=>deckFor(x.g==="H"?x.mode:"W",x.t,x.g).length>=2); if(kind==="en"){ const en=EN_G(); c=c.filter(x=>en.includes(x.g)); const on=c.filter(isOnT); if(on.length) c=on; } else c=c.filter(isOnT);
+  return shuffle(c,Math.random).slice(0,n).map(x=>[x.g,x.mode,x.t]); }
 const nsValid=l=>Array.isArray(l)&&l.length>=1&&l.length<=20&&l.every(x=>Array.isArray(x)&&x.length===3&&typeof x[0]==="string"&&x[0].length<=2&&typeof x[1]==="string"&&x[1].length<=1&&(typeof x[2]==="string"&&x[2].length<40||x[2]===3));
 function nsBegin(gid,spec,nsl){ const p=nsSpec(spec); if(!p||!nsValid(nsl)){ toLobby(); return; }
   Promise.all(nsGenres().map(ensureGenre)).then(()=>{
@@ -2238,13 +2245,14 @@ function nsNext(ps){ const t=nsCur(); if(!t){ toLobby(); return; }
   S.amode=nsAmOpts(t)&&all.length?all[0].am:"C";
   S.ns.k++; S.again=null; S.againAt=0; $("againBtn").disabled=false; $("waitAgain").textContent="";
   startGame((S.ns.base+"-"+S.ns.k).slice(-38),t.g,t.mode,t.t,0,"V",null,0); }
-$("nsGo").onclick=()=>{ const n=Math.min(20,Math.max(1,Number($("nsN").value)||5)), spec=String(n);
+function nsStart(kind){ const n=Math.min(20,Math.max(1,Number($("nsN").value)||5)), spec=String(n);
   if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; }
   S.solo=false; $("nsNote").textContent="札を読み込んでいます…";
-  Promise.all(nsGenres().map(ensureGenre)).then(()=>{ const nsl=nsPick(n); if(!nsl.length){ $("nsNote").textContent="「ランダムの範囲」で学問のトピックをオンにしてください。"; openRsel(); return; }
+  Promise.all(nsGenres().map(ensureGenre)).then(()=>{ const nsl=nsPick(n,kind); if(!nsl.length){ $("nsNote").textContent="「ランダムの範囲」で学問のトピックをオンにしてください。"; openRsel(); return; }
     if(!lobbyPeers().length){ S.solo=true; nsBegin(newGid(),spec,nsl); return; }
     S.wait={gid:newGid(),genre:"NS",mode:"J",lv:spec,cnt:0,bmode:"V",ht:S.ht,qi:0,amode:S.amode,nsl}; $("nsNote").textContent="部屋の人のOKを待っています（ロビーの「対戦をはじめる」で取り消し）"; push(); check();
-  }).catch(()=>{ $("nsNote").textContent="札を読み込めませんでした。通信を確かめてもう一度押してください。"; }); };
+  }).catch(()=>{ $("nsNote").textContent="札を読み込めませんでした。通信を確かめてもう一度押してください。"; }); }
+$("nsGo").onclick=()=>nsStart(""); $("nsEnGo").onclick=()=>nsStart("en");
 $("rselBtn").onclick=()=>{ const b=$("rselBox"); if(b.hidden) openRsel(); else { b.hidden=true; $("rselBtn").setAttribute("aria-expanded","false"); } };
 $("rselReset").onclick=()=>{ RSEL={}; store.set("nb-rsel","{}"); lqSaveRsel(); renderRsel(); };
 function rselAllSet(v){ const tops=["学問","教養"]; Promise.all(tops.flatMap(tabGenres).map(ensureGenre)).then(()=>{ tops.forEach(top=>tabTopics(top).forEach(x=>{ const k=x.all||x.t===""?rKey(x.g,"",""):rKey(x.g,x.mode==="M"?"":x.mode,x.t); const d=x.all||x.t===""?true:rDef(x.g,x.mode==="M"?"":x.mode,x.t); if(v===d) delete RSEL[k]; else RSEL[k]=v?1:0; })); store.set("nb-rsel",JSON.stringify(RSEL)); lqSaveRsel(); renderRsel(); }).catch(()=>{}); }
