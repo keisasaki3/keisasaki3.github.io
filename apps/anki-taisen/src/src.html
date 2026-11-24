@@ -175,7 +175,7 @@ input,select{font:inherit;font-size:16px;background:var(--surf2);color:var(--ink
 .dr{font-size:14px;margin:0}
 .ensent{font-weight:600;line-height:1.7}.ensent .fill{color:var(--acc-ink);text-decoration:underline;text-underline-offset:3px}
 .gic{width:22px;height:22px;padding:3px;box-sizing:content-box;border-radius:7px;background:#2b2530;image-rendering:pixelated;vertical-align:middle;margin-right:7px}
-.randrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.randrow .btn{padding:10px 8px;font-size:15px}
+.randrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}.nsbox{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px 12px}.nsrow{display:flex;align-items:center;gap:8px}.nsrow select{font:inherit;padding:6px 10px;min-width:5em}.randrow .btn{padding:10px 8px;font-size:15px}
 .gearbtn{position:fixed;z-index:40;top:calc(8px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surf);color:var(--ink);border:1px solid var(--line);box-shadow:0 2px 8px rgba(0,0,0,.18)}
 .gearpop{position:fixed;z-index:41;top:calc(54px + env(safe-area-inset-top,0px));right:max(8px,env(safe-area-inset-right,0px));width:min(300px,calc(100vw - 16px));background:var(--card);color:var(--card-ink);border:1px solid var(--card-line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:12px;display:flex;flex-direction:column;gap:8px}
 .gearpop .zrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.gearpop .zrow button{padding:8px 4px;border-radius:10px;border:1.5px solid var(--card-line);background:var(--card-soft);color:var(--card-ink);font-weight:700}.gearpop .zrow button[aria-pressed="true"]{border-color:var(--card-acc);background:var(--card-acc);color:#fff}
@@ -377,6 +377,16 @@ h1.plain{font-size:20px;padding:12px 16px;border-radius:14px;text-align:left;box
       <div class="randrow">
         <button class="btn sub" id="randAc" type="button">🎲 学問ランダム</button>
         <button class="btn sub" id="randCu" type="button">🎲 教養ランダム</button>
+        <button class="btn sub" id="nsBtn" type="button" aria-expanded="false" style="grid-column:1/-1">🔁 NONSTOP（学問）</button>
+      </div>
+      <div id="nsBox" class="nsbox" hidden>
+        <p class="small muted" style="margin:0">学問の札から、選んだ数のトピックをランダムに選び、やめるまで出題しつづけます（ひとりで・4択）。</p>
+        <span class="small muted">トピックの数</span>
+        <div class="nsrow"><select id="nsN" aria-label="トピックの数"></select><span class="small muted">個</span></div>
+        <span class="small muted">難易度</span>
+        <div class="levels" id="nsLv" style="grid-template-columns:repeat(2,1fr)"></div>
+        <button class="btn" id="nsGo" type="button">NONSTOPをはじめる</button>
+        <p class="small muted" id="nsNote" style="margin:0"></p>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px">
         <span class="small muted">ジャンル</span>
@@ -1266,6 +1276,8 @@ function topicsOf(g){ const a=ALL[g]||[]; const hit=TOPC[g]; if(hit&&hit.n===a.l
   let t=o.filter(x=>n[x]>=4); const sm=o.filter(x=>n[x]<4); if(sm.length===1&&!none) t.push(sm[0]); else if(sm.length||none) t.push(TOP_OTHER); if(a.length<30||t.length<2) t=[];
   TOPC[g]={n:a.length,t}; return t; }
 function inTopic(c,t){ if(c.grp===t) return true; return t===TOP_OTHER&&!topicsOf(c.subj).includes(c.grp); }
+// NONSTOP（2026-11-24 Keita依頼「選んだ数字の数だけ基礎か応用かの学問からランダムに出題しつづける」）: 学問のトピックを n 個ランダムに選び、札を使い切ったら混ぜ直して続ける。ひとりで遊ぶ。genre は "NS"（1文字の id は札の key と重なるので使わない）
+const isNS=g=>g==="NS"; const isCust=g=>g==="R"||g==="NS";
 const okLv=lv=>[1,2,3,4].includes(lv)||(typeof lv==="string"&&lv.length>0&&lv.length<40);   // 数字は難易度、文字はトピック名
 const subjTop=g=>{ const sj=SUBJ.find(x=>x.id===g)||{}; return sj.ji?"時事問題":sj.mc?"名著":sj.k?"教養":"学問"; };   // 上段タブ 学問・教養・時事問題（2026-11-17 Keita依頼）
 const subjName=g=>(SUBJ.find(x=>x.id===g)||{}).name||"";
@@ -1292,14 +1304,14 @@ function pickDistractors(c,pool,r){
   scored.sort((p,q)=>q.s-p.s); return scored.slice(0,3).map(o=>o.x);
 }
 function choicesFor(deck,qi,gid){
-  const c=deck[qi], r=rng(gid+":"+qi), pool=c.cc? ALL[c.subj].filter(x=>x.name!==c.name) : S.genre==="R"? (ALL[c.key[0]]||[]).filter(x=>x.key!==c.key) : deck.filter(x=>x!==c);
+  const c=deck[qi], r=rng(gid+":"+qi), pool=c.cc? ALL[c.subj].filter(x=>x.name!==c.name) : isCust(S.genre)? (ALL[c.key[0]]||[]).filter(x=>x.key!==c.key) : deck.filter(x=>x!==c);
   // 数学など問題形式の札は、札ごとの誤答（よくある間違い）から4択を作る（2026-11-08）
   if(c.w&&c.w.length>=3) return shuffle([c.name,...c.w.slice(0,3)],r);
   // ジャンル内に紛らわしい札が足りないときは、札に手書きした誤答（dw）を使う。w と違い入力モードはそのまま（2026-11-23）
   if(c.dw&&c.dw.length>=3) return shuffle([c.name,...c.dw.slice(0,3)],r);
   // 誤答は「迷う余地がある」ものを選ぶ（2026-11-23 Keita「まったく迷う余地がない4択が多い」）:
   // 同じジャンル全体から、同じまとまり・関連語・同じ字種（カタカナ語／漢字語／英字）・同じ語尾（〜法・〜説・〜主義など）・近い長さを点数にして上位から選ぶ
-  const full=(S.genre!=="R"&&c.subj&&ALL[c.subj]&&ALL[c.subj].length>=4)? ALL[c.subj].filter(x=>x.name!==c.name) : pool;
+  const full=(!isCust(S.genre)&&c.subj&&ALL[c.subj]&&ALL[c.subj].length>=4)? ALL[c.subj].filter(x=>x.name!==c.name) : pool;
   const picks=pickDistractors(c,full,r);
   const out=shuffle([c].concat(picks),r).map(x=>x.name);
   // 英語: 文頭の空欄なら全部大文字始まり、文中なら小文字始まりにそろえる（大文字で答えがばれないように）
@@ -1321,6 +1333,7 @@ function birdDeck(d,gid,bmode){ if(!gid) return d; const r=rng(gid), sd=shuffle(
 const sndOf=c=>(c.m.snds&&c.m.snds.length)?c.m.snds[Math.min(c.si||0,c.m.snds.length-1)]:c.m.snd;
 const imgOf=c=>(c.m.imgs&&c.m.imgs.length)?c.m.imgs[Math.min(c.pi||0,c.m.imgs.length-1)]:c.m.img;
 function deckFor(mode,lv,genre,gid,bmode,custom,cnt){
+  if(isNS(genre)){ const d=(Array.isArray(custom)&&custom.length?custom:(S.nskeys||[])).map(k=>BYKEY[k]).filter(Boolean); return birdDeck(d,gid||"ns","V"); }
   if(genre==="R"){ const d=(Array.isArray(custom)&&custom.length?custom:(S.rkeys||[])).map(k=>BYKEY[k]).filter(Boolean); return birdDeck(d,gid||"r","V"); }
   if(Array.isArray(custom)&&custom.length){ const d=custom.map(k=>BYKEY[k]).filter(Boolean); return isPick(genre)? birdDeck(d,gid,hasVoice(genre)?bmode:"P") : sortYears(d); }
   if(isCon(genre)){ if(!hasImgQ(genre)) mode="W"; const dk=birdDeck((ALL[genre]||[]).filter(c=>(lv===3||c.lv===lv||(typeof lv==="string"&&inTopic(c,lv)))&&(mode!=="J"||canImgQ(c))),gid,"P").map(c=>({...c,q:mode==="W"?"T":canSndQ(c)?"A":canImgQ(c)?"I":"T"})); return (gid&&cnt>0)?dk.slice(0,cnt):dk; }
@@ -1617,10 +1630,10 @@ function chip(name, opts={}){
   return c;
 }
 function modeName(id){return (MODES.find(m=>m.id===id)||MODES[0]).name;}
-function genreLabel(g,mode,bm){if(g==="R") return "今日の復習";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
+function genreLabel(g,mode,bm){if(g==="R") return "今日の復習"; if(isNS(g)) return "NONSTOP";const vo=bm==="S"?"・鳴き声のみ":"";return isCon(g)?subjTop(g)+"・"+subjName(g):g==="B"?"関東の鳥"+vo:g==="D"?"北海道の鳥"+vo:g==="T"?"関東の木":"歴史・"+modeName(mode);}
 // 学問・教養の難易度名（2026-11-17 Keita依頼「基礎概念でいっしょくたはそぐわない。気の利いた名前に」）。中身の基準は README §2.1 のまま、名前だけ分野ごと
 const LVN={"あ":["要点","深読み"],"い":["要点","深読み"],"う":["要点","深読み"],"え":["要点","深読み"],"お":["要点","深読み"],"0":["ITの基本","技術者の目"],"i":["寄席の入口","噺の通"],"z":["茶の間の笑い","笑いの通"],"E":["新聞が読める","エコノミスト"],"P":["選挙の前に","政治記者"],"G":["旅の地図帳","地図の読み手"],"Q":["ニュースの裏","戦略家の視点"],"K":["つい買う心理","ナッジ設計者"],"F":["哲学カフェ","原典に挑む"],"L":["暮らしの法律","法廷の言葉"],"C":["理科室","研究室"],"N":["毎日のごはん","栄養士の目"],"M":["会議の常識","社長の本棚"],"A":["決算書を読む","CFOの視点"],"Y":["心のしくみ","臨床の現場"],"O":["社会を見る目","学者の道具箱"],"X":["生き物図鑑","細胞の奥へ"],"Z":["身近な物理","宇宙の法則"],"U":["足もとの地球","地球46億年"],"S":["夜空の案内","宇宙の果てへ"],"1":["グラフを疑う","データ分析家"],"h":["教科書の数学","使える数学"],"j":["日々の仕訳","決算"],"2":["売れるしくみ","戦略を立てる"],"3":["からだの基本","診察室"],"4":["宗教めぐり","教えの奥へ"],"5":["美術館の入口","学芸員の目"],"6":["本棚の名作","文学部"],"7":["大人の常識語","言葉の通"],"9":["旅の定番","通の旅先"],"l":["26件を言える","構成資産の通"],"a":["名所めぐり","建築家の目"],"b":["教科書の名画","美術館の主"],"c":["食卓の定番","料理人の目"],"d":["乾杯の定番","酒場の通"],"e":["季節の定番","市場の目利き"],"f":["あの名曲","演奏会の常連"],"g":["夜空の常連","星読み"],"k":["ひとこと英語","商談の英語"],"V":["TOEIC 600","TOEIC 800"],"I":["日常の熟語","仕事の熟語"],"8":["定番フレーズ","会議・交渉"],"m":["予報を読む","予報士の目"],"n":["花屋の定番","植物園の通"],"o":["誕生石","鉱物標本"],"p":["仏の見分け","印を読む"],"q":["品種と産地","ソムリエの道"],"r":["歳時記の入口","俳人の目"],"s":["お寺の基本","教えの奥へ"],"t":["教会の基本","神学の扉"],"u":["六信五行","文明と思想"],"v":["神々と聖地","哲学の源流"],"w":["律法と祭り","離散の歴史"],"x":["神社の基本","神話と歴史"],"y":["見出しがわかる","解説できる"]};
-function lvName(lv,g){ if(typeof lv==="string") return lv; if(isTop(g)&&lv===3) return "ぜんぶ"; if(LVN[g]&&lv>=1&&lv<=3) return lv===3?"ぜんぶ":LVN[g][lv-1]; if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isProb(g)||isTr(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
+function lvName(lv,g){ if(typeof lv==="string") return lv; if(isTop(g)&&lv===3) return "ぜんぶ"; if(LVN[g]&&lv>=1&&lv<=3) return lv===3?"ぜんぶ":LVN[g][lv-1]; if(g==="R") return S.rkeys?S.rkeys.length+"枚":""; if(isNS(g)) return S.nsInfo?(S.nsInfo.lv===2?"応用":"基礎")+"・"+(S.nsInfo.names.length<=2?S.nsInfo.names.join("／"):S.nsInfo.names.length+"トピック"):""; if(isProb(g)||isTr(g)) return ["","基礎","応用","基礎＋応用"][lv]||"基礎"; if(isCon(g)) return ["","基礎概念","応用","基礎＋応用"][lv]||"基礎概念"; if(lv===4) return g==="T"?"今月の木":"今月の鳥"; return (LEVELS.find(l=>l.lv===lv)||LEVELS[0]).name;}
 const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(1);
 function renderLobby(){
   $("soloBtn").hidden=!others().length;
@@ -1746,6 +1759,7 @@ function startGame(gid, genre, mode, lv, qi, bmode, custom, cnt){
   const needF=[...new Set((Array.isArray(custom)?custom:[]).filter(k=>/^[^:]:/.test(k)).map(k=>k[0]))].map(id=>SUBJ.find(x=>x.id===id)).filter(sj=>sj&&!LOADED[sj.f]);
   if(needF.length){ const a=arguments; Promise.all(needF.map(sj=>loadData(sj.f))).then(()=>startGame.apply(null,a)).catch(()=>{}); return; }
   if(genre==="R"&&Array.isArray(custom)) S.rkeys=custom;
+  if(isNS(genre)&&Array.isArray(custom)&&custom.length) S.nskeys=custom;
   if(!genreReady(genre)){ const a=arguments; ensureGenre(genre).then(()=>startGame.apply(null,a)).catch(()=>setTimeout(()=>startGame.apply(null,a),2000)); return; }
   S.gid=gid; S.genre=genre; S.mode=mode; S.lv=lv; S.cnt=(cnt===undefined?S.cnt:cnt); if(bmode) S.bmode=bmode; S.custom=(Array.isArray(custom)&&custom.length)?custom:null;
   S.deck=deckFor(mode,lv,genre,gid,S.bmode,S.custom,S.cnt); S.hist=""; S.stamp=null; if(!S.deck.length){ S.custom=null; S.deck=deckFor(mode,lv,genre,gid,S.bmode,null,S.cnt); } if(!S.deck.length){ toLobby(); return; } S.qi=Math.min(qi||0,S.deck.length-1); if(!S.custom&&!isPick(genre)&&!isCon(genre)&&genre!=="R"&&S.ht){ const e=fromEnd(mode,lv,S.qi); if(e) S.deck=S.deck.slice(0,e); } S.q0=S.custom?0:S.qi; S.score=0; S.log=[]; S.ready=-1; S.hist="-".repeat(S.qi); S.wait=null; S.again=null; $("againBtn").disabled=false; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; $("waitAgain").textContent="";
@@ -1787,7 +1801,7 @@ function beginAsk(){
   const big=isBig(); card.classList.toggle("big",big);
   if(big){ const t=el("span","bigtag","大一番・得点2倍"); $("cEra").prepend(t); }
   card.classList.remove("flip"); void card.offsetWidth; card.classList.add("flip");
-  $("prog").textContent=`${S.qi+1} / ${S.deck.length}`;
+  $("prog").textContent=isNS(S.genre)?`${S.qi+1}問目`:`${S.qi+1} / ${S.deck.length}`;
   $("eraRange").textContent=`${genreLabel(S.genre,S.mode,S.bmode)}・${lvName(S.lv,S.genre)}`;
   const isC=c.kind==="choice", typing=isC&&(S.amode!=="C"||!!c.p)&&!c.w; $("selfBtn").hidden=true; $("typeIn").placeholder=c.p?"英語で入力（大文字・記号は気にしなくてOK）":"答えを入力"; $("slots").hidden=isC; $("yhint").hidden=isC; $("keypad").hidden=isC; $("choices").hidden=!isC||typing; $("typeBox").hidden=!typing;
   if(typing){ const ti=$("typeIn"); ti.value=""; ti.disabled=!!S.ans; } else if(isC) renderChoices();
@@ -1838,7 +1852,7 @@ function typedOk(v,c){ if(c.w&&c.w.length) return String(v)===c.name;
 const roughCard=c=>c.kind==="year"&&c.lv>1;
 const centOf=y=>y>0?Math.ceil(y/100):-Math.ceil(-y/100);
 function yearRough(v,c){ if(!roughCard(c)) return false; const t=(c.y<0?-1:1)*Number(v); return centOf(t)===centOf(c.y)||Math.abs(t-c.y)<=10; }
-function isBig(){ return S.deck.length-(S.q0||0)>=6 && S.qi>=S.deck.length-3; }
+function isBig(){ return !isNS(S.genre) && S.deck.length-(S.q0||0)>=6 && S.qi>=S.deck.length-3; }
 function answer(v){
   if(S.ans) return;
   const c=S.deck[S.qi];
@@ -1993,6 +2007,7 @@ function allReady(){
 }
 function advance(){
   $("nextBtn").disabled=false; $("waitNext").textContent="";
+  if(S.qi+1>=S.deck.length&&isNS(S.genre)){ const last=S.deck[S.deck.length-1]; let more=birdDeck(S.deck.slice(0,(S.nskeys||[]).length||S.deck.length),S.gid+":"+S.deck.length,"V"); if(more.length>1&&more[0].key===last.key) more=more.slice(1).concat(more[0]); S.deck=S.deck.concat(more); }   // NONSTOP は札を使い切ったら混ぜ直して続ける
   if(S.qi+1>=S.deck.length){ finish(); return; }
   S.qi++; beginAsk();
 }
@@ -2003,6 +2018,7 @@ function lumiSay(id,t){ const b=$(id); if(!b) return; b.hidden=!t; if(!t||b.data
   let i=0; s.textContent=""; b._tm=setInterval(()=>{ s.textContent=t.slice(0,++i); if(i>=t.length) clearInterval(b._tm); },35); }
 function lumiResult(){ const n=S.log.length, ok=S.log.filter(l=>l.ok).length, miss=n-ok, r=n?ok/n:0, pick=a=>a[(n+ok)%a.length];
   if(!n) return "";
+  if(isNS(S.genre)) return "NONSTOP、"+n+"問で正解"+ok+"問"+(r===1?"、全問正解です！":"でした。")+"今回のトピックは"+((S.nsInfo&&S.nsInfo.names)||[]).join("・")+"。"+(miss?"外した"+new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key)).size+"枚は下にまとめておきました。":"");
   if(S.genre==="R") return r===1?"今日の復習、全部クリアです！覚えた札が、またひとつ深く根を張りました。":"今日の復習、おつかれさまでした。外した"+miss+"枚は、また明日いっしょに見直しましょう。";
   if(r===1) return pick(["全問正解！その知識、もう立派な宝物ですね。","お見事、全部正解です。次は一段むずかしい札にも挑んでみませんか？"]);
   if(r>=.8) return "あと少しで満点でした！外した"+miss+"枚だけ、リベンジしていきましょう。";
@@ -2017,7 +2033,7 @@ function renderResult(){
   const box=$("banzuke"); box.textContent="";
   rows.forEach((r,i)=>{
     const d=el("div","rank");
-    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"点 / "+((n=>n+(n>=6?3:0))(S.deck.length-(S.q0||0)))+"点満点"));
+    d.append(el("span","r",titles[Math.min(i,4)]), el("span","nm",r.name), el("span","sc",fmt(r.score)+"点 / "+(isNS(S.genre)?S.log.length:(n=>n+(n>=6?3:0))(S.deck.length-(S.q0||0)))+"点満点"));
     box.append(d);
   });
   const ml=$("missList"); ml.textContent="";
@@ -2028,7 +2044,7 @@ function renderResult(){
   $("hardBox").hidden=!hard.length; const hl=$("hardList"); hl.textContent="";
   hard.forEach(c=>{ const d=el("div"); d.append(el("b",null,c.kind==="year"?yearText(c.y)+"　":""), document.createTextNode(c.name)); hl.append(d); });
   if(!miss.length){ml.append(el("p",null,"全問正解です。お見事。"));}
-  miss.forEach(l=>{const d=el("div"); if(l.c.cc) d.append(el("b",null,l.c.name), el("span",null,l.c.def)); else if(l.c.kind==="choice") d.append(el("b",null,l.c.name), el("span",null,l.c.f2)); else d.append(el("b",null,yearText(l.c.y)), el("span",null,l.c.name)); ml.append(d);});
+  (isNS(S.genre)?miss.filter((l,i)=>miss.findIndex(m=>m.c.key===l.c.key)===i):miss).forEach(l=>{const d=el("div"); if(l.c.cc) d.append(el("b",null,l.c.name), el("span",null,l.c.def)); else if(l.c.kind==="choice") d.append(el("b",null,l.c.name), el("span",null,l.c.f2)); else d.append(el("b",null,yearText(l.c.y)), el("span",null,l.c.name)); ml.append(d);});
 }
 function renderGamePlayers(){
   const box=$("gamePlayers"); box.textContent="";
@@ -2126,6 +2142,21 @@ $("gearBtn").onclick=e=>{ e.stopPropagation(); let pop=$("gearPop"); if(pop){ po
 document.addEventListener("click",()=>{ const p=$("gearPop"); if(p) p.remove(); });
 $("randAc").onclick=()=>randGo("学問");
 $("randCu").onclick=()=>randGo("教養");
+const nsGenres=()=>gLeaves(GTREE.kids.find(n=>n.name==="学問")).filter(g=>g!=="H"&&isTop(g));   // 数学・簿記3級・和文英訳・歴史は除く
+function renderNS(){ const sel=$("nsN"); if(!sel.options.length){ for(let i=1;i<=20;i++){ const o=document.createElement("option"); o.value=String(i); o.textContent=String(i); sel.append(o); } sel.onchange=()=>store.set("nb-ns-n",sel.value); }
+  sel.value=String(Math.min(20,Math.max(1,Number(store.get("nb-ns-n"))||5)));
+  const lv=store.get("nb-ns-lv")==="2"?2:1;
+  seg("nsLv",[{key:1,name:"基礎"},{key:2,name:"応用"}],lv,null,k=>{ store.set("nb-ns-lv",String(k)); renderNS(); }); }
+$("nsBtn").onclick=()=>{ const b=$("nsBox"); b.hidden=!b.hidden; $("nsBtn").setAttribute("aria-expanded",String(!b.hidden)); if(!b.hidden) renderNS(); };
+$("nsGo").onclick=()=>{ const n=Number($("nsN").value)||5, lv=store.get("nb-ns-lv")==="2"?2:1, gs=nsGenres(); $("nsNote").textContent="札を読み込んでいます…"; $("nsGo").disabled=true;
+  Promise.all(gs.map(ensureGenre)).then(()=>{
+    const tops=[]; gs.forEach(g=>topicsOf(g).forEach(t=>{ const ks=(ALL[g]||[]).filter(c=>c.lv===lv&&inTopic(c,t)).map(c=>c.key); if(ks.length>=2) tops.push({name:subjName(g)+"›"+t,ks}); }));
+    const pick=shuffle(tops,Math.random).slice(0,n); $("nsGo").disabled=false; $("nsNote").textContent="";
+    if(!pick.length) return;
+    S.nsInfo={lv,names:pick.map(x=>x.name)}; S.prevGenre=S.genre; S.solo=true; S.amode="C";
+    if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; }
+    startGame(newGid(),"NS",S.mode,lv,0,"V",pick.flatMap(x=>x.ks),0);
+  }).catch(()=>{ $("nsGo").disabled=false; $("nsNote").textContent="札を読み込めませんでした。通信を確かめてもう一度押してください。"; }); };
 // 全員のOKを待たずに始める（2026-11-08 Keita依頼）。OKした人は自動で合流、まだの人には「対戦中です［参加する］」が出る
 $("forceBtn").onclick=()=>{ if(S.wait){ $("forceBtn").hidden=true; S.solo=false; startFromWait(S.wait); } };
 $("soloBtn").onclick=()=>{ if(S.wait){ S.wait=null; $("startBtn").textContent="対戦をはじめる"; $("waitStart").textContent=""; } S.solo=true; startGame(newGid(),S.genre,S.mode,S.lv,startQi()); };
@@ -2153,9 +2184,9 @@ $("lqLogin").onclick=async()=>{ if(!LQ.sb) return; try{ sessionStorage.setItem("
 $("lqToggle").onclick=()=>{ store.set("nb-lq-off",lqOff()?"0":"1"); renderLink(); lqPull(); };
 lqInit();
 $("revengeBtn").onclick=()=>{ const keys=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.c.key))]; if(keys.length) startGame(newGid(),S.genre,S.mode,S.lv,0,S.bmode,keys); };
-function toLobby(){ stopVoice(); S.solo=false; S.amode=store.get("nb-amode")||"T"; S.cnt=store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")); if(S.genre==="R"){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; S.mode=modeFor(S.genre); } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
+function toLobby(){ stopVoice(); S.solo=false; S.amode=store.get("nb-amode")||"T"; S.cnt=store.get("nb-cnt")===null?20:Number(store.get("nb-cnt")); if(isCust(S.genre)){ S.genre=S.prevGenre||store.get("nb-genre")||"H"; S.mode=modeFor(S.genre); } S.again=null; $("againBtn").disabled=false; S.view="lobby"; S.gid=null; S.phase="ask"; show("lobby"); push(); renderPickers(); renderLobby(); }
 $("lobbyBtn").onclick=toLobby;
-{ let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="ゲームをやめる"; toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="ゲームをやめる";},3000); }; }
+{ let qt=null; const q=$("quitBtn"); q.onclick=()=>{ if(qt){ clearTimeout(qt); qt=null; q.textContent="ゲームをやめる"; if(isNS(S.genre)&&S.log.length){ finish(); return; } toLobby(); return; } q.textContent="もう一度押すと終了"; qt=setTimeout(()=>{qt=null; q.textContent="ゲームをやめる";},3000); }; }
 
 // 公開版: Supabase Realtime の presence で同じ部屋の人をつなぐ（DBの表は使わない）
 function sbRoom(cfg){
