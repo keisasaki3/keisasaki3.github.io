@@ -73,7 +73,7 @@ importanceはNEXT計算用。★の重みには使用しない。
 
 ### quest_card_progress
 
-SUPER暗記大戦（`apps/anki-taisen/`）の札ごとの学習記録（migration 013、2026-11-03 Keita依頼）。1行 = 1人 × 札1枚。
+SUPER暗記大戦（旧 `apps/anki-taisen/`、2026-11-26 削除。今はクイズペディアが別DBで記録するので、この表には新しい記録は入らない）の札ごとの学習記録（migration 013、2026-11-03 Keita依頼）。1行 = 1人 × 札1枚。
 
 - user_id: uuid FK -> profiles.user_id
 - card_key: text（SUPER暗記大戦の札の番号。例 `E:機会費用`）
