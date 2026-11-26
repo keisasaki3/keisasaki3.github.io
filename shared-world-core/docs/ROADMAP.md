@@ -25,10 +25,7 @@
 独自ドメインは取らない（セキュリティが不安なため）。Render に静的サイト `natsume-portal` を1つ作り、アプリを同じアドレスの下に並べる: `natsume-portal.onrender.com/life-quest/`、`/anki-taisen/`、共用の `/shared/`。同じアドレスなのでログインは共通。設定はリポジトリ直下の `render.yaml`（Blueprint）と `scripts/build-portal.sh`（`dist/` にまとめる）。アプリ同士・共用素材は相対パスで参照し、特定のアドレスを書き込まない。
 移行: ①RenderでBlueprintから natsume-portal を作る ②SupabaseのSite URLをポータルのトップ `https://natsume-portal.onrender.com/` に（2026-11-04 Keita決定。トップページは作るまで /life-quest/ へ転送）、Redirect URLsに `https://natsume-portal.onrender.com/**` を追加 ③旧 natsume-lq.onrender.com と GitHub Pages の人生クエスト・SUPER暗記大戦は、ページ先頭のスクリプトで新アドレスへ転送（済、2026-11-04）。端末ごとの設定（localStorage）はアドレスが変わると引き継がれない。
 
-### SUPER暗記大戦（2026-11-02 Keita決定、2026-11-26 終了）
-
-> 2026-11-26 Keita「まぎらわしいから旧環境の暗記大戦停止してリンクも全部けして」。クイズペディア（keisasaki3/quizpedia）へ移ったので、`apps/anki-taisen/` とポータルの入口は削除した。以下は経緯。
-
+### SUPER暗記大戦（2026-11-02 Keita決定）
 
 友人・家族と遊ぶ暗記対戦ゲーム。なつめポータルに統合していく前提で、当面はこのリポジトリの `apps/anki-taisen/` に置き、GitHub Pagesで公開する。対戦の同期は `shared-world-core` の Realtime presence を使う。2026-11-03から学習記録を人生クエストと共有し（`quest_card_progress`、誤り報告は `quest_card_reports`）、あらゆる分野の学びを集める場所にする。設計は `apps/anki-taisen/README.md`。
 
@@ -50,7 +47,8 @@
 natsume-portal/
 ├─ apps/
 │  ├─ life-quest/
-│  └─ summer-end/
+│  ├─ summer-end/
+│  └─ anki-taisen/   # SUPER暗記大戦（2026-11-02 追加）
 ├─ packages/
 │  └─ shared/
 ├─ supabase/

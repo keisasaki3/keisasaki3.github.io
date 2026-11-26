@@ -1,0 +1,15 @@
+name: anki-cards
+# SUPER暗記大戦の札の関門。答え漏れ・2つ組・逆向き・画像の使い回しなどがあると失敗する
+on:
+  pull_request:
+    paths: ["apps/anki-taisen/**", ".github/workflows/anki-cards.yml"]
+  push:
+    branches: [main]
+    paths: ["apps/anki-taisen/**"]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 札の関門
+        run: python3 apps/anki-taisen/tools/check_cards.py
