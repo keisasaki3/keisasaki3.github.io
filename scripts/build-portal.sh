@@ -1,12 +1,11 @@
 #!/bin/sh
 # なつめポータル（Render の静的サイト natsume-portal）に出すファイルを dist/ にまとめる（2026-11-04 Keita決定）。
-# 入口は / （apps/portal/index.html、2026-11-05 Keita依頼の仮ランディング）。並びは /life-quest/ /anki-taisen/ /history-novel/ /yosho-novel/ /oshigoto-town/ /eigo-escape/ /ui-mock/ /shared/。アプリ側は相対パス（../anki-taisen/ や ../../shared/）で互いを参照する。
+# 入口は / （apps/portal/index.html、2026-11-05 Keita依頼の仮ランディング）。並びは /life-quest/ /history-novel/ /yosho-novel/ /oshigoto-town/ /eigo-escape/ /ui-mock/ /shared/。アプリ側は相対パス（../../shared/ など）で互いを参照する。
+# SUPER暗記大戦（/anki-taisen/）は 2026-11-26 にクイズペディア（keisasaki3/quizpedia）へ移ったので、ここからは外した（Keita「まぎらわしいから旧環境の暗記大戦停止してリンクも全部けして」）。
 set -e
 rm -rf dist
 mkdir -p dist
 cp -r apps/life-quest dist/life-quest
-cp -r apps/anki-taisen dist/anki-taisen
-rm -rf dist/anki-taisen/src
 cp -r apps/history-novel dist/history-novel
 rm -rf dist/history-novel/src dist/history-novel/faces dist/history-novel/faces-src
 cp -r apps/yosho-novel dist/yosho-novel
